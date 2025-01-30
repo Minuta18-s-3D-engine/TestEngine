@@ -34,8 +34,10 @@ void Shader::compileShaders(
     const std::string& vertex_filename, 
     const std::string& fragment_filename
 ) {
-    const char* vShaderCode = readShaderFile(vertex_filename).c_str();
-    const char* vFragmentCode = readShaderFile(fragment_filename).c_str();
+    std::string cShaderCode = readShaderFile(vertex_filename);
+    std::string cFragmentCode = readShaderFile(fragment_filename);
+    const char* vShaderCode = cShaderCode.c_str();
+    const char* vFragmentCode = cFragmentCode.c_str();
 
     uint vertex_id, fragment_id;
     int success;
