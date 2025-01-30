@@ -9,7 +9,7 @@ sudo dnf install cmake clang glfw glfw-devel
 
 # Ubuntu/Debian
 sudo apt update
-sudo apt-get install build-dep cmake clang libglfw3 libglfw3-dev
+sudo apt-get install cmake clang libglfw3 libglfw3-dev
 ```
 
 ### Install GLAD
