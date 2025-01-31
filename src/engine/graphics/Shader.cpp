@@ -31,67 +31,67 @@ std::string Shader::readShaderFile(const std::string& filename) {
 }
 
 void Shader::compileShaders(
-    const std::string& vertex_filename, 
-    const std::string& fragment_filename
+    const std::string& vertexFilename, 
+    const std::string& fragmentFilename
 ) {
-    std::string cShaderCode = readShaderFile(vertex_filename);
-    std::string cFragmentCode = readShaderFile(fragment_filename);
+    std::string cShaderCode = readShaderFile(vertexFilename);
+    std::string cFragmentCode = readShaderFile(fragmentFilename);
     const char* vShaderCode = cShaderCode.c_str();
     const char* vFragmentCode = cFragmentCode.c_str();
 
-    uint vertex_id, fragment_id;
+    uint vertexId, fragmentId;
     int success;
     char infoLog[ERROR_BUFFER_SIZE];
 
-    vertex_id = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_id, 1, &vShaderCode, nullptr);
-    glCompileShader(vertex_id);
-    glGetShaderiv(vertex_id, GL_COMPILE_STATUS, &success);
+    vertexId = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexId, 1, &vShaderCode, nullptr);
+    glCompileShader(vertexId);
+    glGetShaderiv(vertexId, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glGetShaderInfoLog(vertex_id, ERROR_BUFFER_SIZE, nullptr, infoLog);
+        glGetShaderInfoLog(vertexId, ERROR_BUFFER_SIZE, nullptr, infoLog);
         std::cerr << "Shader " << name << " compilation failed: ";
-        std::cerr << vertex_filename << ":" << std::endl;
+        std::cerr << vertexFilename << ":" << std::endl;
         std::cerr << infoLog << std::endl;
         throw std::runtime_error("Shader " + name + " compilation failed");
     }
 
-    fragment_id = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_id, 1, &vFragmentCode, nullptr);
-    glCompileShader(fragment_id);
-    glGetShaderiv(fragment_id, GL_COMPILE_STATUS, &success);
+    fragmentId = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentId, 1, &vFragmentCode, nullptr);
+    glCompileShader(fragmentId);
+    glGetShaderiv(fragmentId, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glGetShaderInfoLog(fragment_id, ERROR_BUFFER_SIZE, nullptr, infoLog);
+        glGetShaderInfoLog(fragmentId, ERROR_BUFFER_SIZE, nullptr, infoLog);
         std::cerr << "Shader " << name << " compilation failed: ";
-        std::cerr << fragment_filename << ":" << std::endl;
+        std::cerr << fragmentFilename << ":" << std::endl;
         std::cerr << infoLog << std::endl;
         throw std::runtime_error("Shader " + name + " compilation failed");
     }
 
-    gl_id = glCreateProgram();
-    glAttachShader(gl_id, vertex_id);
-    glAttachShader(gl_id, fragment_id);
-    glLinkProgram(gl_id);
-    glGetProgramiv(gl_id, GL_LINK_STATUS, &success);
+    glId = glCreateProgram();
+    glAttachShader(glId, vertexId);
+    glAttachShader(glId, fragmentId);
+    glLinkProgram(glId);
+    glGetProgramiv(glId, GL_LINK_STATUS, &success);
 
     if (!success) {
-        glGetProgramInfoLog(gl_id, ERROR_BUFFER_SIZE, nullptr, infoLog);
+        glGetProgramInfoLog(glId, ERROR_BUFFER_SIZE, nullptr, infoLog);
         std::cerr << "Shader " << name << " linking failed: ";
         std::cerr << infoLog << std::endl;
         throw std::runtime_error("Shader " + name + " linking failed");
     }
 
-    glDeleteShader(vertex_id);
-    glDeleteShader(fragment_id);
+    glDeleteShader(vertexId);
+    glDeleteShader(fragmentId);
 }
 
 void Shader::use() {
-    glUseProgram(gl_id);
+    glUseProgram(glId);
 }
 
 uint Shader::getUniformLocation(const std::string& name) {
     auto found = uniformLocations.find(name);
     if (found == uniformLocations.end()) {
-        uint location = glGetUniformLocation(gl_id, name.c_str());
+        uint location = glGetUniformLocation(glId, name.c_str());
         uniformLocations.try_emplace(name, location);
         return location;
     }
@@ -107,6 +107,6 @@ void Shader::setUniform1f(const std::string& name, float value) {
 } 
 
 Shader::~Shader() {
-    glDeleteProgram(gl_id);
+    glDeleteProgram(glId);
 }
 

@@ -11,15 +11,15 @@
 #include <glad/glad.h>
 
 class Shader {
-    uint gl_id;
+    uint glId;
     std::string name;
     const uint ERROR_BUFFER_SIZE = 512;
     std::unordered_map<std::string, uint> uniformLocations;
 
     std::string readShaderFile(const std::string& filename);
     void compileShaders(
-        const std::string& vertex_filename, 
-        const std::string& fragment_filename
+        const std::string& vertexFilename, 
+        const std::string& fragmentFilename
     );
 
     uint getUniformLocation(const std::string& name);
