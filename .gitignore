@@ -14,5 +14,7 @@ lib/glad
 
 /libglad.a
 /TestEng
+/src/libglad.a
+/src/libTestEngSrc.a
 .vscode
 /build
