@@ -13,8 +13,12 @@ const int BUFFER_SIZE = KEYS_BUFFER_SIZE + MOUSE_BUTTONS_BUFFER_SIZE;
 // Thanks to https://github.com/MihailRis/VoxelEngine-Cpp/src/window/Events.cpp
 // for inspiration (Credits: MihailRis)
 
-void key_callback(GLFWwindow* window, int button, int action, int mode);
+void key_callback(GLFWwindow* window, int button, 
+    int scancode, int action, int mode);
 
+void mouse_button_callback(GLFWwindow*, int button, int action, int);
+
+void cursor_position_callback(GLFWwindow*, double x, double y);
 
 class UserInput {
 public:
@@ -23,6 +27,8 @@ public:
 
     static uint frames[BUFFER_SIZE];
     static bool pressed[BUFFER_SIZE];
+
+    static double x_mouse_pos, y_mouse_pos;
 
     static void initialize();
     static void terminate();

@@ -1,5 +1,7 @@
 #include "Window.hpp"
+#include "UserInput.hpp"
 
+GLFWwindow* Window::window = nullptr;
 int Window::width = 0;
 int Window::height = 0;
 std::string Window::caption = "TestEng";
@@ -43,6 +45,10 @@ void Window::initialize(
 
     glViewport(0, 0, Window::width, Window::height);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+    glfwSetKeyCallback(Window::window, key_callback);
+    glfwSetMouseButtonCallback(Window::window, mouse_button_callback);
+    glfwSetCursorPosCallback(Window::window, cursor_position_callback);
 }
 
 void Window::terminate() {
@@ -63,6 +69,14 @@ void Window::clearColor(glm::vec3 color) {
 
 void Window::clearColor(glm::vec4 color) {
     glClearColor(color.r, color.g, color.b, color.a);
+}
+
+void Window::clear() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void Window::swapBuffers() {
+    glfwSwapBuffers(Window::window);
 }
 
 void Window::setViewport(int x, int y, int width, int height) {
