@@ -2,16 +2,12 @@
 #define ENGINE_GRAPHICS_TEXTURE_H_
 
 #include "../utils/EngineTypes.h"
+#include "../assets/ImageData.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <memory>
-
-enum class ImageFormat {
-    rgb,
-    rgba,
-};
 
 class Texture {
     uint width, height;
@@ -32,6 +28,8 @@ public:
     uint getWidth();
     uint getHeight();
     uint getId();
+
+    static std::unique_ptr<Texture> create(const ImageData* img);
 };
 
 #endif // ENGINE_GRAPHICS_TEXTURE_H_

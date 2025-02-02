@@ -35,3 +35,13 @@ void Texture::bind() {
 void Texture::bind() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+std::unique_ptr<Texture> create(const ImageData* img) {
+    uint width = img->getWidth();
+    uint height = img->getHeight();
+    void* data = img->getData();
+    return std::make_unique<Texture>(
+        width, height, img->getFormat(), static_cast<uint8_t*>(data) 
+    );
+}
+
