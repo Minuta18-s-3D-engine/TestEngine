@@ -2,7 +2,7 @@
 
 Texture::Texture(
     uint width, uint height, ImageFormat format, 
-    std::unique_ptr<uint8_t[]> image_data
+    const uint8_t* image_data
 ) : width(width), height(height), format(format) {
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
@@ -14,7 +14,7 @@ Texture::Texture(
 
     glTexImage2D(
         GL_TEXTURE_2D, 0, fmt, width, height, 0, 
-        fmt, GL_UNSIGNED_BYTE, static_cast<void*>(image_data.get())
+        fmt, GL_UNSIGNED_BYTE, image_data
     );
     glTexParameteri(
         GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
@@ -32,11 +32,11 @@ void Texture::bind() {
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
-void Texture::bind() {
+void Texture::unbind() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-std::unique_ptr<Texture> create(const ImageData* img) {
+std::unique_ptr<Texture> Texture::create(const ImageData* img) {
     uint width = img->getWidth();
     uint height = img->getHeight();
     void* data = img->getData();

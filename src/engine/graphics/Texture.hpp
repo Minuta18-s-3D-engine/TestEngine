@@ -18,7 +18,7 @@ public:
     Texture(
         uint width, uint height, 
         ImageFormat format, 
-        std::unique_ptr<uint8_t[]> image_data
+        const uint8_t* image_data
     );
     ~Texture();
 

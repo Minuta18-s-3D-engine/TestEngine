@@ -6,6 +6,7 @@
 #include <memory>
 #include <stdexcept>
 #include <cstring>
+#include <iostream>
 
 #include <png.h>
 

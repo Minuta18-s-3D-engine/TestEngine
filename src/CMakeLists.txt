@@ -13,10 +13,11 @@ add_library(glad ../lib/glad/include/glad/glad.h ../lib/glad/src/glad.c)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
+find_package(PNG REQUIRED)
 
-include_directories( ${OPENGL_INCLUDE_DIRS} )
+include_directories( ${OPENGL_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} )
 
 target_include_directories(glad PUBLIC ../lib/glad/include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm)
+target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm ${PNG_LIBRARY} )

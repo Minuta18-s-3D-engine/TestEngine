@@ -1,4 +1,4 @@
-#include "./PngCodec.hpp"
+#include "./PngCoder.hpp"
 
 const std::string ERR_BASE = "Failed to read image ";
 
@@ -14,6 +14,14 @@ struct InMemoryReader {
     size_t size;
     size_t offset;
 };
+
+void user_error_fn(png_structp png_ptr, png_const_charp msg) {
+    std::cout << "Libpng error: " << msg << std::endl;
+}
+
+void user_warning_fn(png_structp png_ptr, png_const_charp msg) {
+    std::cout << "Libpng warning: " << msg << std::endl;
+}
 
 // https://github.com/MihailRis/VoxelEngine-Cpp/blob/main/src/coders/png.cpp
 // line 101
@@ -32,29 +40,36 @@ static void read_in_memory(
     reader.offset += toread;
 }
 
-std::unique_ptr<ImageData> load_image(
+std::unique_ptr<ImageData> PngCodec::load_image(
     const uint8_t* bytes, size_t size, std::string name
 ) {
     png_structp pngPtr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr
     );
-    if (!pngPtr)
+    if (pngPtr == nullptr)
         throw std::runtime_error(
             ERR_BASE + name + ": " + ERR_PCRS + ERR_LIBPNG_TIP
         );
-
-    png_infop infoPtr = png_create_info_struct(pngPtr);
-    if (!infoPtr)
+    
+    png_infop infoPtr = nullptr;
+    infoPtr = png_create_info_struct(pngPtr);
+    if (infoPtr == nullptr) {
         png_destroy_read_struct(&pngPtr, nullptr, nullptr);
+
         throw std::runtime_error(
             ERR_BASE + name + ": " + ERR_PCIS + ERR_LIBPNG_TIP
         );
+    }
 
     if (setjmp(png_jmpbuf(pngPtr))) {
         throw std::runtime_error(
             ERR_BASE + name + ": " + ERR_UNKNOWN + ERR_LIBPNG_TIP
         );
     }
+
+    png_set_error_fn(
+        pngPtr, nullptr, user_error_fn, user_warning_fn
+    );
 
     InMemoryReader reader {bytes, size, 0};
 
@@ -127,7 +142,7 @@ std::unique_ptr<ImageData> load_image(
     return image;
 }
 
-std::unique_ptr<Texture> load_texture(
+std::unique_ptr<Texture> PngCodec::load_texture(
     const uint8_t* bytes, size_t size, std::string name
 ) {
     std::unique_ptr<ImageData> image = PngCodec::load_image(bytes, size, name);
@@ -135,5 +150,3 @@ std::unique_ptr<Texture> load_texture(
     
     return texture;
 }
-
-
