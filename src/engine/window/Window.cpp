@@ -49,6 +49,8 @@ void Window::initialize(
     glfwSetKeyCallback(Window::window, key_callback);
     glfwSetMouseButtonCallback(Window::window, mouse_button_callback);
     glfwSetCursorPosCallback(Window::window, cursor_position_callback);
+
+    glEnable(GL_DEPTH_TEST);
 }
 
 void Window::terminate() {

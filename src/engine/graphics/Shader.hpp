@@ -10,6 +10,10 @@
 #include <memory>
 #include <glad/glad.h>
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include <glm/gtc/type_ptr.hpp>
+
 class Shader {
     uint glId;
     std::string name;
@@ -30,6 +34,7 @@ public:
     void use();
     void setUniform1i(const std::string& name, int value);
     void setUniform1f(const std::string& name, float value);
+    void setUniform4mat(const std::string& name, const glm::mat4& value);
     std::string get_name();
 };
 

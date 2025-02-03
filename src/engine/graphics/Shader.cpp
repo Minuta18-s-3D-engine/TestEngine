@@ -1,5 +1,8 @@
 #include "Shader.hpp"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 Shader::Shader(const std::string& name) : name(name) {
     this->compileShaders(
         "./assets/shaders/" + name + ".vertex.glsl",
@@ -105,6 +108,13 @@ void Shader::setUniform1i(const std::string& name, int value) {
 void Shader::setUniform1f(const std::string& name, float value) {
     glUniform1f(getUniformLocation(name), value);
 } 
+
+void Shader::setUniform4mat(const std::string& name, const glm::mat4& value) {
+    glUniformMatrix4fv(
+        getUniformLocation(name), 1, GL_FALSE, 
+        glm::value_ptr(value)
+    );
+}
 
 Shader::~Shader() {
     glDeleteProgram(glId);
