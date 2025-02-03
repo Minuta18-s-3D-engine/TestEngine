@@ -14,6 +14,7 @@
 #include "engine/assets/coders/images/PngCoder.hpp"
 #include "engine/assets/Files.hpp"
 #include "engine/graphics/Texture.hpp"
+#include "engine/map/Player.hpp"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
@@ -85,6 +86,7 @@ int main() {
         auto texture = PngCodec::load_texture(
             texture_content.get(), len, "floor");
 
+        Player player;
         Shader mainShader("main");
 
         unsigned int VAO, VBO, EBO;
@@ -111,8 +113,26 @@ int main() {
         mainShader.use();
         mainShader.setUniform1i("texture1", 0);
 
+        float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
+        glm::vec3 keys(0.0f, 0.0f, 0.0f);
+
         while (!Window::isShouldClose()) {
             UserInput::pollEvents();
+
+            currentFrame = glfwGetTime();
+            deltaTime = currentFrame - lastFrame;
+            lastFrame = currentFrame;
+
+            keys.x = 0.0f; keys.y = 0.0f; keys.z = 0.0f;
+            if (UserInput::isKeyPressed(GLFW_KEY_W)) keys.z -= 1.0f;
+            if (UserInput::isKeyPressed(GLFW_KEY_S)) keys.z += 1.0f;
+            if (UserInput::isKeyPressed(GLFW_KEY_A)) keys.x -= 1.0f;
+            if (UserInput::isKeyPressed(GLFW_KEY_D)) keys.x += 1.0f;
+            if (UserInput::isKeyPressed(GLFW_KEY_SPACE)) keys.y += 1.0f;
+            if (UserInput::isKeyPressed(GLFW_KEY_LEFT_SHIFT)) keys.y -= 1.0f;
+
+            player.addPos(keys * deltaTime * player.getSpeed());
+            player.update(deltaTime);
 
             if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) 
                 Window::setShouldClose(true);
@@ -125,7 +145,7 @@ int main() {
 
             mainShader.use();
 
-            glm::mat4 view = glm::mat4(1.0f);
+            glm::mat4 view = player.getCamera()->getViewMat();
             glm::mat4 proj = glm::mat4(1.0f);
 
             proj = glm::perspective(
@@ -133,7 +153,6 @@ int main() {
                 (float) Window::width / (float) Window::height, 
                 0.1f, 100.0f
             );
-            view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
             mainShader.setUniform4mat("projection", proj); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
             mainShader.setUniform4mat("view", view);
