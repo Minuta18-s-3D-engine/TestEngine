@@ -1,14 +1,14 @@
 #include "Player.hpp"
 
-Player::Player() {
-    camera = Camera();
-    pos = glm::vec3(0.0f);
+Player::Player(glm::vec3 pos) : pos(pos) {
+    this->camera = std::make_shared<Camera>(
+        Camera(pos, glm::vec3(0.0f, 1.0f, 0.0f)));
 }
 
 Player::~Player() = default;
 
-std::unique_ptr<Camera> Player::getCamera() {
-    return std::make_unique<Camera>(camera);
+std::shared_ptr<Camera> Player::getCamera() {
+    return camera;
 }
 
 void Player::addPos(const glm::vec3& pos) {
@@ -24,7 +24,10 @@ float Player::getSpeed() {
 }
 
 void Player::update(float deltaTime) {
-    camera.pos = pos;
+    camera->pos = pos;
+    // std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
+}
 
-    std::cout << pos.x << " " << pos.y << " " << pos.z << std::endl;
+glm::vec3 Player::getPos() {
+    return pos;
 }

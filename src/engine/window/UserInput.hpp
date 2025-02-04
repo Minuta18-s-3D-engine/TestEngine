@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include "../utils/EngineTypes.h"
+#include "Window.hpp"
 
 const int KEYS_BUFFER_SIZE = 1024;
 const int MOUSE_BUTTONS_BUFFER_SIZE = 12;
@@ -28,12 +29,16 @@ public:
     static uint frames[BUFFER_SIZE];
     static bool pressed[BUFFER_SIZE];
 
+    static double last_x_mouse_pos, last_y_mouse_pos;
     static double x_mouse_pos, y_mouse_pos;
 
     static void initialize();
     static void terminate();
 
     static void pollEvents();
+
+    static double getMouseXMov();
+    static double getMouseYMov();
 
     static bool isKeyPressed(int key_code);
     static bool isKeyJustPressed(int key_code);

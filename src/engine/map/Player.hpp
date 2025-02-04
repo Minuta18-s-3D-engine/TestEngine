@@ -11,17 +11,18 @@
 #include <iostream>
 
 class Player {
-    Camera camera;
+    std::shared_ptr<Camera> camera;
     glm::vec3 pos;
     const float PLAYER_SPEED = 5.0f;
 public:
-    Player();
+    Player(glm::vec3 pos);
     ~Player();
 
-    std::unique_ptr<Camera> getCamera();
+    std::shared_ptr<Camera> getCamera();
 
     void addPos(const glm::vec3& acc);
     void setPos(const glm::vec3& acc);
+    glm::vec3 getPos();
     float getSpeed();
 
     void update(float deltaTime);

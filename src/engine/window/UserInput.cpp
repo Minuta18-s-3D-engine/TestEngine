@@ -6,6 +6,8 @@ bool UserInput::pressed[BUFFER_SIZE];
 uint UserInput::current_frame = 0;
 double UserInput::x_mouse_pos = 0;
 double UserInput::y_mouse_pos = 0;
+double UserInput::last_x_mouse_pos = 0;
+double UserInput::last_y_mouse_pos = 0;
 
 void key_callback(GLFWwindow* window, int button, int, int action, int) {
     if (action == GLFW_PRESS) {
@@ -22,6 +24,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int) {
 }
 
 void cursor_position_callback(GLFWwindow* window, double x, double y) {
+    // UserInput::last_x_mouse_pos = UserInput::x_mouse_pos;
+    // UserInput::last_y_mouse_pos = UserInput::y_mouse_pos;
     UserInput::x_mouse_pos = x;
     UserInput::y_mouse_pos = y;
 }
@@ -37,6 +41,8 @@ void UserInput::terminate() {
 
 void UserInput::pollEvents() {
     UserInput::current_frame++;
+    last_x_mouse_pos = x_mouse_pos;
+    last_y_mouse_pos = y_mouse_pos;
     glfwPollEvents();
 }
 
@@ -59,3 +65,10 @@ bool UserInput::isMouseJustPressed(int key_code) {
             UserInput::current_frame);
 }
 
+double UserInput::getMouseYMov() {
+    return UserInput::y_mouse_pos - UserInput::last_y_mouse_pos;
+}
+
+double UserInput::getMouseXMov() {
+    return UserInput::x_mouse_pos - UserInput::last_x_mouse_pos;
+}

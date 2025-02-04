@@ -76,6 +76,8 @@ glm::vec3 cubePositions[] = {
     glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
+const float MOUSE_SENSITIVITY = 0.1;
+
 int main() {
     try {
         UserInput::initialize();
@@ -86,7 +88,7 @@ int main() {
         auto texture = PngCodec::load_texture(
             texture_content.get(), len, "floor");
 
-        Player player;
+        Player player(glm::vec3(0.0f, 0.0f, 0.0f));
         Shader mainShader("main");
 
         unsigned int VAO, VBO, EBO;
@@ -116,22 +118,39 @@ int main() {
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         glm::vec3 keys(0.0f, 0.0f, 0.0f);
 
+        Camera test_camera;
+
         while (!Window::isShouldClose()) {
             UserInput::pollEvents();
+
+            player.getCamera()->processMouseMovement(
+                UserInput::getMouseXMov(), -UserInput::getMouseYMov(), 
+                MOUSE_SENSITIVITY
+            );
+
 
             currentFrame = glfwGetTime();
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
 
-            keys.x = 0.0f; keys.y = 0.0f; keys.z = 0.0f;
-            if (UserInput::isKeyPressed(GLFW_KEY_W)) keys.z -= 1.0f;
-            if (UserInput::isKeyPressed(GLFW_KEY_S)) keys.z += 1.0f;
-            if (UserInput::isKeyPressed(GLFW_KEY_A)) keys.x -= 1.0f;
-            if (UserInput::isKeyPressed(GLFW_KEY_D)) keys.x += 1.0f;
-            if (UserInput::isKeyPressed(GLFW_KEY_SPACE)) keys.y += 1.0f;
-            if (UserInput::isKeyPressed(GLFW_KEY_LEFT_SHIFT)) keys.y -= 1.0f;
+            glm::vec3 frontVec = glm::normalize(player.getCamera()->front); 
+                // TODO: move this logic to player class
+            glm::vec3 rightVec = glm::normalize(player.getCamera()->right);
+            glm::vec3 newPos = player.getPos();
+            if (UserInput::isKeyPressed(GLFW_KEY_W)) 
+                newPos += (frontVec * deltaTime * player.getSpeed());
+            if (UserInput::isKeyPressed(GLFW_KEY_S))
+                newPos -= (frontVec * deltaTime * player.getSpeed());
+            if (UserInput::isKeyPressed(GLFW_KEY_A))
+                newPos -= (rightVec * deltaTime * player.getSpeed());
+            if (UserInput::isKeyPressed(GLFW_KEY_D))
+                newPos += (rightVec * deltaTime * player.getSpeed());
+            if (UserInput::isKeyPressed(GLFW_KEY_SPACE))
+                newPos.y += deltaTime * player.getSpeed();
+            if (UserInput::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
+                newPos.y -= deltaTime * player.getSpeed();
 
-            player.addPos(keys * deltaTime * player.getSpeed());
+            player.setPos(newPos);
             player.update(deltaTime);
 
             if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) 
@@ -149,7 +168,7 @@ int main() {
             glm::mat4 proj = glm::mat4(1.0f);
 
             proj = glm::perspective(
-                glm::radians(45.0f), 
+                player.getCamera()->getZoom(), 
                 (float) Window::width / (float) Window::height, 
                 0.1f, 100.0f
             );
