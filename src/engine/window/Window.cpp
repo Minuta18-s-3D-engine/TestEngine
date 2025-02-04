@@ -50,6 +50,7 @@ void Window::initialize(
     glfwSetMouseButtonCallback(Window::window, mouse_button_callback);
     glfwSetCursorPosCallback(Window::window, cursor_position_callback);
     glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
+    
 
     glEnable(GL_DEPTH_TEST);
 }

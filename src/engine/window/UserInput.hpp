@@ -23,6 +23,8 @@ void cursor_position_callback(GLFWwindow*, double x, double y);
 
 class UserInput {
 public:
+    static bool isCursorPinned;
+
     static uint current_frame;
     static std::vector<int> keys_pressed;
 
@@ -44,6 +46,9 @@ public:
     static bool isKeyJustPressed(int key_code);
     static bool isMousePressed(int key_code);
     static bool isMouseJustPressed(int key_code);
+
+    static bool getIsCursorPinned();
+    static void setIsCursorPinned(bool value);
 };
 
 #endif // ENGINE_WINDOW_USERINPUT_H_

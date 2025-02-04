@@ -20,48 +20,48 @@ const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
 
 float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 
+         0.5f, -0.5f, -0.5f,  
+         0.5f,  0.5f, -0.5f,  
+         0.5f,  0.5f, -0.5f,  
+        -0.5f,  0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f, 
 
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f, 
+         0.5f, -0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+        -0.5f,  0.5f,  0.5f, 
+        -0.5f, -0.5f,  0.5f, 
 
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f, 
+        -0.5f,  0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f, 
+        -0.5f, -0.5f, -0.5f, 
+        -0.5f, -0.5f,  0.5f, 
+        -0.5f,  0.5f,  0.5f, 
 
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f, -0.5f,  
+         0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
 
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 
+         0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f,  0.5f,  
+         0.5f, -0.5f,  0.5f,  
+        -0.5f, -0.5f,  0.5f, 
+        -0.5f, -0.5f, -0.5f, 
 
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-};
+        -0.5f,  0.5f, -0.5f, 
+         0.5f,  0.5f, -0.5f,  
+         0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+        -0.5f,  0.5f,  0.5f, 
+        -0.5f,  0.5f, -0.5f, 
+    };
 
 glm::vec3 cubePositions[] = {
     glm::vec3( 0.0f,  0.0f,  0.0f),
@@ -89,36 +89,30 @@ int main() {
             texture_content.get(), len, "floor");
 
         Player player(glm::vec3(0.0f, 0.0f, 0.0f));
-        Shader mainShader("main");
+        Shader lightingShader("main");
+        Shader lightSourceShader("lightSource");
 
         unsigned int VAO, VBO, EBO;
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
-        // glGenBuffers(1, &EBO);
-        
         glBindVertexArray(VAO);
-
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         glVertexAttribPointer(
             0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(
-            1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
         glBindVertexArray(0);
 
-        mainShader.use();
-        mainShader.setUniform1i("texture1", 0);
+        uint lightVAO;
+        glGenVertexArrays(1, &lightVAO);
+        glBindVertexArray(lightVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         glm::vec3 keys(0.0f, 0.0f, 0.0f);
-
-        Camera test_camera;
 
         while (!Window::isShouldClose()) {
             UserInput::pollEvents();
@@ -127,7 +121,6 @@ int main() {
                 UserInput::getMouseXMov(), -UserInput::getMouseYMov(), 
                 MOUSE_SENSITIVITY
             );
-
 
             currentFrame = glfwGetTime();
             deltaTime = currentFrame - lastFrame;
@@ -156,37 +149,61 @@ int main() {
             if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) 
                 Window::setShouldClose(true);
 
-            Window::clearColor(glm::vec3(0.2f, 0.3f, 0.3f));
+            Window::clearColor(glm::vec3(0.1f, 0.1f, 0.1f));
             Window::clear();
 
-            glActiveTexture(GL_TEXTURE0);
-            texture->bind();
+            lightingShader.use();
+            
+            lightingShader.setUniform3f("lightColor",  1.0f, 1.0f, 1.0f);
 
-            mainShader.use();
-
-            glm::mat4 view = player.getCamera()->getViewMat();
             glm::mat4 proj = glm::mat4(1.0f);
-
             proj = glm::perspective(
                 player.getCamera()->getZoom(), 
                 (float) Window::width / (float) Window::height, 
                 0.1f, 100.0f
             );
+            glm::mat4 view = player.getCamera()->getViewMat();
 
-            mainShader.setUniform4mat("projection", proj); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-            mainShader.setUniform4mat("view", view);
+            lightingShader.setUniform4mat("projection", proj);
+            lightingShader.setUniform4mat("view", view);
 
-            glBindVertexArray(VAO);
+            glm::mat4 model = glm::translate(model, cubePositions[0]);
+            lightingShader.setUniform4mat("model", model);
+
+            // glActiveTexture(GL_TEXTURE0);
+            // texture->bind();
+
+            // glBindVertexArray(VAO);
+            // glDrawArrays(GL_TRIANGLES, 0, 36);
 
             for (uint i = 0; i < 10; i++) {
+                if (i % 3 == 0) {
+                    lightingShader.setUniform3f("objectColor", 1.0f, 0.5f, 0.31f);
+                } else if (i % 3 == 1) {
+                    lightingShader.setUniform3f("objectColor", 0.5f, 0.31f, 1.0f);
+                } else {
+                    lightingShader.setUniform3f("objectColor", 0.31f, 1.0f, 0.5f);     
+                }
+
                 glm::mat4 model = glm::mat4(1.0f);
                 model = glm::translate(model, cubePositions[i]);
                 float angle = 20.0f * i;
                 model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-                mainShader.setUniform4mat("model", model);
+                lightingShader.setUniform4mat("model", model);
 
                 glDrawArrays(GL_TRIANGLES, 0, 36);
             }
+
+            lightSourceShader.use();
+            lightSourceShader.setUniform4mat("projection", proj);
+            lightSourceShader.setUniform4mat("view", view);
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(3.0f, 0.0f, 3.0f));
+            model = glm::scale(model, glm::vec3(0.2f));
+            lightSourceShader.setUniform4mat("model", model);
+
+            glBindVertexArray(lightVAO);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
 
             Window::swapBuffers();
         }
