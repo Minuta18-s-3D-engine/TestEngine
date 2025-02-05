@@ -5,6 +5,7 @@ GLFWwindow* Window::window = nullptr;
 int Window::width = 0;
 int Window::height = 0;
 std::string Window::caption = "TestEng";
+int Window::cursorInputMode = GLFW_CURSOR_DISABLED;
 
 void framebufferSizeCallback(GLFWwindow* win, int width, int height) {
     glViewport(0, 0, width, height);
@@ -49,10 +50,11 @@ void Window::initialize(
     glfwSetKeyCallback(Window::window, key_callback);
     glfwSetMouseButtonCallback(Window::window, mouse_button_callback);
     glfwSetCursorPosCallback(Window::window, cursor_position_callback);
-    glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
-    
+    glfwMakeContextCurrent(window);
 
     glEnable(GL_DEPTH_TEST);
+
+    Window::setCursorInputMode(GLFW_CURSOR_DISABLED);
 }
 
 void Window::terminate() {
@@ -87,4 +89,13 @@ void Window::setViewport(int x, int y, int width, int height) {
     glViewport(0, 0, width, height);
     Window::width = width;
     Window::height = height;
+}
+
+void Window::setCursorInputMode(int mode) {
+    Window::cursorInputMode = mode;
+    glfwSetInputMode(Window::window, GLFW_CURSOR, mode);  
+}
+
+int Window::getCursorInputMode() {
+    return Window::cursorInputMode;
 }

@@ -16,10 +16,13 @@ class Window {
 public:
     static int width, height;
     static std::string caption;
+    static int cursorInputMode;
 
     static void initialize(uint width, uint height, std::string caption);
     static void terminate();
-
+    
+    static void setCursorInputMode(int mode);
+    static int getCursorInputMode();
     static bool isShouldClose();
     static void setShouldClose(bool should_close);
 

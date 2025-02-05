@@ -148,7 +148,11 @@ int main() {
             player.update(deltaTime);
 
             if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) 
-                Window::setShouldClose(true);
+                if (Window::getCursorInputMode() == GLFW_CURSOR_NORMAL) {
+                    Window::setCursorInputMode(GLFW_CURSOR_DISABLED);
+                } else {
+                    Window::setCursorInputMode(GLFW_CURSOR_NORMAL);
+                }
 
             Window::clearColor(glm::vec3(0.1f, 0.1f, 0.1f));
             Window::clear();
@@ -175,7 +179,7 @@ int main() {
             // glActiveTexture(GL_TEXTURE0);
             // texture->bind();
 
-            // glBindVertexArray(VAO);
+            glBindVertexArray(VAO);
             // glDrawArrays(GL_TRIANGLES, 0, 36);
 
             for (uint i = 0; i < 10; i++) {
@@ -203,6 +207,9 @@ int main() {
             model = glm::translate(model, glm::vec3(3.0f, 0.0f, 3.0f));
             model = glm::scale(model, glm::vec3(0.2f));
             lightSourceShader.setUniform4mat("model", model);
+
+            lightSourceShader.setUniform3f("lightColor", 1.0f, 1.0f, 1.0f);
+            lightSourceShader.setUniform3f("objectColor", 1.0f, 1.0f, 1.0f);
 
             glBindVertexArray(lightVAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
