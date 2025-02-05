@@ -175,6 +175,7 @@ int main() {
             glm::mat4 model = glm::translate(model, cubePositions[0]);
             lightingShader.setUniform4mat("model", model);
             lightingShader.setUniform3f("lightPos", 3.0f, 0.0f, 3.0f);
+            lightingShader.setUniform3f("viewPos", player.getPos());
 
             // glActiveTexture(GL_TEXTURE0);
             // texture->bind();

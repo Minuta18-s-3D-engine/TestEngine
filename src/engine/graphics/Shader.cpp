@@ -122,6 +122,12 @@ void Shader::setUniform3f(
     glUniform3f(getUniformLocation(name), v1, v2, v3);
 }
 
+void Shader::setUniform3f(
+    const std::string& name, const glm::vec3& v
+) {
+    glUniform3fv(getUniformLocation(name), 1, glm::value_ptr(v));
+}
+
 Shader::~Shader() {
     glDeleteProgram(glId);
 }
