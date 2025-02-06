@@ -16,7 +16,6 @@ Material::~Material() {
 }
 
 void Material::passToShader(Shader& shader) {
-    shader.use();
     shader.setUniform3f("material.ambient", ambient);
     shader.setUniform3f("material.diffuse", diffuse);
     shader.setUniform3f("material.specular", specular);

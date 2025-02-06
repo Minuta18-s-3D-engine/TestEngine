@@ -17,6 +17,7 @@
 #include "engine/map/Player.hpp"
 #include "engine/materials/Material.hpp"
 #include "engine/materials/Light.hpp"
+#include "engine/materials/TextureMaterial.hpp"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
@@ -94,6 +95,8 @@ int main() {
         auto texture_content = read_bytes("assets/textures/container.png", len);
         auto texture = PngCodec::load_texture(
             texture_content.get(), len, "floor");
+
+        TextureMaterial objTexture(std::make_shared<Texture>(texture));
 
         Player player(glm::vec3(0.0f, 0.0f, 0.0f));
         Shader lightingShader("main");
@@ -183,29 +186,17 @@ int main() {
             lightingShader.setUniform3f("viewPos", player.getPos());
             l1.passToShader(lightingShader);
 
+            // objTexture.passToShader()
             // glActiveTexture(GL_TEXTURE0);
             // texture->bind();
 
             glBindVertexArray(VAO);
             // glDrawArrays(GL_TRIANGLES, 0, 36);
 
-            for (uint i = 0; i < 10; i++) {
-                if (i % 3 == 0) {
-                    mat1.passToShader(lightingShader);
-                } else if (i % 3 == 1) {
-                    mat2.passToShader(lightingShader);
-                } else {
-                    mat3.passToShader(lightingShader);
-                }
-
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, cubePositions[i]);
-                float angle = 20.0f * i;
-                model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-                lightingShader.setUniform4mat("model", model);
-
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-            }
+            mat1.passToShader(lightingShader);
+            glm::mat4 model = glm::translate(model, cubePositions[i]);
+            lightingShader.setUniform4mat("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
 
             lightSourceShader.use();
             lightSourceShader.setUniform4mat("projection", proj);

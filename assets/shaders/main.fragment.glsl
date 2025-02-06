@@ -16,12 +16,12 @@ struct Light {
     vec3 specular;
 };
 
-// struct Texture {
-//     sampler2D texture;
-//     float scaleX, scaleY;
-//     float shiftX, shiftY;
-//     bool activeTexture;
-// }
+struct TextureMaterial {
+    sampler2D texture;
+    float scaleX, scaleY;
+    float shiftX, shiftY;
+    bool isActive;
+}
 
 in vec3 Normal;  
 in vec3 FragPos;  
@@ -30,7 +30,8 @@ uniform Material material;
 uniform Light light;
 uniform vec3 viewPos; 
 
-// uniform Texture objectTexture;
+uniform TextureMaterial objectTexture; // Which is also diffuse map
+uniform TextureMaterial specularMapTexture;
 
 vec3 calcAmbientLight() {
     return light.ambient * material.ambient;
@@ -43,6 +44,11 @@ vec3 calcDiffuseLight() {
     return light.diffuse * (diff * material.diffuse);
 }
 
+vec3 getTexturePixel(TextureMaterial tex, vec2 coords) {
+    if (!texture.isActive) return vec3(0.0, 0.0, 0.0);
+    return vec3(texture(tex.texture, coords));
+}
+
 vec3 calcSpecularLight() {
     vec3 lightDir = normalize(light.pos - FragPos);
     vec3 viewDir = normalize(viewPos - FragPos);
@@ -53,10 +59,26 @@ vec3 calcSpecularLight() {
 }
 
 void main() {
-    vec3 ambient = calcAmbientLight();
-    vec3 diffuse = calcDiffuseLight();
-    vec3 specular = calcSpecularLight();
-        
-    vec3 result = (ambient + diffuse + specular) * material.color;
+    vec3 result;
+
+    if (!objectTexture.isActive) {
+        vec3 ambient = calcAmbientLight();
+        vec3 diffuse = calcDiffuseLight();
+        vec3 specular = calcSpecularLight();
+
+        result = (ambient + diffuse + specular) * material.color;
+    } else if (objectTexture.isActive && !specularMapTexture.isActive) {
+        vec3 ambient = calcAmbientLight() * getTexturePixel(objectTexture, TexCoords);
+        vec3 diffuse = calcDiffuseLight() * getTexturePixel(objectTexture, TexCoords);;
+        vec3 specular = calcSpecularLight() * getTexturePixel(objectTexture, TexCoords);;
+
+        result = (ambient * + diffuse + specular);
+    } else {
+        vec3 ambient = calcAmbientLight() * getTexturePixel(objectTexture, TexCoords);
+        vec3 diffuse = calcDiffuseLight() * getTexturePixel(objectTexture, TexCoords);;
+        vec3 specular = calcSpecularLight() * getTexturePixel(specularMapTexture, TexCoords);
+
+        result = (ambient + diffuse + specular);
+    }
     FragColor = vec4(result, 1.0);
 } 
