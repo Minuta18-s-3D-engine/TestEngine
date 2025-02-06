@@ -1,11 +1,11 @@
 #include "Material.hpp"
 
 Material::Material(
+    glm::vec3 color,
     glm::vec3 ambient,
     glm::vec3 diffuse,
     glm::vec3 specular,
-    glm::vec3 color,
-    float shininess = 8
+    float shininess
 ) : ambient(ambient), diffuse(diffuse), specular(specular), color(color),
     shininess(shininess) {
 

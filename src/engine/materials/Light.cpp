@@ -6,12 +6,17 @@ Light::Light(
 
 }
 
+Light::Light(glm::vec3 pos, glm::vec3 color) : pos(pos), ambient(color), 
+    diffuse(color), specular(color) {
+    
+}
+
 Light::~Light() = default;
 
 void Light::passToShader(Shader& shader) {
-    shader.setUniform3f("material.ambient", ambient);
-    shader.setUniform3f("material.diffuse", diffuse);
-    shader.setUniform3f("material.specular", specular);
-    shader.setUniform3f("material.pos", pos);
+    shader.setUniform3f("light.ambient", ambient);
+    shader.setUniform3f("light.diffuse", diffuse);
+    shader.setUniform3f("light.specular", specular);
+    shader.setUniform3f("light.pos", pos);
 }
 

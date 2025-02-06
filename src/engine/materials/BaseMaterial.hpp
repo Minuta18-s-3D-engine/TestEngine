@@ -11,4 +11,4 @@ public:
     virtual void passToShader(Shader& shader) = 0;
 };
 
-#endif ENGINE_MATERIAL_BASEMATERIAL_H_
+#endif // ENGINE_MATERIAL_BASEMATERIAL_H_
