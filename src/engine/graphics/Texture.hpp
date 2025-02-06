@@ -29,7 +29,7 @@ public:
     uint getHeight();
     uint getId();
 
-    static std::unique_ptr<Texture> create(const ImageData* img);
+    static std::shared_ptr<Texture> create(const ImageData* img);
 };
 
 #endif // ENGINE_GRAPHICS_TEXTURE_H_

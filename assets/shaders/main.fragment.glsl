@@ -21,10 +21,11 @@ struct TextureMaterial {
     float scaleX, scaleY;
     float shiftX, shiftY;
     bool isActive;
-}
+};
 
 in vec3 Normal;  
 in vec3 FragPos;  
+in vec2 TexCoords;
   
 uniform Material material;
 uniform Light light;
@@ -45,7 +46,7 @@ vec3 calcDiffuseLight() {
 }
 
 vec3 getTexturePixel(TextureMaterial tex, vec2 coords) {
-    if (!texture.isActive) return vec3(0.0, 0.0, 0.0);
+    if (!tex.isActive) return vec3(0.0, 0.0, 0.0);
     return vec3(texture(tex.texture, coords));
 }
 

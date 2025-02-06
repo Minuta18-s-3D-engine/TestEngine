@@ -23,6 +23,7 @@ public:
     );
     ~TextureMaterial();
 
+    void passToShader(Shader& shader);
     void passToShader(Shader& shader, std::string name);
     void passTextureToShader(GLenum order);
 };

@@ -40,7 +40,7 @@ static void read_in_memory(
     reader.offset += toread;
 }
 
-std::unique_ptr<ImageData> PngCodec::load_image(
+std::shared_ptr<ImageData> PngCodec::load_image(
     const uint8_t* bytes, size_t size, std::string name
 ) {
     png_structp pngPtr = png_create_read_struct(
@@ -135,17 +135,17 @@ std::unique_ptr<ImageData> PngCodec::load_image(
                 std::to_string(colorType) + " is not supported!"
             );
     }
-    auto image = std::make_unique<ImageData>(
+    auto image = std::make_shared<ImageData>(
         format, width, height, std::move(imageData)
     );
     png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
     return image;
 }
 
-std::unique_ptr<Texture> PngCodec::load_texture(
+std::shared_ptr<Texture> PngCodec::load_texture(
     const uint8_t* bytes, size_t size, std::string name
 ) {
-    std::unique_ptr<ImageData> image = PngCodec::load_image(bytes, size, name);
+    std::shared_ptr<ImageData> image = PngCodec::load_image(bytes, size, name);
     auto texture = Texture::create(image.get());
     
     return texture;

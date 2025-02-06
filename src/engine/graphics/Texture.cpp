@@ -36,11 +36,11 @@ void Texture::unbind() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-std::unique_ptr<Texture> Texture::create(const ImageData* img) {
+std::shared_ptr<Texture> Texture::create(const ImageData* img) {
     uint width = img->getWidth();
     uint height = img->getHeight();
     void* data = img->getData();
-    return std::make_unique<Texture>(
+    return std::make_shared<Texture>(
         width, height, img->getFormat(), static_cast<uint8_t*>(data) 
     );
 }

@@ -17,11 +17,11 @@
 
 class PngCodec {
 public:
-    static std::unique_ptr<ImageData> load_image(
+    static std::shared_ptr<ImageData> load_image(
         const uint8_t* bytes, size_t size, std::string name
     );
 
-    static std::unique_ptr<Texture> load_texture(
+    static std::shared_ptr<Texture> load_texture(
         const uint8_t* bytes, size_t size, std::string name
     );
 };
