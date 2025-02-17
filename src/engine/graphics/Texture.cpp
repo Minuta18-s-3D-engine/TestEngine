@@ -16,12 +16,15 @@ Texture::Texture(
         GL_TEXTURE_2D, 0, fmt, width, height, 0, 
         fmt, GL_UNSIGNED_BYTE, image_data
     );
-    glTexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, 
+        GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, 
+        GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 Texture::~Texture() {
@@ -34,6 +37,18 @@ void Texture::bind() {
 
 void Texture::unbind() {
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+uint Texture::getWidth() {
+    return width;
+}
+
+uint Texture::getHeight() {
+    return height;
+}
+
+uint Texture::getId() {
+    return id;
 }
 
 std::shared_ptr<Texture> Texture::create(const ImageData* img) {

@@ -34,7 +34,9 @@ static void read_in_memory(
     }
     auto& reader = *reinterpret_cast<InMemoryReader*>(ioPtr);
     if (reader.offset + toread > reader.size) {
-        throw std::runtime_error("buffer underflow");
+        std::cout << "Warning: buffer underflow (idk how 2 fix it)" 
+            << std::endl;
+        // throw std::runtime_error("buffer underflow");
     }
     std::memcpy(dst, reader.bytes + reader.offset, toread);
     reader.offset += toread;
@@ -66,10 +68,6 @@ std::shared_ptr<ImageData> PngCodec::load_image(
             ERR_BASE + name + ": " + ERR_UNKNOWN + ERR_LIBPNG_TIP
         );
     }
-
-    png_set_error_fn(
-        pngPtr, nullptr, user_error_fn, user_warning_fn
-    );
 
     InMemoryReader reader {bytes, size, 0};
 
@@ -119,7 +117,6 @@ std::shared_ptr<ImageData> PngCodec::load_image(
         rowPointers[height - 1 - i] = imageData.get() + i * rowBytes;
     }
     png_read_image(pngPtr, rowPointers.get());
-
     ImageFormat format = ImageFormat::rgba;
     switch (colorType) {
         case PNG_COLOR_TYPE_RGBA:

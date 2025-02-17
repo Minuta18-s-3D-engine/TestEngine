@@ -17,7 +17,6 @@ struct Light {
 };
 
 struct TextureMaterial {
-    sampler2D texture;
     float scaleX, scaleY;
     float shiftX, shiftY;
     bool isActive;
@@ -31,8 +30,11 @@ uniform Material material;
 uniform Light light;
 uniform vec3 viewPos; 
 
-uniform TextureMaterial objectTexture; // Which is also diffuse map
-uniform TextureMaterial specularMapTexture;
+uniform TextureMaterial objectTextureMat; // Which is also diffuse map
+uniform TextureMaterial specularMapTextureMat;
+
+uniform sampler2D objectTexture;
+uniform sampler2D specularMapTexture;
 
 vec3 calcAmbientLight() {
     return light.ambient * material.ambient;
@@ -45,9 +47,14 @@ vec3 calcDiffuseLight() {
     return light.diffuse * (diff * material.diffuse);
 }
 
-vec3 getTexturePixel(TextureMaterial tex, vec2 coords) {
-    if (!tex.isActive) return vec3(0.0, 0.0, 0.0);
-    return vec3(texture(tex.texture, coords));
+vec3 getDiffTexturePixel(vec2 coords) {
+    if (!objectTextureMat.isActive) return vec3(0.0, 0.0, 0.0);
+    return vec3(texture(objectTexture, coords));
+}
+
+vec3 getSpecTexturePixel(vec2 coords) {
+    if (!specularMapTextureMat.isActive) return vec3(0.0, 0.0, 0.0);
+    return vec3(texture(specularMapTexture, coords));
 }
 
 vec3 calcSpecularLight() {
@@ -62,22 +69,22 @@ vec3 calcSpecularLight() {
 void main() {
     vec3 result;
 
-    if (!objectTexture.isActive) {
+    if (!objectTextureMat.isActive) {
         vec3 ambient = calcAmbientLight();
         vec3 diffuse = calcDiffuseLight();
         vec3 specular = calcSpecularLight();
 
         result = (ambient + diffuse + specular) * material.color;
-    } else if (objectTexture.isActive && !specularMapTexture.isActive) {
-        vec3 ambient = calcAmbientLight() * getTexturePixel(objectTexture, TexCoords);
-        vec3 diffuse = calcDiffuseLight() * getTexturePixel(objectTexture, TexCoords);;
-        vec3 specular = calcSpecularLight() * getTexturePixel(objectTexture, TexCoords);;
+    } else if (objectTextureMat.isActive && !specularMapTextureMat.isActive) {
+        vec3 ambient = calcAmbientLight() * getDiffTexturePixel(TexCoords);
+        vec3 diffuse = calcDiffuseLight() * getDiffTexturePixel(TexCoords);
+        vec3 specular = calcSpecularLight() * getDiffTexturePixel(TexCoords);
 
-        result = (ambient * + diffuse + specular);
+        result = (ambient + diffuse + specular);
     } else {
-        vec3 ambient = calcAmbientLight() * getTexturePixel(objectTexture, TexCoords);
-        vec3 diffuse = calcDiffuseLight() * getTexturePixel(objectTexture, TexCoords);;
-        vec3 specular = calcSpecularLight() * getTexturePixel(specularMapTexture, TexCoords);
+        vec3 ambient = calcAmbientLight() * getDiffTexturePixel(TexCoords);
+        vec3 diffuse = calcDiffuseLight() * getDiffTexturePixel(TexCoords);
+        vec3 specular = calcSpecularLight() * getSpecTexturePixel(TexCoords);
 
         result = (ambient + diffuse + specular);
     }

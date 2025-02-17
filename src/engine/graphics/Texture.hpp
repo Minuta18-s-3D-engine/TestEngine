@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 
 #include <memory>
+#include <iostream>
 
 class Texture {
     uint width, height;
