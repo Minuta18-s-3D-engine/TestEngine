@@ -28,7 +28,7 @@ void TextureMaterial::passToShader(Shader& shader, std::string name) {
 void TextureMaterial::passToShader(Shader& shader) {}
 
 void TextureMaterial::passTextureToShader(GLenum order) {
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(order);
     tex.get()->bind();
 }
 
