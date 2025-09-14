@@ -5,11 +5,11 @@
 ```bash
 # Fedora/RHEL
 sudo dnf update
-sudo dnf install cmake clang glfw glfw-devel
+sudo dnf install cmake clang glfw glfw-devel glm-devel libpng-devel
 
 # Ubuntu/Debian
 sudo apt update
-sudo apt-get install cmake clang libglfw3 libglfw3-dev
+sudo apt-get install cmake clang libglfw3 libglfw3-dev libglm-dev libpng-dev
 ```
 
 ### Install GLAD

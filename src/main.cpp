@@ -147,12 +147,13 @@ int main() {
             player.setPos(newPos);
             player.update(deltaTime);
 
-            if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) 
+            if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) {
                 if (Window::getCursorInputMode() == GLFW_CURSOR_NORMAL) {
                     Window::setCursorInputMode(GLFW_CURSOR_DISABLED);
                 } else {
                     Window::setCursorInputMode(GLFW_CURSOR_NORMAL);
                 }
+            }
 
             Window::clearColor(glm::vec3(0.1f, 0.1f, 0.1f));
             Window::clear();

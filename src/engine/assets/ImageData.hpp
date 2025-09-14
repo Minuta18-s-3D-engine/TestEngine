@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "../utils/EngineTypes.h"
+#include "inttypes.h"
 
 enum class ImageFormat {
     rgb,
