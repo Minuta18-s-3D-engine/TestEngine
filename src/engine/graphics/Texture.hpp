@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 
 #include <memory>
+#include <iostream>
 
 class Texture {
     uint width, height;
@@ -29,7 +30,7 @@ public:
     uint getHeight();
     uint getId();
 
-    static std::unique_ptr<Texture> create(const ImageData* img);
+    static std::shared_ptr<Texture> create(const ImageData* img);
 };
 
 #endif // ENGINE_GRAPHICS_TEXTURE_H_

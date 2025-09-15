@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+#include <memory>
 
 #include "engine/graphics/Shader.hpp"
 #include "engine/window/Window.hpp"
@@ -15,53 +16,64 @@
 #include "engine/assets/Files.hpp"
 #include "engine/graphics/Texture.hpp"
 #include "engine/map/Player.hpp"
+#include "engine/materials/Material.hpp"
+#include "engine/materials/Light.hpp"
+#include "engine/materials/TextureMaterial.hpp"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
 
 float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    // positions          // normals           // texture coords
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+    0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+    0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+    0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-    0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+    0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
 
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+    0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+    0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-    0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-    0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+    0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+    0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+    0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
 
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-    0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+    0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 };
+
+Material mat1(
+    glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
+    glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f));
+Material mat2(glm::vec3(0.35f, 1.0f, 0.5f));
+Material mat3(glm::vec3(0.5f, 0.35f, 1.0f));
+Light l1(glm::vec3(1.5f, 0.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 glm::vec3 cubePositions[] = {
     glm::vec3( 0.0f,  0.0f,  0.0f),
@@ -83,10 +95,18 @@ int main() {
         UserInput::initialize();
         Window::initialize(WINDOW_WIDTH, WINDOW_HEIGHT, "TestEng");
         
+         size_t len2 = 0;
+        auto texture_content2 = read_bytes("assets/textures/containerSpecular.png", len2);
+        auto texture2 = PngCodec::load_texture(
+            texture_content2.get(), len2, "containerSpec");
+
         size_t len = 0;
         auto texture_content = read_bytes("assets/textures/container.png", len);
         auto texture = PngCodec::load_texture(
-            texture_content.get(), len, "floor");
+            texture_content.get(), len, "container");
+
+        TextureMaterial objTexture(texture);
+        TextureMaterial specTexture(texture2);
 
         Player player(glm::vec3(0.0f, 0.0f, 0.0f));
         Shader lightingShader("main");
@@ -99,16 +119,18 @@ int main() {
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
         glBindVertexArray(VAO);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
 
         uint lightVAO;
         glGenVertexArrays(1, &lightVAO);
         glBindVertexArray(lightVAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) 0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,8 * sizeof(float), (void*) 0);
         glEnableVertexAttribArray(0);
 
 
@@ -158,10 +180,6 @@ int main() {
             Window::clearColor(glm::vec3(0.1f, 0.1f, 0.1f));
             Window::clear();
 
-            lightingShader.use();
-            
-            lightingShader.setUniform3f("lightColor",  1.0f, 1.0f, 1.0f);
-
             glm::mat4 proj = glm::mat4(1.0f);
             proj = glm::perspective(
                 player.getCamera()->getZoom(), 
@@ -169,47 +187,32 @@ int main() {
                 0.1f, 100.0f
             );
             glm::mat4 view = player.getCamera()->getViewMat();
+            glm::mat4 worldModel = glm::mat4(1.0f);
 
+            glm::mat4 model = glm::translate(worldModel, cubePositions[0]);
+            lightingShader.use();
             lightingShader.setUniform4mat("projection", proj);
             lightingShader.setUniform4mat("view", view);
-
-            glm::mat4 model = glm::translate(model, cubePositions[0]);
-            lightingShader.setUniform4mat("model", model);
-            lightingShader.setUniform3f("lightPos", 3.0f, 0.0f, 3.0f);
             lightingShader.setUniform3f("viewPos", player.getPos());
-
-            // glActiveTexture(GL_TEXTURE0);
-            // texture->bind();
+            l1.passToShader(lightingShader);
+            objTexture.passToShader(lightingShader, "objectTextureMat");
+            objTexture.passTextureToShader(0);
+            specTexture.passToShader(lightingShader, "specularMapTextureMat");
+            specTexture.passTextureToShader(1);
+            
+            mat1.passToShader(lightingShader);
+            lightingShader.setUniform4mat("model", model);
 
             glBindVertexArray(VAO);
-            // glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
 
-            for (uint i = 0; i < 10; i++) {
-                if (i % 3 == 0) {
-                    lightingShader.setUniform3f("objectColor", 1.0f, 0.5f, 0.31f);
-                } else if (i % 3 == 1) {
-                    lightingShader.setUniform3f("objectColor", 0.5f, 0.31f, 1.0f);
-                } else {
-                    lightingShader.setUniform3f("objectColor", 0.31f, 1.0f, 0.5f);     
-                }
-
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, cubePositions[i]);
-                float angle = 20.0f * i;
-                model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-                lightingShader.setUniform4mat("model", model);
-
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-            }
+            glm::mat4 model2 = glm::translate(worldModel, l1.pos);
+            model2 = glm::scale(model2, glm::vec3(0.2f));
 
             lightSourceShader.use();
             lightSourceShader.setUniform4mat("projection", proj);
             lightSourceShader.setUniform4mat("view", view);
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(3.0f, 0.0f, 3.0f));
-            model = glm::scale(model, glm::vec3(0.2f));
-            lightSourceShader.setUniform4mat("model", model);
-
+            lightSourceShader.setUniform4mat("model", model2);
             lightSourceShader.setUniform3f("lightColor", 1.0f, 1.0f, 1.0f);
             lightSourceShader.setUniform3f("objectColor", 1.0f, 1.0f, 1.0f);
 

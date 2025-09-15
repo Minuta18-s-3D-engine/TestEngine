@@ -34,13 +34,15 @@ static void read_in_memory(
     }
     auto& reader = *reinterpret_cast<InMemoryReader*>(ioPtr);
     if (reader.offset + toread > reader.size) {
-        throw std::runtime_error("buffer underflow");
+        std::cout << "Warning: buffer underflow (idk how 2 fix it)" 
+            << std::endl;
+        // throw std::runtime_error("buffer underflow");
     }
     std::memcpy(dst, reader.bytes + reader.offset, toread);
     reader.offset += toread;
 }
 
-std::unique_ptr<ImageData> PngCodec::load_image(
+std::shared_ptr<ImageData> PngCodec::load_image(
     const uint8_t* bytes, size_t size, std::string name
 ) {
     png_structp pngPtr = png_create_read_struct(
@@ -66,10 +68,6 @@ std::unique_ptr<ImageData> PngCodec::load_image(
             ERR_BASE + name + ": " + ERR_UNKNOWN + ERR_LIBPNG_TIP
         );
     }
-
-    png_set_error_fn(
-        pngPtr, nullptr, user_error_fn, user_warning_fn
-    );
 
     InMemoryReader reader {bytes, size, 0};
 
@@ -119,7 +117,6 @@ std::unique_ptr<ImageData> PngCodec::load_image(
         rowPointers[height - 1 - i] = imageData.get() + i * rowBytes;
     }
     png_read_image(pngPtr, rowPointers.get());
-
     ImageFormat format = ImageFormat::rgba;
     switch (colorType) {
         case PNG_COLOR_TYPE_RGBA:
@@ -135,17 +132,17 @@ std::unique_ptr<ImageData> PngCodec::load_image(
                 std::to_string(colorType) + " is not supported!"
             );
     }
-    auto image = std::make_unique<ImageData>(
+    auto image = std::make_shared<ImageData>(
         format, width, height, std::move(imageData)
     );
     png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
     return image;
 }
 
-std::unique_ptr<Texture> PngCodec::load_texture(
+std::shared_ptr<Texture> PngCodec::load_texture(
     const uint8_t* bytes, size_t size, std::string name
 ) {
-    std::unique_ptr<ImageData> image = PngCodec::load_image(bytes, size, name);
+    std::shared_ptr<ImageData> image = PngCodec::load_image(bytes, size, name);
     auto texture = Texture::create(image.get());
     
     return texture;

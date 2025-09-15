@@ -1,29 +1,92 @@
 #version 330 core
 out vec4 FragColor;
 
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    vec3 color;
+    float shininess;
+};
+
+struct Light {
+    vec3 pos;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+struct TextureMaterial {
+    float scaleX, scaleY;
+    float shiftX, shiftY;
+    bool isActive;
+};
+
 in vec3 Normal;  
 in vec3 FragPos;  
+in vec2 TexCoords;
   
-uniform vec3 lightPos; 
+uniform Material material;
+uniform Light light;
 uniform vec3 viewPos; 
-uniform vec3 lightColor;
-uniform vec3 objectColor;
+
+uniform TextureMaterial objectTextureMat; // Which is also diffuse map
+uniform TextureMaterial specularMapTextureMat;
+
+uniform sampler2D objectTexture;
+uniform sampler2D specularMapTexture;
+
+vec3 calcAmbientLight() {
+    return light.ambient * material.ambient;
+}
+
+vec3 calcDiffuseLight() {
+    vec3 normal = normalize(Normal);
+    vec3 lightDir = normalize(light.pos - FragPos);
+    float diff = max(dot(normal, lightDir), 0.0);
+    return light.diffuse * (diff * material.diffuse);
+}
+
+vec3 getDiffTexturePixel(vec2 coords) {
+    if (!objectTextureMat.isActive) return vec3(0.0, 0.0, 0.0);
+    return vec3(texture(objectTexture, coords));
+}
+
+vec3 getSpecTexturePixel(vec2 coords) {
+    if (!specularMapTextureMat.isActive) return vec3(0.0, 0.0, 0.0);
+    return vec3(texture(specularMapTexture, coords));
+}
+
+vec3 calcSpecularLight() {
+    vec3 lightDir = normalize(light.pos - FragPos);
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 normal = normalize(Normal);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    return light.specular * (spec * material.specular);
+}
 
 void main() {
-    float ambientStrength = 0.1;
-    vec3 ambient = ambientStrength * lightColor;
-  	
-    vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - FragPos);
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
-    
-    float specularStrength = 0.5;
-    vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    vec3 specular = specularStrength * spec * lightColor;  
-        
-    vec3 result = (ambient + diffuse + specular) * objectColor;
+    vec3 result;
+
+    if (!objectTextureMat.isActive) {
+        vec3 ambient = calcAmbientLight();
+        vec3 diffuse = calcDiffuseLight();
+        vec3 specular = calcSpecularLight();
+
+        result = (ambient + diffuse + specular) * material.color;
+    } else if (objectTextureMat.isActive && !specularMapTextureMat.isActive) {
+        vec3 ambient = calcAmbientLight() * getDiffTexturePixel(TexCoords);
+        vec3 diffuse = calcDiffuseLight() * getDiffTexturePixel(TexCoords);
+        vec3 specular = calcSpecularLight() * getDiffTexturePixel(TexCoords);
+
+        result = (ambient + diffuse + specular);
+    } else {
+        vec3 ambient = calcAmbientLight() * getDiffTexturePixel(TexCoords);
+        vec3 diffuse = calcDiffuseLight() * getDiffTexturePixel(TexCoords);
+        vec3 specular = calcSpecularLight() * getSpecTexturePixel(TexCoords);
+
+        result = (ambient + diffuse + specular);
+    }
     FragColor = vec4(result, 1.0);
 } 

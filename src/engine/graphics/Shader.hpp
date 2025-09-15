@@ -37,6 +37,7 @@ public:
     void setUniform4mat(const std::string& name, const glm::mat4& value);
     void setUniform3f(const std::string& name, float v1, float v2, float v3);
     void setUniform3f(const std::string& name, const glm::vec3& value);
+    void setUniform1b(const std::string& name, bool value);
     std::string get_name();
 };
 

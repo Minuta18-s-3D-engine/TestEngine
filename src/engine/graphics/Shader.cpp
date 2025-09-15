@@ -128,6 +128,10 @@ void Shader::setUniform3f(
     glUniform3fv(getUniformLocation(name), 1, glm::value_ptr(v));
 }
 
+void Shader::setUniform1b(const std::string& name, bool value) {
+    glUniform1i(getUniformLocation(name), value);
+}
+
 Shader::~Shader() {
     glDeleteProgram(glId);
 }
