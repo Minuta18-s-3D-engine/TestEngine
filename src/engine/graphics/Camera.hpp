@@ -12,7 +12,6 @@ class Camera {
 
     void updateCameraVectors();
 public:
-    int test;
     glm::vec3 pos, front, up, right, worldUp;
 
     Camera(

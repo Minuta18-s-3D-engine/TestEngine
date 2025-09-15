@@ -8,7 +8,6 @@ Camera::Camera(
     this->yaw = yaw;
     this->pitch = pitch;
     updateCameraVectors();
-    test = 1;
 }
 
 Camera::~Camera() = default;
