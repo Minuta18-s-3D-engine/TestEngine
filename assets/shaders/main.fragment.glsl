@@ -82,8 +82,8 @@ void main() {
 
         result = (ambient + diffuse + specular);
     } else {
-        vec3 ambient = calcAmbientLight() * getSpecTexturePixel(TexCoords);
-        vec3 diffuse = calcDiffuseLight() * getSpecTexturePixel(TexCoords);
+        vec3 ambient = calcAmbientLight() * getDiffTexturePixel(TexCoords);
+        vec3 diffuse = calcDiffuseLight() * getDiffTexturePixel(TexCoords);
         vec3 specular = calcSpecularLight() * getSpecTexturePixel(TexCoords);
 
         result = (ambient + diffuse + specular);

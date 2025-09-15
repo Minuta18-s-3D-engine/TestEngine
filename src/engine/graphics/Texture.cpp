@@ -5,7 +5,7 @@ Texture::Texture(
     const uint8_t* image_data
 ) : width(width), height(height), format(format) {
     glGenTextures(1, &id);
-    glBindTexture(GL_TEXTURE_2D, id);
+    this->bind();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     GLenum fmt = GL_RGB;
@@ -25,6 +25,7 @@ Texture::Texture(
         GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glGenerateMipmap(GL_TEXTURE_2D);
+    this->unbind();
 }
 
 Texture::~Texture() {

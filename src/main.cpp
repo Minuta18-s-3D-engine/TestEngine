@@ -94,21 +94,21 @@ int main() {
     try {
         UserInput::initialize();
         Window::initialize(WINDOW_WIDTH, WINDOW_HEIGHT, "TestEng");
-        
-         size_t len2 = 0;
-        auto texture_content2 = read_bytes("assets/textures/containerSpecular.png", len2);
-        auto texture2 = PngCodec::load_texture(
-            texture_content2.get(), len2, "containerSpec");
 
         size_t len = 0;
         auto texture_content = read_bytes("assets/textures/container.png", len);
         auto texture = PngCodec::load_texture(
             texture_content.get(), len, "container");
 
+        size_t len2 = 0;
+        auto texture_content2 = read_bytes("assets/textures/containerSpecular.png", len2);
+        auto texture2 = PngCodec::load_texture(
+            texture_content2.get(), len2, "containerSpec");
+
         TextureMaterial objTexture(texture);
         TextureMaterial specTexture(texture2);
 
-        Player player(glm::vec3(0.0f, 0.0f, 0.0f));
+        Player player(glm::vec3(0.0f, 0.0f, -1.0f));
         Shader lightingShader("main");
         Shader lightSourceShader("lightSource");
 
@@ -137,13 +137,16 @@ int main() {
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         glm::vec3 keys(0.0f, 0.0f, 0.0f);
 
+        bool isInGame = true;
         while (!Window::isShouldClose()) {
             UserInput::pollEvents();
 
-            player.getCamera()->processMouseMovement(
-                UserInput::getMouseXMov(), -UserInput::getMouseYMov(), 
-                MOUSE_SENSITIVITY
-            );
+            if (isInGame) {
+                player.getCamera()->processMouseMovement(
+                    UserInput::getMouseXMov(), -UserInput::getMouseYMov(), 
+                    MOUSE_SENSITIVITY
+                );
+            }
 
             currentFrame = glfwGetTime();
             deltaTime = currentFrame - lastFrame;
@@ -175,6 +178,7 @@ int main() {
                 } else {
                     Window::setCursorInputMode(GLFW_CURSOR_NORMAL);
                 }
+                isInGame = !isInGame;
             }
 
             Window::clearColor(glm::vec3(0.1f, 0.1f, 0.1f));
@@ -196,9 +200,11 @@ int main() {
             lightingShader.setUniform3f("viewPos", player.getPos());
             l1.passToShader(lightingShader);
             objTexture.passToShader(lightingShader, "objectTextureMat");
-            objTexture.passTextureToShader(0);
+            objTexture.passTextureToShader(0, lightingShader, "objectTexture");
             specTexture.passToShader(lightingShader, "specularMapTextureMat");
-            specTexture.passTextureToShader(1);
+            specTexture.passTextureToShader(1, lightingShader, "specularMapTexture");
+            
+            lightingShader.setUniform1i("specularMapTexture", 1);
             
             mat1.passToShader(lightingShader);
             lightingShader.setUniform4mat("model", model);

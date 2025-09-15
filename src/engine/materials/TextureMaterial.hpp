@@ -25,7 +25,7 @@ public:
 
     void passToShader(Shader& shader);
     void passToShader(Shader& shader, std::string name);
-    void passTextureToShader(int order);
+    void passTextureToShader(int order, Shader& shader, std::string name);
 };
 
 #endif //  ENGINE_MATERIAL_TEXTUREMATERIAL_H_
