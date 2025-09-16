@@ -36,6 +36,28 @@ void Mesh::setupMesh() {
         (void*) offsetof(Vertex, texCords));
 }
 
-void draw(Shader& shader) {
-    
+void Mesh::draw(Shader& shader) {
+    uint diffuseNr = 1; // I should move this somewhere later.
+    uint specularNr = 1;
+
+    for (uint i = 0; i < textures.size(); ++i) {
+        std::string shaderName = "texture_";
+
+        if (textures[i].type == TextureType::DIFFUSE) {
+            shaderName += "diffuse" + std::to_string(diffuseNr);
+            diffuseNr += 1;
+        } else if (textures[i].type == TextureType::SPECULAR) {
+            shaderName += "specular" + std::to_string(specularNr);
+            specularNr += 1;
+        }
+
+        textures[i].passToShader(shader, shaderName + "_mat");
+        textures[i].passTextureToShader(i, shader, shaderName);
+    }
+
+    glActiveTexture(0);
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }

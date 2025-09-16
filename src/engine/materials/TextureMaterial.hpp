@@ -6,6 +6,12 @@
 #include "BaseMaterial.hpp"
 #include "../graphics/Texture.hpp"
 #include <memory>
+#include <string>
+
+enum TextureType {
+    DIFFUSE,
+    SPECULAR
+};
 
 class TextureMaterial : public BaseMaterial {
 public:
@@ -13,13 +19,19 @@ public:
     float shiftX, shiftY;
     bool isActive;
     std::shared_ptr<Texture> tex;
+    TextureType type;
 
     TextureMaterial();
     TextureMaterial(std::shared_ptr<Texture> tex);
     TextureMaterial(
         std::shared_ptr<Texture> tex,
         float scaleX, float scaleY,
-        float shiftX, float shiftY
+        float shiftX, float shiftY, 
+        TextureType type
+    );
+    TextureMaterial(
+        std::shared_ptr<Texture> tex,
+        TextureType type
     );
     ~TextureMaterial();
 

@@ -11,9 +11,16 @@ TextureMaterial::TextureMaterial(
 TextureMaterial::TextureMaterial(
     std::shared_ptr<Texture> tex,
     float scaleX, float scaleY,
-    float shiftX, float shiftY
+    float shiftX, float shiftY,
+    TextureType type
 ) : scaleX(scaleX), scaleY(scaleY), tex(tex),
-    shiftX(shiftX), shiftY(shiftY), isActive(true) {}
+    shiftX(shiftX), shiftY(shiftY), isActive(true), type(type) {}
+
+TextureMaterial::TextureMaterial(
+    std::shared_ptr<Texture> tex,
+    TextureType type
+) : scaleX(1.0), scaleY(1.0), tex(tex),
+    shiftX(0.0), shiftY(0.0), isActive(true), type(type) {}
 
 TextureMaterial::~TextureMaterial() {}
 
