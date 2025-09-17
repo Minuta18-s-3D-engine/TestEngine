@@ -41,17 +41,17 @@ void Mesh::draw(Shader& shader) {
     uint specularNr = 1;
 
     for (uint i = 0; i < textures.size(); ++i) {
-        std::string shaderName = "texture_";
+        std::string shaderName = "texture";
 
         if (textures[i].type == TextureType::DIFFUSE) {
-            shaderName += "diffuse" + std::to_string(diffuseNr);
+            shaderName += "Diffuse" + std::to_string(diffuseNr);
             diffuseNr += 1;
         } else if (textures[i].type == TextureType::SPECULAR) {
-            shaderName += "specular" + std::to_string(specularNr);
+            shaderName += "Specular" + std::to_string(specularNr);
             specularNr += 1;
         }
 
-        textures[i].passToShader(shader, shaderName + "_mat");
+        textures[i].passToShader(shader, shaderName + "Mat");
         textures[i].passTextureToShader(i, shader, shaderName);
     }
 

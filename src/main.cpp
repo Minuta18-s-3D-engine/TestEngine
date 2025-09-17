@@ -199,12 +199,10 @@ int main() {
             lightingShader.setUniform4mat("view", view);
             lightingShader.setUniform3f("viewPos", player.getPos());
             l1.passToShader(lightingShader);
-            objTexture.passToShader(lightingShader, "objectTextureMat");
-            objTexture.passTextureToShader(0, lightingShader, "objectTexture");
-            specTexture.passToShader(lightingShader, "specularMapTextureMat");
-            specTexture.passTextureToShader(1, lightingShader, "specularMapTexture");
-            
-            lightingShader.setUniform1i("specularMapTexture", 1);
+            objTexture.passToShader(lightingShader, "textureDiffuse1Mat");
+            objTexture.passTextureToShader(0, lightingShader, "textureDiffuse1");
+            specTexture.passToShader(lightingShader, "textureSpecular1Mat");
+            specTexture.passTextureToShader(1, lightingShader, "textureSpecular1");
             
             mat1.passToShader(lightingShader);
             lightingShader.setUniform4mat("model", model);

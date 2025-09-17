@@ -30,11 +30,10 @@ uniform Material material;
 uniform Light light;
 uniform vec3 viewPos; 
 
-uniform TextureMaterial objectTextureMat; // Which is also diffuse map
-uniform TextureMaterial specularMapTextureMat;
-
-uniform sampler2D objectTexture;
-uniform sampler2D specularMapTexture;
+uniform TextureMaterial textureDiffuse1Mat;
+uniform TextureMaterial textureSpecular1Mat;
+uniform sampler2D textureDiffuse1;
+uniform sampler2D textureSpecular1;
 
 vec3 calcAmbientLight() {
     return light.ambient * material.ambient;
@@ -48,13 +47,13 @@ vec3 calcDiffuseLight() {
 }
 
 vec3 getDiffTexturePixel(vec2 coords) {
-    if (!objectTextureMat.isActive) return vec3(0.0, 0.0, 0.0);
-    return vec3(texture(objectTexture, coords));
+    if (!textureDiffuse1Mat.isActive) return vec3(0.0, 0.0, 0.0);
+    return vec3(texture(textureDiffuse1, coords));
 }
 
 vec3 getSpecTexturePixel(vec2 coords) {
-    if (!specularMapTextureMat.isActive) return vec3(0.0, 0.0, 0.0);
-    return vec3(texture(specularMapTexture, coords));
+    if (!textureSpecular1Mat.isActive) return vec3(0.0, 0.0, 0.0);
+    return vec3(texture(textureSpecular1, coords));
 }
 
 vec3 calcSpecularLight() {
@@ -69,13 +68,13 @@ vec3 calcSpecularLight() {
 void main() {
     vec3 result;
 
-    if (!objectTextureMat.isActive) {
+    if (!textureDiffuse1Mat.isActive) {
         vec3 ambient = calcAmbientLight();
         vec3 diffuse = calcDiffuseLight();
         vec3 specular = calcSpecularLight();
 
         result = (ambient + diffuse + specular) * material.color;
-    } else if (objectTextureMat.isActive && !specularMapTextureMat.isActive) {
+    } else if (textureDiffuse1Mat.isActive && !textureSpecular1Mat.isActive) {
         vec3 ambient = calcAmbientLight() * getDiffTexturePixel(TexCoords);
         vec3 diffuse = calcDiffuseLight() * getDiffTexturePixel(TexCoords);
         vec3 specular = calcSpecularLight() * getDiffTexturePixel(TexCoords);
