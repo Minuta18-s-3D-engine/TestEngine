@@ -6,7 +6,7 @@ TextureMaterial::TextureMaterial() : scaleX(1.0f), scaleY(1.0f),
 TextureMaterial::TextureMaterial(
     std::shared_ptr<Texture> tex
 ) : scaleX(1.0f), scaleY(1.0f), tex(tex),
-    shiftX(0.0f), shiftY(0.0f), isActive(true) {}
+    shiftX(0.0f), shiftY(0.0f), isActive(true), type(TextureType::DIFFUSE) {}
 
 TextureMaterial::TextureMaterial(
     std::shared_ptr<Texture> tex,

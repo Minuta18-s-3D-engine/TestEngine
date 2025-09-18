@@ -106,8 +106,8 @@ int main() {
         auto texture2 = PngCodec::load_texture(
             texture_content2.get(), len2, "containerSpec");
 
-        TextureMaterial objTexture(texture);
-        TextureMaterial specTexture(texture2);
+        TextureMaterial objTexture(texture, TextureType::DIFFUSE);
+        TextureMaterial specTexture(texture2, TextureType::SPECULAR);
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
         Shader lightingShader("main");
