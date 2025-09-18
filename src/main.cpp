@@ -15,7 +15,7 @@
 #include "engine/assets/coders/images/PngCoder.hpp"
 #include "engine/assets/Files.hpp"
 #include "engine/graphics/Texture.hpp"
-#include "engine/scene/Player.hpp"
+#include "engine/player/Player.hpp"
 #include "engine/materials/Material.hpp"
 #include "engine/materials/Light.hpp"
 #include "engine/materials/TextureMaterial.hpp"

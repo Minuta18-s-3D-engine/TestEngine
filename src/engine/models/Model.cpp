@@ -30,3 +30,9 @@ std::vector<TextureMaterial> Model::loadMaterialTextures(
 ) {
     // TODO
 }
+
+void Model::draw(Shader& shader) {
+    for (size_t mesh = 0; mesh < meshes.size(); ++mesh) {
+        meshes[mesh]->draw(shader);
+    }
+}

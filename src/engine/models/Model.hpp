@@ -25,6 +25,8 @@ class Model {
 public:
     Model(std::vector<std::shared_ptr<Mesh>> meshes);
     Model(std::string filename);
+
+    void draw(Shader& shader);
 };
 
 #endif // ENGINE_MODELS_MODEL_H_
