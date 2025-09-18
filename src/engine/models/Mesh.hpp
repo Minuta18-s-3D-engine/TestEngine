@@ -23,6 +23,8 @@ public:
 
     Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
         std::vector<TextureMaterial> _textures);
+    ~Mesh();
+    
     void draw(Shader& shader);
 };
 
