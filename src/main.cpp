@@ -70,7 +70,7 @@ float vertices[] = {
 };
 
 Material mat1(
-    glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.5f, 0.5f, 0.5f), 
+    glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
     glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f));
 Material mat2(glm::vec3(0.35f, 1.0f, 0.5f));
 Material mat3(glm::vec3(0.5f, 0.35f, 1.0f));
@@ -150,7 +150,6 @@ int main() {
         glEnableVertexAttribArray(0);
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
-        glm::vec3 keys(0.0f, 0.0f, 0.0f);
 
         bool isInGame = true;
         while (!Window::isShouldClose()) {

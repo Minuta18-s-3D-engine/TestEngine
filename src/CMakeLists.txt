@@ -3,6 +3,29 @@ project(TestEngSrc)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(FetchContent)
+
+set(ASSIMP_SOURCE_DIR ${CMAKE_SOURCE_DIR}/lib/assimp)
+set(ASSIMP_BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/assimp-build)
+
+if(EXISTS ${ASSIMP_SOURCE_DIR}/CMakeLists.txt)
+    message(STATUS "Using local Assimp from: ${ASSIMP_SOURCE_DIR}")
+    
+    FetchContent_Declare(
+        assimp
+        SOURCE_DIR ${ASSIMP_SOURCE_DIR}
+        BINARY_DIR ${ASSIMP_BINARY_DIR}
+    )
+else()
+    message(FATAL_ERROR "No assimp installation found.")
+endif()
+
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Disable tests" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "Disable installation" FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Disable tools" FORCE)
+
+FetchContent_MakeAvailable(assimp)
+
 file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Main.cpp)
@@ -20,4 +43,5 @@ include_directories( ${OPENGL_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} )
 target_include_directories(glad PUBLIC ../lib/glad/include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm ${PNG_LIBRARY} )
+target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm 
+    ${PNG_LIBRARY} assimp::assimp)
