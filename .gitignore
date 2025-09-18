@@ -16,7 +16,7 @@ lib/assimp
 /libglad.a
 /TestEng
 /src/libglad.a
-/stc/libglad.so
+/src/libglad.so
 /src/libTestEngSrc.a
 /src/libTestEngSrc.so
 .vscode
