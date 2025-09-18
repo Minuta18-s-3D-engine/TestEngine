@@ -12,6 +12,7 @@ Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices,
 Mesh::~Mesh() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
 }
 
 void Mesh::setupMesh() {
@@ -37,7 +38,7 @@ void Mesh::setupMesh() {
         (void*) offsetof(Vertex, normal));
     
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
         (void*) offsetof(Vertex, texCords));
 }
 

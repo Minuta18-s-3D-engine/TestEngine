@@ -70,7 +70,7 @@ float vertices[] = {
 };
 
 Material mat1(
-    glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
+    glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.5f, 0.5f, 0.5f), 
     glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f));
 Material mat2(glm::vec3(0.35f, 1.0f, 0.5f));
 Material mat3(glm::vec3(0.5f, 0.35f, 1.0f));
@@ -113,27 +113,41 @@ int main() {
         Shader lightingShader("main");
         Shader lightSourceShader("lightSource");
 
-        unsigned int VAO, VBO, EBO;
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        std::vector<Vertex> cubeVertices;
+        for (int i = 0; i < 36; ++i) {
+            Vertex v;
+            v.pos = glm::vec3(
+                vertices[i * 8], 
+                vertices[i * 8 + 1], 
+                vertices[i * 8 + 2]
+            );
+            v.normal = glm::vec3(
+                vertices[i * 8 + 3], 
+                vertices[i * 8 + 4], 
+                vertices[i * 8 + 5]
+            );
+            v.texCords = glm::vec2(
+                vertices[i * 8 + 6], 
+                vertices[i * 8 + 7] 
+            );
+            cubeVertices.push_back(v);
+        }
 
-        glBindVertexArray(VAO);
+        std::vector<uint> cubeIndices(36);
+        for (int i = 0; i < 36; ++i) cubeIndices[i] = i;
+        std::vector<TextureMaterial> cubeTextures = 
+            { objTexture, specTexture };
+
+        Mesh cubeMesh(cubeVertices, cubeIndices, cubeTextures);
+
+        uint lightVAO, lightVBO;
+        glGenVertexArrays(1, &lightVAO);
+        glGenBuffers(1, &lightVBO);
+        glBindVertexArray(lightVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-
-        uint lightVAO;
-        glGenVertexArrays(1, &lightVAO);
-        glBindVertexArray(lightVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,8 * sizeof(float), (void*) 0);
-        glEnableVertexAttribArray(0);
-
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         glm::vec3 keys(0.0f, 0.0f, 0.0f);
@@ -191,25 +205,26 @@ int main() {
                 (float) Window::width / (float) Window::height, 
                 0.1f, 100.0f
             );
+
+            // Отрисовка куба
+
             glm::mat4 view = player.getCamera()->getViewMat();
             glm::mat4 worldModel = glm::mat4(1.0f);
 
-            glm::mat4 model = glm::translate(worldModel, cubePositions[0]);
             lightingShader.use();
             lightingShader.setUniform4mat("projection", proj);
             lightingShader.setUniform4mat("view", view);
             lightingShader.setUniform3f("viewPos", player.getPos());
-            l1.passToShader(lightingShader);
-            objTexture.passToShader(lightingShader, "textureDiffuse1Mat");
-            objTexture.passTextureToShader(0, lightingShader, "textureDiffuse1");
-            specTexture.passToShader(lightingShader, "textureSpecular1Mat");
-            specTexture.passTextureToShader(1, lightingShader, "textureSpecular1");
             
+            l1.passToShader(lightingShader);
             mat1.passToShader(lightingShader);
+
+            glm::mat4 model = glm::translate(worldModel, cubePositions[0]);
             lightingShader.setUniform4mat("model", model);
 
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            cubeMesh.draw(lightingShader);
+
+            // Отрисовка источника освещения            
 
             glm::mat4 model2 = glm::translate(worldModel, l1.pos);
             model2 = glm::scale(model2, glm::vec3(0.2f));
@@ -226,9 +241,6 @@ int main() {
 
             Window::swapBuffers();
         }
-
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
     } catch (std::runtime_error err) {
         // Just skipping to exit
         std::cerr << "Critical error: runtime_error:" << std::endl;
