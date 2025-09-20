@@ -1,5 +1,5 @@
-#ifndef ENGINE_ASSETS_FILES_H_
-#define ENGINE_ASSETS_FILES_H_
+#ifndef ENGINE_ASSETS_UTILS_FILES_H_
+#define ENGINE_ASSETS_UTILS_FILES_H_
 
 #include <memory>
 #include <filesystem>
@@ -13,4 +13,4 @@ std::unique_ptr<uint8_t[]> read_bytes(
     const fs::path& filename, size_t& length
 );
 
-#endif // ENGINE_ASSETS_FILES_H_
+#endif // ENGINE_ASSETS_UTILS_FILES_H_

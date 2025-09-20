@@ -1,5 +1,5 @@
-#ifndef ENGINE_GRAPHICS_IMAGEDATA_H_
-#define ENGINE_GRAPHICS_IMAGEDATA_H_
+#ifndef ENGINE_ASSETS_UTILS_IMAGEDATA_H_
+#define ENGINE_ASSETS_UTILS_IMAGEDATA_H_
 
 #include <memory>
 #include "../../utils/EngineTypes.h"
@@ -28,4 +28,4 @@ public:
     ImageFormat getFormat() const;
 };
 
-#endif // ENGINE_GRAPHICS_IMAGEDATA_H_
+#endif // ENGINE_ASSETS_UTILS_IMAGEDATA_H_
