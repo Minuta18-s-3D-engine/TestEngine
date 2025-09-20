@@ -13,7 +13,7 @@
 #include "engine/window/Window.hpp"
 #include "engine/window/UserInput.hpp"
 #include "engine/assets/coders/images/PngCoder.hpp"
-#include "engine/assets/Files.hpp"
+#include "engine/assets/utils/Files.hpp"
 #include "engine/graphics/Texture.hpp"
 #include "engine/player/Player.hpp"
 #include "engine/materials/Material.hpp"
@@ -240,7 +240,7 @@ int main() {
 
             Window::swapBuffers();
         }
-    } catch (std::runtime_error err) {
+    } catch (const std::runtime_error& err) {
         // Just skipping to exit
         std::cerr << "Critical error: runtime_error:" << std::endl;
         std::cerr << "\t" << err.what() << std::endl;

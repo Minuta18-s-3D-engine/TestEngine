@@ -2,7 +2,7 @@
 #define ENGINE_GRAPHICS_IMAGEDATA_H_
 
 #include <memory>
-#include "../utils/EngineTypes.h"
+#include "../../utils/EngineTypes.h"
 #include "inttypes.h"
 
 enum class ImageFormat {

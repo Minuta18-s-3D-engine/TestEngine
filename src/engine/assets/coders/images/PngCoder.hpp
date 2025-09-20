@@ -1,7 +1,7 @@
 #ifndef ENGINE_ASSETS_CODECS_IMAGES_PNGCODEC_HPP_
 #define ENGINE_ASSETS_CODECS_IMAGES_PNGCODEC_HPP_
 
-#include "../../ImageData.hpp"
+#include "../../utils/ImageData.hpp"
 #include "../../../graphics/Texture.hpp"
 #include <memory>
 #include <stdexcept>

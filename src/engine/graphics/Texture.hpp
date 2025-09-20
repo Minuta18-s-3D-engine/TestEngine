@@ -2,7 +2,7 @@
 #define ENGINE_GRAPHICS_TEXTURE_H_
 
 #include "../utils/EngineTypes.h"
-#include "../assets/ImageData.hpp"
+#include "../assets/utils/ImageData.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
