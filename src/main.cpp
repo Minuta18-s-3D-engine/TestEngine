@@ -14,6 +14,7 @@
 #include "engine/window/UserInput.hpp"
 #include "engine/assets/coders/images/PngCoder.hpp"
 #include "engine/assets/utils/Files.hpp"
+#include "engine/assets/AssetManager.hpp"
 #include "engine/graphics/Texture.hpp"
 #include "engine/player/Player.hpp"
 #include "engine/materials/Material.hpp"
@@ -96,6 +97,8 @@ int main() {
         UserInput::initialize();
         Window::initialize(WINDOW_WIDTH, WINDOW_HEIGHT, "TestEng");
 
+        AssetManager manager;
+
         size_t len = 0;
         auto texture_content = read_bytes("assets/textures/container.png", len);
         auto texture = PngCodec::load_texture(
@@ -106,12 +109,21 @@ int main() {
         auto texture2 = PngCodec::load_texture(
             texture_content2.get(), len2, "containerSpec");
 
+        manager.set(texture, "textures/container");
+        manager.set(texture, "textures/containerSpecular");
+
         TextureMaterial objTexture(texture, TextureType::DIFFUSE);
         TextureMaterial specTexture(texture2, TextureType::SPECULAR);
+
+        manager.set(std::make_shared<TextureMaterial>(objTexture), "materials/container");
+        manager.set(std::make_shared<TextureMaterial>(specTexture), "materials/containerSpecular");
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
         Shader lightingShader("main");
         Shader lightSourceShader("lightSource");
+
+        manager.set(std::make_shared<Shader>(lightingShader), "shaderes/main");
+        manager.set(std::make_shared<Shader>(lightSourceShader), "shaderes/lightSource");
 
         std::vector<Vertex> cubeVertices;
         for (int i = 0; i < 36; ++i) {
@@ -139,6 +151,8 @@ int main() {
             { objTexture, specTexture };
 
         Mesh cubeMesh(cubeVertices, cubeIndices, cubeTextures);
+
+        manager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
 
         uint lightVAO, lightVBO;
         glGenVertexArrays(1, &lightVAO);
