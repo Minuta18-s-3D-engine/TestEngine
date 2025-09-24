@@ -153,7 +153,7 @@ int main() {
         Mesh cubeMesh(cubeVertices, cubeIndices, cubeTextures);
 
         manager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
-
+        //
         uint lightVAO, lightVBO;
         glGenVertexArrays(1, &lightVAO);
         glGenBuffers(1, &lightVBO);
