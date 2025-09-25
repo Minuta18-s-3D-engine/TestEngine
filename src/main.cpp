@@ -21,6 +21,9 @@
 #include "engine/materials/Light.hpp"
 #include "engine/materials/TextureMaterial.hpp"
 #include "engine/models/Mesh.hpp"
+#include "engine/scene/Scene.hpp"
+#include "engine/scene/StaticObject.hpp"
+#include "engine/models/Model.hpp"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
@@ -97,7 +100,7 @@ int main() {
         UserInput::initialize();
         Window::initialize(WINDOW_WIDTH, WINDOW_HEIGHT, "TestEng");
 
-        AssetManager manager;
+        AssetManager assetManager;
 
         size_t len = 0;
         auto texture_content = read_bytes("assets/textures/container.png", len);
@@ -109,21 +112,21 @@ int main() {
         auto texture2 = PngCodec::load_texture(
             texture_content2.get(), len2, "containerSpec");
 
-        manager.set(texture, "textures/container");
-        manager.set(texture, "textures/containerSpecular");
+        assetManager.set(texture, "textures/container");
+        assetManager.set(texture, "textures/containerSpecular");
 
         TextureMaterial objTexture(texture, TextureType::DIFFUSE);
         TextureMaterial specTexture(texture2, TextureType::SPECULAR);
 
-        manager.set(std::make_shared<TextureMaterial>(objTexture), "materials/container");
-        manager.set(std::make_shared<TextureMaterial>(specTexture), "materials/containerSpecular");
+        assetManager.set(std::make_shared<TextureMaterial>(objTexture), "materials/container");
+        assetManager.set(std::make_shared<TextureMaterial>(specTexture), "materials/containerSpecular");
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
         Shader lightingShader("main");
         Shader lightSourceShader("lightSource");
 
-        manager.set(std::make_shared<Shader>(lightingShader), "shaderes/main");
-        manager.set(std::make_shared<Shader>(lightSourceShader), "shaderes/lightSource");
+        assetManager.set(std::make_shared<Shader>(lightingShader), "shaderes/main");
+        assetManager.set(std::make_shared<Shader>(lightSourceShader), "shaderes/lightSource");
 
         std::vector<Vertex> cubeVertices;
         for (int i = 0; i < 36; ++i) {
@@ -151,8 +154,11 @@ int main() {
             { objTexture, specTexture };
 
         Mesh cubeMesh(cubeVertices, cubeIndices, cubeTextures);
+        assetManager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
+        
+        Model cubeModel({ std::make_shared<Mesh>(cubeMesh) });
+        StaticObject cubeObject(std::make_shared<Model>(cubeModel), {0.0f, 0.0f, 0.0f});
 
-        manager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
         //
         uint lightVAO, lightVBO;
         glGenVertexArrays(1, &lightVAO);
@@ -163,8 +169,11 @@ int main() {
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
 
-        float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
+        Scene mainScene(assetManager);
+        // I need to implement polymorphic behavior here. I heard std::unique_ptr will solve this problem...
+        // mainScene.addObject(std::shared_ptr<StaticObject>(cubeObject));
 
+        float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         bool isInGame = true;
         while (!Window::isShouldClose()) {
             UserInput::pollEvents();
