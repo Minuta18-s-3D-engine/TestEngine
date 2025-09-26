@@ -170,8 +170,9 @@ int main() {
         glEnableVertexAttribArray(0);
 
         Scene mainScene(assetManager);
-        // I need to implement polymorphic behavior here. I heard std::unique_ptr will solve this problem...
-        // mainScene.addObject(std::shared_ptr<StaticObject>(cubeObject));
+        std::shared_ptr<StaticObject> cubeObjectPtr = 
+            std::make_shared<StaticObject>(cubeObject);
+        mainScene.addObject(cubeObjectPtr);
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         bool isInGame = true;
