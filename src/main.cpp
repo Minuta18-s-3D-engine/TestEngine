@@ -125,8 +125,8 @@ int main() {
         Shader lightingShader("main");
         Shader lightSourceShader("lightSource");
 
-        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaderes/main");
-        assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaderes/lightSource");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/main");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/lightSource");
 
         std::vector<Vertex> cubeVertices;
         for (int i = 0; i < 36; ++i) {
