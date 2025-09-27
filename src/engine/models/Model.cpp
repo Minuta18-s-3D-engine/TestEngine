@@ -1,7 +1,7 @@
 #include "Model.hpp"
 
-Model::Model(std::vector<std::shared_ptr<Mesh>> meshes) {
-    meshes = meshes;
+Model::Model(std::vector<std::shared_ptr<Mesh>>& meshes) {
+    this->meshes = meshes;
     wasLoaded = false;
     filename = "";
 }

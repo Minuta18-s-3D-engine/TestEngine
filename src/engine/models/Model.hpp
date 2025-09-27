@@ -8,11 +8,11 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <iostream>
 
 #include "Mesh.hpp"
 
 class Model {
-    std::vector<std::shared_ptr<Mesh>> meshes;
     std::string filename;
     bool wasLoaded;
     
@@ -23,7 +23,8 @@ class Model {
         aiMaterial* mat, aiTextureType type, std::string typeName
     );
 public:
-    Model(std::vector<std::shared_ptr<Mesh>> meshes);
+    std::vector<std::shared_ptr<Mesh>> meshes;
+    Model(std::vector<std::shared_ptr<Mesh>>& meshes);
     Model(std::string filename);
 
     void draw(Shader& shader);

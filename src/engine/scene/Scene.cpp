@@ -17,7 +17,6 @@ void Scene::drawAll(Camera* cam) {
     glm::mat4 viewMat = cam->getViewMat();
     glm::mat4 worldModel = glm::mat4(1.0f);
     for (auto& object : this->objects) {
-        std::cout << object.get()->position.x << " " << object.get()->position.y << " " << object.get()->position.z << std::endl;
         glm::mat4 model = glm::translate(worldModel, object.get()->position);
         
         mainShader.use();
@@ -26,7 +25,7 @@ void Scene::drawAll(Camera* cam) {
         mainShader.setUniform3f("viewPos", cam->pos);
         mainShader.setUniform4mat("model", model);
 
-        object.get()->draw(mainShader);
+        object->draw(mainShader);
     }
 }
 

@@ -156,7 +156,9 @@ int main() {
         Mesh cubeMesh(cubeVertices, cubeIndices, cubeTextures, mat1);
         assetManager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
         
-        Model cubeModel({ std::make_shared<Mesh>(cubeMesh) });
+        std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
+        cubeMeshArray.push_back(std::make_shared<Mesh>(cubeMesh));
+        Model cubeModel(cubeMeshArray);
         StaticObject cubeObject(std::make_shared<Model>(cubeModel), {0.0f, 0.0f, 0.0f});
 
         //
