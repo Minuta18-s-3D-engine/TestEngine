@@ -14,9 +14,9 @@ Light::Light(glm::vec3 pos, glm::vec3 color) : pos(pos), ambient(color),
 Light::~Light() = default;
 
 void Light::passToShader(Shader& shader, std::string name) {
-    shader.setUniform3f(name + "ambient", ambient);
-    shader.setUniform3f(name + "diffuse", diffuse);
-    shader.setUniform3f(name + "specular", specular);
-    shader.setUniform3f(name + "pos", pos);
+    shader.setUniform3f(name + ".ambient", ambient);
+    shader.setUniform3f(name + ".diffuse", diffuse);
+    shader.setUniform3f(name + ".specular", specular);
+    shader.setUniform3f(name + ".pos", pos);
 }
 

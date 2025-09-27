@@ -12,7 +12,6 @@ void Scene::drawAll(Camera* cam) {
         0.1f, 100.0f
     );
 
-    lights[0]->passToShader(mainShader, "light");
 
     glm::mat4 viewMat = cam->getViewMat();
     glm::mat4 worldModel = glm::mat4(1.0f);
@@ -25,6 +24,7 @@ void Scene::drawAll(Camera* cam) {
         mainShader.setUniform3f("viewPos", cam->pos);
         mainShader.setUniform4mat("model", model);
 
+        lights[0]->passToShader(mainShader, "light");
         object->draw(mainShader);
     }
 }
