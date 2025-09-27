@@ -2,4 +2,4 @@
 
 BaseMaterial::BaseMaterial() {};
 BaseMaterial::~BaseMaterial() {};
-void BaseMaterial::passToShader(Shader& shader) {};
+void BaseMaterial::passToShader(Shader& shader, std::string name) {};

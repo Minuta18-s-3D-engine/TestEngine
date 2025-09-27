@@ -112,21 +112,21 @@ int main() {
         auto texture2 = PngCodec::load_texture(
             texture_content2.get(), len2, "containerSpec");
 
-        assetManager.set(texture, "textures/container");
-        assetManager.set(texture, "textures/containerSpecular");
+        assetManager.set<Texture>(texture, "textures/container");
+        assetManager.set<Texture>(texture, "textures/containerSpecular");
 
         TextureMaterial objTexture(texture, TextureType::DIFFUSE);
         TextureMaterial specTexture(texture2, TextureType::SPECULAR);
 
-        assetManager.set(std::make_shared<TextureMaterial>(objTexture), "materials/container");
-        assetManager.set(std::make_shared<TextureMaterial>(specTexture), "materials/containerSpecular");
+        assetManager.set<TextureMaterial>(std::make_shared<TextureMaterial>(objTexture), "materials/container");
+        assetManager.set<TextureMaterial>(std::make_shared<TextureMaterial>(specTexture), "materials/containerSpecular");
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
         Shader lightingShader("main");
         Shader lightSourceShader("lightSource");
 
-        assetManager.set(std::make_shared<Shader>(lightingShader), "shaderes/main");
-        assetManager.set(std::make_shared<Shader>(lightSourceShader), "shaderes/lightSource");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaderes/main");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaderes/lightSource");
 
         std::vector<Vertex> cubeVertices;
         for (int i = 0; i < 36; ++i) {
