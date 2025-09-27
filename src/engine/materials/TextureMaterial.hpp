@@ -35,7 +35,6 @@ public:
     );
     ~TextureMaterial();
 
-    void passToShader(Shader& shader);
     void passToShader(Shader& shader, std::string name);
     void passTextureToShader(int order, Shader& shader, std::string name);
 };

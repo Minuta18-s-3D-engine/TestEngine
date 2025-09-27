@@ -1,10 +1,11 @@
 #include "Mesh.hpp"
 
 Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
-    std::vector<TextureMaterial> _textures) {
+    std::vector<TextureMaterial> _textures, Material _mainMaterial) {
     vertices = _vertices;
     indices = _indices;
     textures = _textures;
+    mainMaterial = _mainMaterial;
 
     setupMesh();
 }
@@ -43,9 +44,10 @@ void Mesh::setupMesh() {
 }
 
 void Mesh::draw(Shader& shader) {
-    uint diffuseNr = 1; // I should move this somewhere later.
-    uint specularNr = 1;
+    mainMaterial.passToShader(shader, "mainMaterial");
 
+    uint diffuseNr = 1;
+    uint specularNr = 1;
     for (uint i = 0; i < textures.size(); ++i) {
         std::string shaderName = "texture";
 

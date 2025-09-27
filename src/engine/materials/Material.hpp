@@ -23,7 +23,7 @@ public:
     );
     ~Material();
 
-    void passToShader(Shader& shader);
+    void passToShader(Shader& shader, std::string name);
 };
 
 #endif //  ENGINE_MATERIAL_MATERIALS_H_

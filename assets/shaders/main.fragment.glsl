@@ -26,7 +26,7 @@ in vec3 Normal;
 in vec3 FragPos;  
 in vec2 TexCoords;
   
-uniform Material material;
+uniform Material mainMaterial;
 uniform Light light;
 uniform vec3 viewPos; 
 
@@ -36,14 +36,14 @@ uniform sampler2D textureDiffuse1;
 uniform sampler2D textureSpecular1;
 
 vec3 calcAmbientLight() {
-    return light.ambient * material.ambient;
+    return light.ambient * mainMaterial.ambient;
 }
 
 vec3 calcDiffuseLight() {
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(light.pos - FragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    return light.diffuse * (diff * material.diffuse);
+    return light.diffuse * (diff * mainMaterial.diffuse);
 }
 
 vec3 getDiffTexturePixel(vec2 coords) {
@@ -61,8 +61,8 @@ vec3 calcSpecularLight() {
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 normal = normalize(Normal);
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    return light.specular * (spec * material.specular);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), mainMaterial.shininess);
+    return light.specular * (spec * mainMaterial.specular);
 }
 
 void main() {
@@ -73,7 +73,7 @@ void main() {
         vec3 diffuse = calcDiffuseLight();
         vec3 specular = calcSpecularLight();
 
-        result = (ambient + diffuse + specular) * material.color;
+        result = (ambient + diffuse + specular) * mainMaterial.color;
     } else if (textureDiffuse1Mat.isActive && !textureSpecular1Mat.isActive) {
         vec3 ambient = calcAmbientLight() * getDiffTexturePixel(TexCoords);
         vec3 diffuse = calcDiffuseLight() * getDiffTexturePixel(TexCoords);

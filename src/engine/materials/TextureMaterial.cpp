@@ -32,8 +32,6 @@ void TextureMaterial::passToShader(Shader& shader, std::string name) {
     shader.setUniform1b(name + ".isActive", isActive);
 }
 
-void TextureMaterial::passToShader(Shader& shader) {}
-
 void TextureMaterial::passTextureToShader(int order, Shader& shader, std::string name) {
     glActiveTexture(GL_TEXTURE0 + order);
     tex.get()->bind();

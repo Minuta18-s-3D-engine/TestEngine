@@ -153,7 +153,7 @@ int main() {
         std::vector<TextureMaterial> cubeTextures = 
             { objTexture, specTexture };
 
-        Mesh cubeMesh(cubeVertices, cubeIndices, cubeTextures);
+        Mesh cubeMesh(cubeVertices, cubeIndices, cubeTextures, mat1);
         assetManager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
         
         Model cubeModel({ std::make_shared<Mesh>(cubeMesh) });
@@ -173,6 +173,9 @@ int main() {
         std::shared_ptr<StaticObject> cubeObjectPtr = 
             std::make_shared<StaticObject>(cubeObject);
         mainScene.addObject(cubeObjectPtr);
+        std::shared_ptr<Light> l1Ptr = 
+            std::make_shared<Light>(l1);
+        mainScene.addLight(l1Ptr);
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         bool isInGame = true;
@@ -228,24 +231,12 @@ int main() {
                 (float) Window::width / (float) Window::height, 
                 0.1f, 100.0f
             );
-
-            // Отрисовка куба
-
             glm::mat4 view = player.getCamera()->getViewMat();
             glm::mat4 worldModel = glm::mat4(1.0f);
 
-            lightingShader.use();
-            lightingShader.setUniform4mat("projection", proj);
-            lightingShader.setUniform4mat("view", view);
-            lightingShader.setUniform3f("viewPos", player.getPos());
-            
-            l1.passToShader(lightingShader);
-            mat1.passToShader(lightingShader);
+            // Отрисовка куба
 
-            glm::mat4 model = glm::translate(worldModel, cubePositions[0]);
-            lightingShader.setUniform4mat("model", model);
-
-            cubeMesh.draw(lightingShader);
+            mainScene.drawAll(player.getCamera().get());
 
             // Отрисовка источника освещения            
 

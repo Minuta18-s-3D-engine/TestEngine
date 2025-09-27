@@ -3,6 +3,9 @@
 
 #include "SceneObject.hpp"
 #include "../assets/AssetManager.hpp"
+#include "../graphics/Camera.hpp"
+#include "../window/Window.hpp"
+#include "../materials/Light.hpp"
 
 #include <memory>
 #include <vector>
@@ -11,11 +14,13 @@ class Scene {
     AssetManager& assetManager;
 
     std::vector<std::shared_ptr<SceneObject>> objects;
+    std::vector<std::shared_ptr<Light>> lights; // temporary solution
 public:
     Scene(AssetManager& _assetManager);
 
     void addObject(std::shared_ptr<SceneObject> obj);
-    void drawAll(); // Move this to RenderSystem ad fast as possible
+    void addLight(std::shared_ptr<Light> obj);
+    void drawAll(Camera* cam); // Move this to RenderSystem as fast as possible
 };
 
 #endif // ENGINE_SCENE_SCENE_H_

@@ -15,11 +15,11 @@ Material::~Material() {
 
 }
 
-void Material::passToShader(Shader& shader) {
-    shader.setUniform3f("material.ambient", ambient);
-    shader.setUniform3f("material.diffuse", diffuse);
-    shader.setUniform3f("material.specular", specular);
-    shader.setUniform3f("material.color", color);
-    shader.setUniform1f("material.shininess", shininess);
+void Material::passToShader(Shader& shader, std::string name) {
+    shader.setUniform3f(name + ".ambient", ambient);
+    shader.setUniform3f(name + ".diffuse", diffuse);
+    shader.setUniform3f(name + ".specular", specular);
+    shader.setUniform3f(name + ".color", color);
+    shader.setUniform1f(name + ".shininess", shininess);
 }
 

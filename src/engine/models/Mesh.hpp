@@ -5,6 +5,7 @@
 #include <vector>
 #include "../utils/EngineTypes.h"
 #include "../materials/TextureMaterial.hpp"
+#include "../materials/Material.hpp"
 #include "../graphics/Shader.hpp"
 
 struct Vertex {
@@ -20,9 +21,10 @@ public:
     std::vector<Vertex> vertices;
     std::vector<uint> indices;
     std::vector<TextureMaterial> textures;
+    Material mainMaterial;
 
     Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
-        std::vector<TextureMaterial> _textures);
+        std::vector<TextureMaterial> _textures, Material _mainMaterial);
     ~Mesh();
     
     void draw(Shader& shader);
