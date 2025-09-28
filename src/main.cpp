@@ -25,8 +25,8 @@
 #include "engine/scene/StaticObject.hpp"
 #include "engine/models/Model.hpp"
 
-const int WINDOW_WIDTH = 1920;
-const int WINDOW_HEIGHT = 1080;
+const int INITIAL_WINDOW_WIDTH = 1920;
+const int INITIAL_WINDOW_HEIGHT = 1080;
 
 float vertices[] = {
     // positions          // normals           // texture coords
@@ -98,7 +98,7 @@ const float MOUSE_SENSITIVITY = 0.1;
 int main() {
     try {
         UserInput::initialize();
-        Window::initialize(WINDOW_WIDTH, WINDOW_HEIGHT, "TestEng");
+        Window::initialize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "TestEng");
 
         AssetManager assetManager;
 
