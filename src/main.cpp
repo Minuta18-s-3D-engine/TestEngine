@@ -82,12 +82,28 @@ Light l1(glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 const float MOUSE_SENSITIVITY = 0.1;
 
-// just for debug
+// temporary solution
 void createRect(
     glm::vec3 pos, glm::vec3 scale, Material mat, std::string textureKey, 
     AssetManager& manager, Scene& scene 
 ) {
     
+}
+
+void loadTexture(
+    std::string path, std::string key, std::string material_key, 
+    const TextureType& type, AssetManager& manager
+) {
+    size_t len = 0;
+    auto texture_content = read_bytes(path, len);
+    auto texture = PngCodec::load_texture(
+        texture_content.get(), len, key);
+    manager.set<Texture>(texture, key);
+
+    auto mat = std::make_shared<TextureMaterial>(texture, type);
+    manager.set<TextureMaterial>(
+        mat, material_key
+    );
 }
 
 int main() {
@@ -97,24 +113,20 @@ int main() {
 
         AssetManager assetManager;
 
-        size_t len = 0;
-        auto texture_content = read_bytes("assets/textures/container.png", len);
-        auto texture = PngCodec::load_texture(
-            texture_content.get(), len, "container");
-
-        size_t len2 = 0;
-        auto texture_content2 = read_bytes("assets/textures/containerSpecular.png", len2);
-        auto texture2 = PngCodec::load_texture(
-            texture_content2.get(), len2, "containerSpec");
-
-        assetManager.set<Texture>(texture, "textures/container");
-        assetManager.set<Texture>(texture, "textures/containerSpecular");
-
-        TextureMaterial objTexture(texture, TextureType::DIFFUSE);
-        TextureMaterial specTexture(texture2, TextureType::SPECULAR);
-
-        assetManager.set<TextureMaterial>(std::make_shared<TextureMaterial>(objTexture), "materials/container");
-        assetManager.set<TextureMaterial>(std::make_shared<TextureMaterial>(specTexture), "materials/containerSpecular");
+        loadTexture(
+            "assets/textures/container.png", 
+            "textures/container", 
+            "materials/container", 
+            TextureType::DIFFUSE, 
+            assetManager
+        );
+        loadTexture(
+            "assets/textures/containerSpecular.png", 
+            "textures/containerSpecular", 
+            "materials/containerSpecular", 
+            TextureType::SPECULAR, 
+            assetManager
+        );
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
         Shader lightingShader("main");
@@ -145,8 +157,10 @@ int main() {
 
         std::vector<uint> cubeIndices(36);
         for (int i = 0; i < 36; ++i) cubeIndices[i] = i;
-        std::vector<TextureMaterial> cubeTextures = 
-            { objTexture, specTexture };
+        std::vector<TextureMaterial> cubeTextures = { 
+            assetManager.require<TextureMaterial>("materials/container"), 
+            assetManager.require<TextureMaterial>("materials/containerSpecular")
+        };
 
         Mesh cubeMesh(cubeVertices, cubeIndices, cubeTextures, mat1);
         assetManager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
