@@ -11,6 +11,7 @@
 class StaticObject : public SceneObject {
 public:
     StaticObject(std::shared_ptr<Model> _model, glm::vec3 _pos); 
+    ~StaticObject() = default;
 
     void draw(Shader& shader) override;
 };

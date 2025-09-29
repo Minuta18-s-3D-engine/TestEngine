@@ -17,6 +17,7 @@ public:
     // glm::vec3 rotation, scale;
     
     SceneObject(std::shared_ptr<Model> _model, glm::vec3 _pos);
+    virtual ~SceneObject() = default;
 
     virtual void draw(Shader& shader) = 0;
 };
