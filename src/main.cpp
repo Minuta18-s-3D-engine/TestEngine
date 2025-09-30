@@ -73,21 +73,53 @@ float vertices[] = {
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 };
 
-Material mat1(
-    glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
-    glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f));
-Material mat2(glm::vec3(0.35f, 1.0f, 0.5f));
-Material mat3(glm::vec3(0.5f, 0.35f, 1.0f));
 Light l1(glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 const float MOUSE_SENSITIVITY = 0.1;
 
 // temporary solution
 void createRect(
-    glm::vec3 pos, glm::vec3 scale, Material mat, std::string textureKey, 
-    AssetManager& manager, Scene& scene 
+    glm::vec3 pos, glm::vec3 scale, glm::vec2 textureScale, Material mat, 
+    std::string textureKey, AssetManager& manager, Scene& scene 
 ) {
-    
+    std::vector<Vertex> cubeVertices;
+    for (int i = 0; i < 36; ++i) {
+        Vertex v;
+        v.pos = glm::vec3(
+            vertices[i * 8] * scale.x, 
+            vertices[i * 8 + 1] * scale.y, 
+            vertices[i * 8 + 2] * scale.z
+        );
+        v.normal = glm::vec3(
+            vertices[i * 8 + 3], 
+            vertices[i * 8 + 4], 
+            vertices[i * 8 + 5]
+        );
+        v.texCords = glm::vec2(
+            vertices[i * 8 + 6] * textureScale.x, 
+            vertices[i * 8 + 7] * textureScale.y
+        );
+        cubeVertices.push_back(v);
+    }
+
+    std::vector<uint> cubeIndices(36);
+    for (int i = 0; i < 36; ++i) cubeIndices[i] = i;
+    std::vector<TextureMaterial> cubeTextures = { 
+        manager.require<TextureMaterial>(textureKey), 
+        manager.require<TextureMaterial>(textureKey + "Specular")
+    };
+
+    std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>(
+        cubeVertices, cubeIndices, cubeTextures, mat);
+    // manager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
+
+    std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
+    cubeMeshArray.push_back(cubeMesh);
+    std::shared_ptr<Model> cubeModel = std::make_shared<Model>(cubeMeshArray);
+    std::shared_ptr<StaticObject> cubeObject = std::make_shared<StaticObject>(
+        cubeModel, pos);
+
+    scene.addObject(cubeObject);
 }
 
 void loadTexture(
@@ -135,58 +167,22 @@ int main() {
         assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/main");
         assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/lightSource");
 
-        std::vector<Vertex> cubeVertices;
-        for (int i = 0; i < 36; ++i) {
-            Vertex v;
-            v.pos = glm::vec3(
-                vertices[i * 8], 
-                vertices[i * 8 + 1], 
-                vertices[i * 8 + 2]
-            );
-            v.normal = glm::vec3(
-                vertices[i * 8 + 3], 
-                vertices[i * 8 + 4], 
-                vertices[i * 8 + 5]
-            );
-            v.texCords = glm::vec2(
-                vertices[i * 8 + 6], 
-                vertices[i * 8 + 7] 
-            );
-            cubeVertices.push_back(v);
-        }
-
-        std::vector<uint> cubeIndices(36);
-        for (int i = 0; i < 36; ++i) cubeIndices[i] = i;
-        std::vector<TextureMaterial> cubeTextures = { 
-            assetManager.require<TextureMaterial>("materials/container"), 
-            assetManager.require<TextureMaterial>("materials/containerSpecular")
-        };
-
-        Mesh cubeMesh(cubeVertices, cubeIndices, cubeTextures, mat1);
-        assetManager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
-        
-        std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
-        cubeMeshArray.push_back(std::make_shared<Mesh>(cubeMesh));
-        Model cubeModel(cubeMeshArray);
-        StaticObject cubeObject(std::make_shared<Model>(cubeModel), {0.0f, 0.0f, 0.0f});
-
-        //
-        uint lightVAO, lightVBO;
-        glGenVertexArrays(1, &lightVAO);
-        glGenBuffers(1, &lightVBO);
-        glBindVertexArray(lightVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
         Scene mainScene(assetManager);
-        std::shared_ptr<StaticObject> cubeObjectPtr = 
-            std::make_shared<StaticObject>(cubeObject);
-        mainScene.addObject(cubeObjectPtr);
         std::shared_ptr<Light> l1Ptr = 
             std::make_shared<Light>(l1);
         mainScene.addLight(l1Ptr);
+
+        glm::vec3 pos(0, 0, 0), scale(1, 1, 1);
+        glm::vec2 textureScale(1, 1);
+        Material mat(
+            glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
+            glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f)
+        );
+        std::string textureKey = "materials/container";
+        AssetManager& manager = assetManager;
+
+        createRect(pos, scale, textureScale, mat, textureKey, 
+            assetManager, mainScene);
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         bool isInGame = true;
@@ -236,33 +232,7 @@ int main() {
             Window::clearColor(glm::vec3(0.1f, 0.1f, 0.1f));
             Window::clear();
 
-            glm::mat4 proj = glm::mat4(1.0f);
-            proj = glm::perspective(
-                player.getCamera()->getZoom(), 
-                (float) Window::width / (float) Window::height, 
-                0.1f, 100.0f
-            );
-            glm::mat4 view = player.getCamera()->getViewMat();
-            glm::mat4 worldModel = glm::mat4(1.0f);
-
-            // Отрисовка куба
-
             mainScene.drawAll(player.getCamera().get());
-
-            // Отрисовка источника освещения            
-
-            glm::mat4 model2 = glm::translate(worldModel, l1.pos);
-            model2 = glm::scale(model2, glm::vec3(0.2f));
-
-            lightSourceShader.use();
-            lightSourceShader.setUniform4mat("projection", proj);
-            lightSourceShader.setUniform4mat("view", view);
-            lightSourceShader.setUniform4mat("model", model2);
-            lightSourceShader.setUniform3f("lightColor", l1.diffuse);
-            lightSourceShader.setUniform3f("objectColor", 1.0f, 1.0f, 1.0f);
-
-            glBindVertexArray(lightVAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
 
             Window::swapBuffers();
         }
