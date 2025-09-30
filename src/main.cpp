@@ -8,6 +8,7 @@
 #include <string>
 #include <cstring>
 #include <memory>
+#include <filesystem>
 
 #include "engine/graphics/Shader.hpp"
 #include "engine/window/Window.hpp"
@@ -24,6 +25,8 @@
 #include "engine/scene/Scene.hpp"
 #include "engine/scene/StaticObject.hpp"
 #include "engine/models/Model.hpp"
+
+namespace fs = std::filesystem;
 
 const int INITIAL_WINDOW_WIDTH = 1920;
 const int INITIAL_WINDOW_HEIGHT = 1080;
@@ -145,20 +148,30 @@ int main() {
 
         AssetManager assetManager;
 
-        loadTexture(
-            "assets/textures/container.png", 
-            "textures/container", 
-            "materials/container", 
-            TextureType::DIFFUSE, 
-            assetManager
-        );
-        loadTexture(
-            "assets/textures/containerSpecular.png", 
-            "textures/containerSpecular", 
-            "materials/containerSpecular", 
-            TextureType::SPECULAR, 
-            assetManager
-        );
+        std::string path = "./assets/textures";
+        for (const auto & entry : fs::directory_iterator(path)) {
+            fs::path p = entry.path();
+            std::string stem = p.stem().string();
+            std::string ending = "Specular";
+
+            bool isSpecular = true;
+            if (stem.size() < ending.size()) {
+                isSpecular = false;
+            } else {
+                isSpecular = (0 == stem.compare(
+                    stem.size() - ending.size(), ending.size(), ending
+                ));
+            }
+
+            std::cout << "textures/" + stem << std::endl;
+            loadTexture(
+                "assets/textures/" + p.filename().string(), 
+                "textures/" + stem, 
+                "materials/" + stem, 
+                isSpecular ? TextureType::SPECULAR : TextureType::DIFFUSE, 
+                assetManager
+            );
+        }
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
         Shader lightingShader("main");
@@ -175,7 +188,7 @@ int main() {
         glm::vec3 pos(0, 0, 0), scale(1, 1, 1);
         glm::vec2 textureScale(1, 1);
         Material mat(
-            glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
+            glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.2f, 0.2f, 0.2f), 
             glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f)
         );
         std::string textureKey = "materials/container";
@@ -183,6 +196,20 @@ int main() {
 
         createRect(pos, scale, textureScale, mat, textureKey, 
             assetManager, mainScene);
+        createRect(
+            glm::vec3(0.0f, -0.6f, 0.0f),
+            glm::vec3(10.0f, 0.2, 10.0f),
+            glm::vec2(10.0f, 10.0f),
+            Material(
+                glm::vec3(0.8, 0.8, 0.8), 
+                glm::vec3(0.05, 0.05, 0.05),
+                glm::vec3(0.3, 0.3, 0.3),
+                glm::vec3(0.8, 0.8, 0.8),
+                64.0f
+            ),
+            "materials/pavingStone",
+            assetManager, mainScene
+        );
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         bool isInGame = true;
