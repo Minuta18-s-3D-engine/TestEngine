@@ -205,7 +205,7 @@ int main() {
                 glm::vec3(0.05, 0.05, 0.05),
                 glm::vec3(0.3, 0.3, 0.3),
                 glm::vec3(0.8, 0.8, 0.8),
-                64.0f
+                16.0f
             ),
             "materials/pavingStone",
             assetManager, mainScene
