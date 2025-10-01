@@ -215,11 +215,8 @@ int main() {
             glm::vec3(1.0f, 3.0f, 6.0f),
             glm::vec2(3.0f, 3.0f),
             Material(
-                glm::vec3(0.0f, 0.0f, 0.0f),
-                glm::vec3(0.05f, 0.05f, 0.05f),
-                glm::vec3(0.4f, 0.4f, 0.4f),
-                glm::vec3(0.2f, 0.2f, 0.2f),
-                16.0f
+                glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
+                glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.8f, 0.8f, 0.8f)
             ),
             "materials/bricksRed",
             assetManager, mainScene
