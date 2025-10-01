@@ -14,6 +14,7 @@ struct Light {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+    float brightness;
 };
 
 struct TextureMaterial {
@@ -43,7 +44,7 @@ vec3 calcDiffuseLight() {
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(light.pos - FragPos);
     float diff = max(dot(normal, lightDir), 0.0);
-    return light.diffuse * (diff * mainMaterial.diffuse);
+    return light.diffuse * (diff * mainMaterial.diffuse) * light.brightness;
 }
 
 vec3 getDiffTexturePixel(vec2 coords) {
@@ -62,7 +63,7 @@ vec3 calcSpecularLight() {
     vec3 normal = normalize(Normal);
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), mainMaterial.shininess);
-    return light.specular * (spec * mainMaterial.specular);
+    return light.specular * (spec * mainMaterial.specular) * light.brightness;
 }
 
 void main() {

@@ -13,13 +13,16 @@ public:
     glm::vec3 specular;
 
     glm::vec3 pos;
+    float brightness;
 
     Light(glm::vec3 pos,
         glm::vec3 ambient,
         glm::vec3 diffuse,
-        glm::vec3 specular);
+        glm::vec3 specular,
+        float brightness);
     Light(glm::vec3 pos,
-        glm::vec3 color);
+        glm::vec3 color, 
+        float brightness);
     ~Light();
 
     void passToShader(Shader& shader, std::string name);
