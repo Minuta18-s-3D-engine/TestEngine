@@ -27,6 +27,12 @@ sudo apt-get install cmake clang libglfw3 libglfw3-dev libglm-dev libpng-dev
     └── src
 ```
 
+### Install Assimp
+
+1. Go to [assimp repo](https://github.com/assimp/assimp)
+2. Go to Releases
+3. Choose 6.0.2 release and place it into lib folder (just like you did GLAD)
+
 ### Build using clang
 
 ```bash
