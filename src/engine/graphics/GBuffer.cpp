@@ -76,6 +76,7 @@ void GBuffer::unbind() {
 }
 
 void GBuffer::bindBufffers() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     for (int i = 0; i < BufferType::NUM_BUFFERS; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, buffersId[i]);
