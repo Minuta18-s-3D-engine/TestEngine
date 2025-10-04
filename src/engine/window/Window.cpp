@@ -11,6 +11,10 @@ void framebufferSizeCallback(GLFWwindow* win, int width, int height) {
     glViewport(0, 0, width, height);
     Window::width = width;
     Window::height = height;
+
+    for (auto& callback : Window::framebufferSizeCallbacks) {
+        callback(win, width, height);
+    }
 }
 
 void Window::checkGlad() {
@@ -98,4 +102,8 @@ void Window::setCursorInputMode(int mode) {
 
 int Window::getCursorInputMode() {
     return Window::cursorInputMode;
+}
+
+void Window::addframebufferCallback(FramebufferCallback callback) {
+    Window::framebufferSizeCallbacks.push_back(callback);
 }

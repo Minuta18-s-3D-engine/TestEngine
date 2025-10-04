@@ -180,6 +180,10 @@ int main() {
         assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/main");
         assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/lightSource");
 
+        Shader geomShader("geomShader");
+
+        assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/geomShader");
+
         Scene mainScene(assetManager);
         std::shared_ptr<Light> l1Ptr = 
             std::make_shared<Light>(l1);

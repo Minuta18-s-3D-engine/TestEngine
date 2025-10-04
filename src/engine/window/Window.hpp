@@ -6,14 +6,19 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <iostream>
+#include <vector>
+#include <functional>
 
 #include "../utils/EngineTypes.h"
 
 class Window {
+    typedef std::function<void(GLFWwindow*, int, int)> FramebufferCallback;
+
     static GLFWwindow* window;
-    
+
     static void checkGlad();
 public:
+    static std::vector<FramebufferCallback> framebufferSizeCallbacks;
     static int width, height;
     static std::string caption;
     static int cursorInputMode;
@@ -31,6 +36,8 @@ public:
     static void clear();
     static void swapBuffers();
     static void setViewport(int x, int y, int width, int height);
+
+    static void addframebufferCallback(FramebufferCallback callback);
 };
 
 #endif // ENGINE_GRAPHICS_WINDOW_H_

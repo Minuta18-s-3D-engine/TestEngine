@@ -68,7 +68,7 @@ void GBuffer::createBuffers() {
 
 void GBuffer::bind() {
     glBindFramebuffer(GL_FRAMEBUFFER, fboId);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void GBuffer::unbind() {
