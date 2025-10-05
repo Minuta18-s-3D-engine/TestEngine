@@ -39,6 +39,7 @@ void Scene::drawAll(Camera* cam) {
     // }
 
     Shader& geomShader = assetManager.require<Shader>("shaders/geomShader");
+    Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader");
 
     gBuffer->bind();
 
@@ -63,7 +64,12 @@ void Scene::drawAll(Camera* cam) {
 
     gBuffer->unbind();
 
-    
+    lightingShader.use();
+    gBuffer->bindBufffers();
+    lightingShader.setUniform3f("viewPos", cam->pos);
+    for (auto& light : this->lights) {
+
+    }
 }
 
 void Scene::addObject(std::shared_ptr<SceneObject> obj) {

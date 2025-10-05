@@ -8,24 +8,28 @@
 
 class Light : public BaseMaterial {
 public:
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
+    glm::vec3 color;
+    glm::vec3 position;
 
-    glm::vec3 pos;
-    float brightness;
+    float linear;
+    float quadratic;
+    float radius;
 
-    Light(glm::vec3 pos,
-        glm::vec3 ambient,
-        glm::vec3 diffuse,
-        glm::vec3 specular,
-        float brightness);
-    Light(glm::vec3 pos,
-        glm::vec3 color, 
-        float brightness);
+    Light(
+        glm::vec3 _position,
+        glm::vec3 _color,
+        float _linear,
+        float _quadratic,
+        float _radius
+    );
+    Light(
+        glm::vec3 _position,
+        glm::vec3 _color 
+    );
     ~Light();
 
     void passToShader(Shader& shader, std::string name);
+    void passToShader(Shader& shader, std::string name, uint index);
 };
 
 #endif //  ENGINE_MATERIAL_LIGHT_H_

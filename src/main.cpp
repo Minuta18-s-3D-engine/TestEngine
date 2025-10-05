@@ -76,7 +76,7 @@ float vertices[] = {
     -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 };
 
-Light l1(glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f), 1.5);
+Light l1(glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
 const float MOUSE_SENSITIVITY = 0.1;
 
@@ -174,15 +174,17 @@ int main() {
         }
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
-        Shader lightingShader("main");
+        // Shader lightingShader("main");
         Shader lightSourceShader("lightSource");
 
-        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/main");
+        // assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/main");
         assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/lightSource");
 
         Shader geomShader("geomShader");
+        Shader lightingShader("lightingShader");
 
         assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/geomShader");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
 
         Scene mainScene(assetManager);
         std::shared_ptr<Light> l1Ptr = 
