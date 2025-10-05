@@ -12,6 +12,29 @@ Scene::~Scene() {
     delete gBuffer;
 }
 
+void Scene::renderQuad() {
+    if (quadVAO == 0) {
+        float quadVertices[] = {
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
+
 void Scene::drawAll(Camera* cam) {
     // Shader& mainShader = assetManager.require<Shader>("shaders/main");
 
@@ -67,9 +90,12 @@ void Scene::drawAll(Camera* cam) {
     lightingShader.use();
     gBuffer->bindBufffers();
     lightingShader.setUniform3f("viewPos", cam->pos);
-    for (auto& light : this->lights) {
-
+    lightingShader.setUniform1i("lights_size", this->lights.size());
+    for (int i = 0; i < this->lights.size(); ++i) {
+        auto light = this->lights[i];
+        light->passToShader(lightingShader, "lights", i);
     }
+    renderQuad();
 }
 
 void Scene::addObject(std::shared_ptr<SceneObject> obj) {

@@ -18,6 +18,10 @@ class Scene {
     std::vector<std::shared_ptr<Light>> lights; // temporary solution
     GBuffer* gBuffer; // since rendering and scene temproray merged, I'll put
                       // it here until separate Graphics class will appear
+
+    uint quadVAO = 0, quadVBO; // I'll move this to mesh after i'll be sure 
+                               // GBuffer works.
+    void renderQuad();
 public:
     Scene(AssetManager& _assetManager);
     ~Scene();

@@ -7,20 +7,19 @@
 #include <string>
 
 class Light : public BaseMaterial {
+    float calcRadius();
 public:
     glm::vec3 color;
     glm::vec3 position;
 
     float linear;
     float quadratic;
-    float radius;
 
     Light(
         glm::vec3 _position,
         glm::vec3 _color,
         float _linear,
-        float _quadratic,
-        float _radius
+        float _quadratic
     );
     Light(
         glm::vec3 _position,
