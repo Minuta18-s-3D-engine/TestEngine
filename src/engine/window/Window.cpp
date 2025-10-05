@@ -6,6 +6,7 @@ int Window::width = 0;
 int Window::height = 0;
 std::string Window::caption = "TestEng";
 int Window::cursorInputMode = GLFW_CURSOR_DISABLED;
+std::vector<Window::FramebufferCallback> Window::framebufferSizeCallbacks;
 
 void framebufferSizeCallback(GLFWwindow* win, int width, int height) {
     glViewport(0, 0, width, height);

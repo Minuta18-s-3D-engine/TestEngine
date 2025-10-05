@@ -7,6 +7,12 @@ in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
 
+struct TextureMaterial {
+    float scaleX, scaleY;
+    float shiftX, shiftY;
+    bool isActive;
+};
+
 uniform TextureMaterial textureDiffuse1Mat;
 uniform TextureMaterial textureSpecular1Mat;
 uniform sampler2D texture_diffuse1;

@@ -32,24 +32,27 @@ vec3 calcAmbientLight(vec2 coords) {
 
 vec3 calcDiffuseLight(int lightId, vec2 coords) {
     vec3 Diffuse = texture(gAlbedoSpec, coords).rgb;
-    vec3 lightDir = normalize(lights[lightId].Position - FragPos);
-    return max(dot(Normal, lightDir), 0.0) * Diffuse * lights[lightId].Color;
+    vec3 lightDir = normalize(lights[lightId].position - FragPos);
+    return max(dot(Normal, lightDir), 0.0) * Diffuse * lights[lightId].color;
 }
 
 vec3 calcSpecularLight(int lightId, vec2 coords) {
     float Specular = texture(gAlbedoSpec, coords).a;
     vec3 viewDir  = normalize(viewPos - FragPos);
-    vec3 lightDir = normalize(lights[i].Position - FragPos);
+    vec3 lightDir = normalize(lights[lightId].position - FragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0); // shinessness 
             // will go here
-    vec3 specular = lights[lightId].Color * spec * Specular;
+    vec3 specular = lights[lightId].color * spec * Specular;
+    return specular;
 }
 
-float calcAttenuation(int lightId) {
-    float linearPart = lights[lightId].Linear * distance;
-    float quadraticPart lights[i].Quadratic * distance * distance;
+float calcAttenuation(int lightId, float distToLightSource) {
+    float linearPart = lights[lightId].linear * distToLightSource;
+    float quadraticPart = lights[lightId].quadratic * distToLightSource 
+        * distToLightSource;
     float attenuation = 1.0 / (1.0 + linearPart + quadraticPart);
+    return attenuation;
 }
 
 void main() {
@@ -58,14 +61,14 @@ void main() {
     for (int i = 0; i < lights_size; ++i) {
         float distToLightSource = length(lights[i].position - FragPos);
 
-        if (distance < lights[i].radius) {
+        if (distToLightSource < lights[i].radius) {
             vec3 diffuse = calcDiffuseLight(i, TexCoords);
             vec3 specular = calcSpecularLight(i, TexCoords);
-            float attenuation = calcAttenuation(i);
+            float attenuation = calcAttenuation(i, distToLightSource);
 
             diffuse *= attenuation;
             specular *= attenuation;
-            lighting += diffuse + specular;
+            result += diffuse + specular;
         }
     }
 
