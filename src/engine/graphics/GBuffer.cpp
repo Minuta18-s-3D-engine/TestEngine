@@ -4,18 +4,21 @@ GBuffer::GBuffer(uint _width, uint _height) : width(_width), height(_height) {
     createFBO();
     createBuffers();
 
-    GLenum attachments[BufferType::NUM_BUFFERS] = {
+    uint attachments[BufferType::NUM_BUFFERS] = {
         GL_COLOR_ATTACHMENT0,
         GL_COLOR_ATTACHMENT1,
         GL_COLOR_ATTACHMENT2
     };
+    std::cout << BufferType::NUM_BUFFERS << std::endl;
     glDrawBuffers(BufferType::NUM_BUFFERS, attachments);
   
     createDepthBuffer();
 
     int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE) {
-        throw std::runtime_error("GBuffer is not complete: " + status);
+        throw std::runtime_error(
+            "GBuffer is not complete: " + std::to_string(status)
+        );
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -50,6 +53,7 @@ void GBuffer::createBuffer(uint ind, GLuint format, GLenum type) {
 }
 
 void GBuffer::createDepthBuffer() {
+    glGenRenderbuffers(1, &depthBufferId);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBufferId);
     glRenderbufferStorage(
         GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height

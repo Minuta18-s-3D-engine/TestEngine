@@ -3,9 +3,12 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <GL/glu.h>
 
 #include <exception>
 #include <stdexcept>
+#include <iostream>
+#include <stdio.h>
 
 #include "../utils/EngineTypes.h"
 
