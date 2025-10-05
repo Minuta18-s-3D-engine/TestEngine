@@ -16,8 +16,8 @@ class GBuffer {
 public:
     enum BufferType {
         BUFFER_POSITION,
-        BUFFER_ALBEDO,
         BUFFER_NORMAL,
+        BUFFER_ALBEDO,
         NUM_BUFFERS
     };
 
@@ -30,10 +30,9 @@ public:
     void bindBufffers();
 private:
     uint width, height;
-    bool buffersInitialized = false;
     uint buffersId[BufferType::NUM_BUFFERS];
     uint fboId;
-    uint depthBufferId;
+    uint depthBufferId = 0;
 
     void createFBO();
     void createBuffer(uint ind, GLuint format, GLenum type);

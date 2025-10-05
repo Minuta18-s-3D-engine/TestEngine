@@ -1,6 +1,10 @@
 #include "GBuffer.hpp"
 
 GBuffer::GBuffer(uint _width, uint _height) : width(_width), height(_height) {
+    for (int i = 0; i < BufferType::NUM_BUFFERS; ++i) {
+        buffersId[i] = 0;
+    }
+    
     createFBO();
     createBuffers();
 
@@ -9,7 +13,6 @@ GBuffer::GBuffer(uint _width, uint _height) : width(_width), height(_height) {
         GL_COLOR_ATTACHMENT1,
         GL_COLOR_ATTACHMENT2
     };
-    std::cout << BufferType::NUM_BUFFERS << std::endl;
     glDrawBuffers(BufferType::NUM_BUFFERS, attachments);
   
     createDepthBuffer();
@@ -38,7 +41,7 @@ void GBuffer::createFBO() {
 }
 
 void GBuffer::createBuffer(uint ind, GLuint format, GLenum type) {
-    if (!buffersInitialized)
+    if (buffersId[ind] == 0)
         glGenTextures(1, &buffersId[ind]);
     glBindTexture(GL_TEXTURE_2D, buffersId[ind]);
     glTexImage2D(
@@ -47,13 +50,14 @@ void GBuffer::createBuffer(uint ind, GLuint format, GLenum type) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + ind, GL_TEXTURE2, 
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + ind, GL_TEXTURE_2D, 
         buffersId[ind], 0
     );
 }
 
 void GBuffer::createDepthBuffer() {
-    glGenRenderbuffers(1, &depthBufferId);
+    if (depthBufferId == 0)
+        glGenRenderbuffers(1, &depthBufferId);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBufferId);
     glRenderbufferStorage(
         GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height
@@ -65,9 +69,8 @@ void GBuffer::createDepthBuffer() {
 
 void GBuffer::createBuffers() {
     createBuffer(0, GL_RGBA16F, GL_FLOAT);
-    createBuffer(0, GL_RGBA16F, GL_FLOAT);
-    createBuffer(0, GL_RGBA, GL_UNSIGNED_BYTE);
-    buffersInitialized = true;
+    createBuffer(1, GL_RGBA16F, GL_FLOAT);
+    createBuffer(2, GL_RGBA, GL_UNSIGNED_BYTE);
 }
 
 void GBuffer::bind() {
@@ -80,7 +83,6 @@ void GBuffer::unbind() {
 }
 
 void GBuffer::bindBufffers() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     for (int i = 0; i < BufferType::NUM_BUFFERS; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, buffersId[i]);
@@ -89,12 +91,13 @@ void GBuffer::bindBufffers() {
 
 void GBuffer::resize(uint _width, uint _height) {
     if (width == _width && height == _height) return;
-    this->width = width;
-    this->height = height;
+    this->width = _width;
+    this->height = _height;
 
     glBindFramebuffer(GL_FRAMEBUFFER, fboId);
 
     createBuffers();
+    createDepthBuffer();
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

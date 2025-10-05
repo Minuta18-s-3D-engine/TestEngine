@@ -87,8 +87,12 @@ void Scene::drawAll(Camera* cam) {
 
     gBuffer->unbind();
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     lightingShader.use();
     gBuffer->bindBufffers();
+    lightingShader.setUniform1i("gPosition", 0);
+    lightingShader.setUniform1i("gNormal", 1);
+    lightingShader.setUniform1i("gAlbedoSpec", 2);
     lightingShader.setUniform3f("viewPos", cam->pos);
     lightingShader.setUniform1i("lights_size", this->lights.size());
     for (int i = 0; i < this->lights.size(); ++i) {

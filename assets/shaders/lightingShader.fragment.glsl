@@ -27,7 +27,7 @@ const float AMBIENT_LIGHT = 0.1; // Actuall not sure if I should get this
                                  // from code.
 
 vec3 calcAmbientLight(vec2 coords) {
-    return texture(gAlbedoSpec, coords).rgb;
+    return texture(gAlbedoSpec, coords).rgb * AMBIENT_LIGHT;
 }
 
 vec3 calcDiffuseLight(int lightId, vec2 coords) {
@@ -61,7 +61,7 @@ void main() {
     for (int i = 0; i < lights_size; ++i) {
         float distToLightSource = length(lights[i].position - FragPos);
 
-        if (distToLightSource < lights[i].radius) {
+        // if (distToLightSource < lights[i].radius) {
             vec3 diffuse = calcDiffuseLight(i, TexCoords);
             vec3 specular = calcSpecularLight(i, TexCoords);
             float attenuation = calcAttenuation(i, distToLightSource);
@@ -69,7 +69,7 @@ void main() {
             diffuse *= attenuation;
             specular *= attenuation;
             result += diffuse + specular;
-        }
+        // }
     }
 
     FragColor = vec4(result, 1.0);

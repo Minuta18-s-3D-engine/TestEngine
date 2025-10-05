@@ -15,12 +15,12 @@ struct TextureMaterial {
 
 uniform TextureMaterial textureDiffuse1Mat;
 uniform TextureMaterial textureSpecular1Mat;
-uniform sampler2D texture_diffuse1;
-uniform sampler2D texture_specular1;
+uniform sampler2D textureDiffuse1;
+uniform sampler2D textureSpecular1;
 
 void main() {    
     gPosition = FragPos;
     gNormal = normalize(Normal);
-    gAlbedoSpec.rgb = texture(texture_diffuse1, TexCoords).rgb;
-    gAlbedoSpec.a = texture(texture_specular1, TexCoords).r;
+    gAlbedoSpec.rgb = texture(textureDiffuse1, TexCoords).rgb;
+    gAlbedoSpec.a = texture(textureSpecular1, TexCoords).r;
 }
