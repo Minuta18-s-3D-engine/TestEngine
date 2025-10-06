@@ -190,6 +190,11 @@ int main() {
         std::shared_ptr<Light> l1Ptr = 
             std::make_shared<Light>(l1);
         mainScene.addLight(l1Ptr);
+        mainScene.addLight(Light::calcLight(
+            glm::vec3(-2.0, 1.0, -4.0),
+            glm::vec3(1.0, 0.0, 0.0),
+            2.0, 0.5
+        ));
 
         glm::vec3 pos(0, 0, 0), scale(1, 1, 1);
         glm::vec2 textureScale(1, 1);
@@ -200,12 +205,12 @@ int main() {
         std::string textureKey = "materials/container";
         AssetManager& manager = assetManager;
 
-        createRect(pos, scale, textureScale, mat, textureKey, 
-            assetManager, mainScene);
+        // createRect(pos, scale, textureScale, mat, textureKey, 
+        //     assetManager, mainScene);
         createRect(
             glm::vec3(0.0f, -0.6f, 0.0f),
-            glm::vec3(10.0f, 0.2, 10.0f),
-            glm::vec2(10.0f, 10.0f),
+            glm::vec3(200.0f, 0.2, 200.0f),
+            glm::vec2(50.0f, 50.0f),
             Material(
                 glm::vec3(0.8, 0.8, 0.8), 
                 glm::vec3(0.05, 0.05, 0.05),
@@ -216,17 +221,39 @@ int main() {
             "materials/pavingStone",
             assetManager, mainScene
         );
-        createRect(
-            glm::vec3(4.0f, 1.0f, 2.0f),
-            glm::vec3(1.0f, 3.0f, 6.0f),
-            glm::vec2(3.0f, 3.0f),
-            Material(
-                glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
-                glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.8f, 0.8f, 0.8f)
-            ),
-            "materials/bricksRed",
-            assetManager, mainScene
-        );
+
+        for (int i = 0; i < 500; ++i) {
+            int size = rand() % 2 + 1;
+            int tex = rand() % 2;
+            createRect(
+                glm::vec3(rand() % 100 - 50 + (rand() % 5) * 0.13, (size - 1.0) * 0.5 - ((rand() % 2) * 0.1), rand() % 100 - 50 + (rand() % 5) * 0.13),
+                glm::vec3(size, size, size),
+                glm::vec2(1.0, 1.0),
+                Material(),
+                (tex == 0 ? "materials/container" : "materials/paintedPlaster"),
+                assetManager, mainScene
+            );
+        }
+
+        // for (int i = 0; i < 100; ++i) {
+        //     mainScene.addLight(Light::calcLight(
+        //         glm::vec3(rand() % 100 - 50 + (rand() % 5) * 0.13, 0.1 + rand() % 5, rand() % 100 - 50 + (rand() % 5) * 0.13),
+        //         glm::vec3(0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005),
+        //         (rand() % 6 + 1) * 0.1, (rand() % 6 + 1) * 0.1
+        //     ));
+        // }
+
+        // createRect(
+        //     glm::vec3(4.0f, 1.0f, 2.0f),
+        //     glm::vec3(1.0f, 3.0f, 6.0f),
+        //     glm::vec2(3.0f, 3.0f),
+        //     Material(
+        //         glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
+        //         glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.8f, 0.8f, 0.8f)
+        //     ),
+        //     "materials/bricksRed",
+        //     assetManager, mainScene
+        // );
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         bool isInGame = true;

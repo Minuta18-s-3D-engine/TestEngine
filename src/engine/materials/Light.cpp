@@ -11,8 +11,8 @@ Light::Light(
 Light::Light(
     glm::vec3 _position,
     glm::vec3 _color 
-) : position(_position), color(_color), linear(1.0f), 
-    quadratic(1.0f) {}
+) : position(_position), color(_color), linear(0.04f), 
+    quadratic(0.01f) {}
 
 Light::~Light() = default;
 
@@ -20,6 +20,7 @@ float Light::calcRadius() {
     float maxBrightness = std::fmaxf(std::fmaxf(color.r, color.g), color.b);
     float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * 
         (1.0 - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+    
     return radius;
 }
 
@@ -38,4 +39,18 @@ void Light::passToShader(Shader& shader, std::string name, uint index) {
     shader.setUniform1f(name + "[" + stringIndex + "]" + ".linear", linear);
     shader.setUniform1f(name + "[" + stringIndex + "]" + ".quadratic", quadratic);
     shader.setUniform1f(name + "[" + stringIndex + "]" + ".radius", calcRadius());
+}
+
+std::shared_ptr<Light> Light::calcLight(
+    glm::vec3 _position,
+    glm::vec3 _color,
+    float _linear,
+    float _quadratic
+) {
+    return std::make_shared<Light>(
+        _position, 
+        _color, 
+        glm::pow(10.0, -_linear), 
+        glm::pow(10.0, -_quadratic)
+    );
 }

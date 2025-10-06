@@ -29,6 +29,13 @@ public:
 
     void passToShader(Shader& shader, std::string name);
     void passToShader(Shader& shader, std::string name, uint index);
+
+    static std::shared_ptr<Light> calcLight(
+        glm::vec3 _position,
+        glm::vec3 _color,
+        float _linear,
+        float _quadratic
+    );
 };
 
 #endif //  ENGINE_MATERIAL_LIGHT_H_

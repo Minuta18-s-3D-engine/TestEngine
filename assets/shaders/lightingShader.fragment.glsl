@@ -19,11 +19,11 @@ struct Light {
     float radius;
 };
 
-const int MAX_NR_LIGHTS = 1024;
+const int MAX_NR_LIGHTS = 1224;
 uniform Light lights[MAX_NR_LIGHTS];
 uniform int lights_size;
 
-const float AMBIENT_LIGHT = 0.1; // Actuall not sure if I should get this 
+const float AMBIENT_LIGHT = 0.05; // Actuall not sure if I should get this 
                                  // from code.
 
 vec3 calcAmbientLight(vec2 coords) {
@@ -51,7 +51,7 @@ float calcAttenuation(int lightId, float distToLightSource) {
     float linearPart = lights[lightId].linear * distToLightSource;
     float quadraticPart = lights[lightId].quadratic * distToLightSource 
         * distToLightSource;
-    float attenuation = 1.0 / (1.0 + linearPart + quadraticPart);
+    float attenuation = 1.0 / (0.7 + linearPart + quadraticPart);
     return attenuation;
 }
 
@@ -61,7 +61,7 @@ void main() {
     for (int i = 0; i < lights_size; ++i) {
         float distToLightSource = length(lights[i].position - FragPos);
 
-        // if (distToLightSource < lights[i].radius) {
+        if (distToLightSource < lights[i].radius) {
             vec3 diffuse = calcDiffuseLight(i, TexCoords);
             vec3 specular = calcSpecularLight(i, TexCoords);
             float attenuation = calcAttenuation(i, distToLightSource);
@@ -69,7 +69,7 @@ void main() {
             diffuse *= attenuation;
             specular *= attenuation;
             result += diffuse + specular;
-        // }
+        }
     }
 
     FragColor = vec4(result, 1.0);
