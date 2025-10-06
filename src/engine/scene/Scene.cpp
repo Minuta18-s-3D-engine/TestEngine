@@ -1,15 +1,15 @@
 #include "Scene.hpp"
 
 Scene::Scene(AssetManager& _assetManager) : assetManager(_assetManager) {
-    gBuffer = new GBuffer(Window::width, Window::height);
+    renderer = new ClusteredRenderer();
 
-    Window::addframebufferCallback([&] (GLFWwindow* win, int width, int height) {
-        gBuffer->resize(width, height);
-    });
+    // Window::addframebufferCallback([&] (GLFWwindow* win, int width, int height) {
+    //     gBuffer->resize(width, height);
+    // });
 }
 
 Scene::~Scene() {
-    delete gBuffer;
+    delete renderer;
 }
 
 void Scene::renderQuad() {
@@ -64,7 +64,7 @@ void Scene::drawAll(Camera* cam) {
     Shader& geomShader = assetManager.require<Shader>("shaders/geomShader");
     Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader");
 
-    gBuffer->bind();
+    // gBuffer->bind();
 
     glm::mat4 proj = glm::mat4(1.0f);
     proj = glm::perspective(
@@ -85,11 +85,11 @@ void Scene::drawAll(Camera* cam) {
         object->draw(geomShader);
     }
 
-    gBuffer->unbind();
+    // gBuffer->unbind();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     lightingShader.use();
-    gBuffer->bindBufffers();
+    // gBuffer->bindBufffers();
     lightingShader.setUniform1i("gPosition", 0);
     lightingShader.setUniform1i("gNormal", 1);
     lightingShader.setUniform1i("gAlbedoSpec", 2);

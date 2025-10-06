@@ -6,7 +6,7 @@
 #include "../graphics/Camera.hpp"
 #include "../window/Window.hpp"
 #include "../materials/Light.hpp"
-#include "../graphics/GBuffer.hpp"
+#include "../graphics/ClusteredRenderer.hpp"
 
 #include <memory>
 #include <vector>
@@ -16,8 +16,8 @@ class Scene {
 
     std::vector<std::shared_ptr<SceneObject>> objects;
     std::vector<std::shared_ptr<Light>> lights; // temporary solution
-    GBuffer* gBuffer; // since rendering and scene temproray merged, I'll put
-                      // it here until separate Graphics class will appear
+
+    ClusteredRenderer* renderer;
 
     uint quadVAO = 0, quadVBO; // I'll move this to mesh after i'll be sure 
                                // GBuffer works.

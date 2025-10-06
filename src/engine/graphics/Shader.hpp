@@ -15,6 +15,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 class Shader {
+protected:
     uint glId;
     std::string name;
     const uint ERROR_BUFFER_SIZE = 512;
@@ -28,8 +29,9 @@ class Shader {
 
     uint getUniformLocation(const std::string& name);
 public:
+    Shader();
     Shader(const std::string& name);
-    ~Shader();
+    virtual ~Shader();
 
     void use();
     void setUniform1i(const std::string& name, int value);

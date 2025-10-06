@@ -3,6 +3,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+Shader::Shader() {}
+
 Shader::Shader(const std::string& name) : name(name) {
     this->compileShaders(
         "./assets/shaders/" + name + ".vertex.glsl",
@@ -134,5 +136,9 @@ void Shader::setUniform1b(const std::string& name, bool value) {
 
 Shader::~Shader() {
     glDeleteProgram(glId);
+}
+
+std::string Shader::get_name() {
+    return name;
 }
 

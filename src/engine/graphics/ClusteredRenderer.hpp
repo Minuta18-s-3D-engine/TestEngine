@@ -43,6 +43,7 @@ public:
     ClusteredRenderer();
 
     void updateLightData(const std::vector<std::shared_ptr<Light>>& lights);
+    
 };
 
 #endif // ENGINE_GRAPHICS_CLUSTERED_RENDERER_H_
