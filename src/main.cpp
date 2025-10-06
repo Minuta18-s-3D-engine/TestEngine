@@ -174,17 +174,17 @@ int main() {
         }
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
-        // Shader lightingShader("main");
-        Shader lightSourceShader("lightSource");
+        Shader lightingShader("forward/main");
+        Shader lightSourceShader("forward/lightSource");
 
-        // assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/main");
-        assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/lightSource");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/forward/main");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/forward/lightSource");
 
-        Shader geomShader("geomShader");
-        Shader lightingShader("lightingShader");
+        Shader geomShader("gbuffer/geomShader");
+        Shader lightingShader("gbuffer/lightingShader");
 
-        assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/geomShader");
-        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
+        assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/gbuffer/geomShader");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/gbuffer/lightingShader");
 
         Scene mainScene(assetManager);
         std::shared_ptr<Light> l1Ptr = 
