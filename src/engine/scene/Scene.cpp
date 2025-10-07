@@ -70,7 +70,7 @@ void Scene::drawAll(Camera* cam) {
     proj = glm::perspective(
         cam->getZoom(), 
         (float) Window::width / (float) Window::height, 
-        0.1f, 100.0f
+        cam->zNear, cam->zFar
     );
     glm::mat4 viewMat = cam->getViewMat();
     glm::mat4 worldModel = glm::mat4(1.0f);

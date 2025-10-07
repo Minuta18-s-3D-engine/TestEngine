@@ -63,4 +63,16 @@ void ClusteredRenderer::updateLightData(
 void ClusteredRenderer::updateClusters(const Camera* cam) {
     buildClustersShader.use();
 
+    buildClustersShader.setUniform1f("zNear", cam->zNear);
+    buildClustersShader.setUniform1f("zFar", cam->zFar);
+
+    glm::mat4 proj = glm::perspective(
+        cam->getZoom(), 
+        (float) Window::width / (float) Window::height, 
+        cam->zNear, cam->zFar
+    );
+    glm::mat4 invProj = glm::inverse(proj);
+
+    buildClustersShader.setUniform4mat("inverseProjection", invProj);
+    // buildClustersShader.se
 }

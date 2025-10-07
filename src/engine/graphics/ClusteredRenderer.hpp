@@ -10,6 +10,7 @@
 #include "../materials/Light.hpp"
 #include "ComputeShader.hpp"
 #include "Camera.hpp"
+#include "Window.hpp"
 
 struct alignas(16) CompCluster {
     glm::vec4 minPoint;

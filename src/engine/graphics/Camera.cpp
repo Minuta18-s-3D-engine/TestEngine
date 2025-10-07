@@ -1,18 +1,21 @@
 #include "Camera.hpp"
 
 Camera::Camera(
-    glm::vec3 pos, glm::vec3 up, float yaw, float pitch, float fov
+    glm::vec3 pos, glm::vec3 up, float yaw, float pitch, 
+    float fov, float zNear, float zFar 
 ) : front(glm::vec3(0.0f, 0.0f, -1.0f)), fov(fov), zoom(45.0f) {
     this->pos = pos;
     this->worldUp = up;
     this->yaw = yaw;
     this->pitch = pitch;
+    this->zNear = zNear;
+    this->zFar = zFar;
     updateCameraVectors();
 }
 
 Camera::~Camera() = default;
 
-glm::mat4 Camera::getViewMat() {
+glm::mat4 Camera::getViewMat() const {
     return glm::lookAt(pos, pos + front, up);
 }
 
@@ -26,11 +29,11 @@ void Camera::updateCameraVectors() {
     up = glm::normalize(glm::cross(right, front));
 }
 
-float Camera::getFov() {
+float Camera::getFov() const {
     return fov;
 }
 
-float Camera::getZoom() {
+float Camera::getZoom() const {
     return zoom;
 }
 

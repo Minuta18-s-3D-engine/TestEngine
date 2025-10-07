@@ -35,6 +35,15 @@ public:
 
     void use();
     void setUniform1i(const std::string& name, int value);
+    void setUniform1ui(const std::string& name, uint value);
+    void setUniform2i(const std::string& name, glm::vec2 value);
+    void setUniform2i(const std::string& name, int v1, int v2);
+    void setUniform2ui(const std::string& name, glm::uvec2 value);
+    void setUniform2ui(const std::string& name, uint v1, uint v2);
+    void setUniform3i(const std::string& name, glm::vec3 value);
+    void setUniform3i(const std::string& name, int v1, int v2, int v3);
+    void setUniform3ui(const std::string& name, glm::uvec3 value);
+    void setUniform3ui(const std::string& name, uint v1, uint v2, uint v3);
     void setUniform1f(const std::string& name, float value);
     void setUniform4mat(const std::string& name, const glm::mat4& value);
     void setUniform3f(const std::string& name, float v1, float v2, float v3);
