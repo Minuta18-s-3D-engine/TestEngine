@@ -74,5 +74,13 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     glm::mat4 invProj = glm::inverse(proj);
 
     buildClustersShader.setUniform4mat("inverseProjection", invProj);
-    // buildClustersShader.se
+    buildClustersShader.setUniform3ui("gridSize", 
+        GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
+    buildClustersShader.setUniform2ui("screenDimensions", 
+        Window::width, Window::height);
+    
+    glDispatchCompute(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+    lightCullingShader.use();
 }
