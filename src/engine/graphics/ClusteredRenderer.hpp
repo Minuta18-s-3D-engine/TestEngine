@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "../materials/Light.hpp"
+#include "ComputeShader.hpp"
+#include "Camera.hpp"
 
 struct alignas(16) CompCluster {
     glm::vec4 minPoint;
@@ -27,6 +29,8 @@ class ClusteredRenderer {
 
     std::vector<CompLight> gpuLightsCache;
 
+    ComputeShader buildClustersShader, lightCullingShader;
+
     // I'm going to move all this settings somewhere, yet don't know where.
     // I'll probably code something like Settings object or smth in future.
 
@@ -43,7 +47,7 @@ public:
     ClusteredRenderer();
 
     void updateLightData(const std::vector<std::shared_ptr<Light>>& lights);
-    
+    void updateClusters(const Camera* cam);
 };
 
 #endif // ENGINE_GRAPHICS_CLUSTERED_RENDERER_H_

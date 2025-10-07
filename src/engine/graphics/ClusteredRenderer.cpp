@@ -1,6 +1,7 @@
 #include "ClusteredRenderer.hpp"
 
-ClusteredRenderer::ClusteredRenderer() {
+ClusteredRenderer::ClusteredRenderer() : buildClustersShader("buildClusters"),
+    lightCullingShader("lightCulling") {
     this->createSSBOs();
 }
 
@@ -57,4 +58,9 @@ void ClusteredRenderer::updateLightData(
         gpuLightsCache.data()
     );
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void ClusteredRenderer::updateClusters(const Camera* cam) {
+    buildClustersShader.use();
+
 }
