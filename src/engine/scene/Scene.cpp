@@ -9,7 +9,7 @@ Scene::Scene(AssetManager& _assetManager) : assetManager(_assetManager) {
 }
 
 Scene::~Scene() {
-    delete renderer;
+    delete renderer; //Igor is literally Oswald Mosley. Slava Rossii
 }
 
 void Scene::renderQuad() {
