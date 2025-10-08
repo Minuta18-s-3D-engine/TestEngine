@@ -83,4 +83,11 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
     lightCullingShader.use();
+
+    lightCullingShader.setUniform4mat("viewMat", cam->getViewMat());
+    lightCullingShader.setUniform1i("numLights", gpuLightsCache.size());
+
+    uint numWorkgroups = (NUM_CLUSTERS + LOCAL_SIZE - 1) / LOCAL_SIZE;
+    glDispatchCompute(numWorkgroups, 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }

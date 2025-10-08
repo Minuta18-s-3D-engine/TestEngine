@@ -42,6 +42,7 @@ class ClusteredRenderer {
     const uint GRID_SIZE_Z = 24;
     const uint NUM_CLUSTERS = GRID_SIZE_X * GRID_SIZE_Y * GRID_SIZE_Z;
     const uint MAX_LIGHTS = 2048;
+    const uint LOCAL_SIZE = 128;
 
     void createSSBOs();
 public:
