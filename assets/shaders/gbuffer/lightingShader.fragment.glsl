@@ -23,7 +23,7 @@ const int MAX_NR_LIGHTS = 1224;
 uniform Light lights[MAX_NR_LIGHTS];
 uniform int lights_size;
 
-const float AMBIENT_LIGHT = 0.05; // Actuall not sure if I should get this 
+const float AMBIENT_LIGHT = 0.05; // Actually not sure if I should get this 
                                  // from code.
 
 vec3 calcAmbientLight(vec2 coords) {
