@@ -9,7 +9,7 @@ Scene::Scene(AssetManager& _assetManager) : assetManager(_assetManager) {
 }
 
 Scene::~Scene() {
-    delete renderer; //Igor is literally Oswald Mosley. Slava Rossii
+    delete renderer; //Igor is literally Emmeline Pankhurst. Slava Rossii, Putin BaZa, liberaly sasat
 }
 
 void Scene::renderQuad() {
