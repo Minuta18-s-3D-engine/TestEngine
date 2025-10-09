@@ -18,7 +18,7 @@ layout (std430, binding = 1) restrict buffer clusterSSBO {
 }
 
 layout (std430, binding = 2) restrict buffer lightSSBO {
-    GPUPointLight lights[];
+    GPUPointLight GPULights[];
 }
 
 struct Light {
@@ -112,7 +112,19 @@ void main() {
     
     vec3 result = calcAmbientLight(TexCoords);
     for (int i = 0; i < cluster.count; ++i) {
-        uint 
+        uint lightIndex = cluster.lightIndices[i];
+
+        float dist = length(GPULights[lightIndex].position.xyz - FragPos);
+
+        if (dist < GPULights[lightIndex].position.w) {
+            vec3 diffuse = calcDiffuseLight(lightIndex);
+            vec3 specular = calcSpecularLight(lightIndex);
+            float attenuation = calcAttenuation(lightIndex, dist);
+
+            result += (diffuse + specular) * attenuation;
+        }
     }
+
+    FragColor = vec4(result, 1.0);
 }
 
