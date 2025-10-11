@@ -20,17 +20,18 @@ struct alignas(16) CompCluster {
 };
 
 struct alignas(16) CompLight {
-    glm::vec4 position;
-    glm::vec4 color;
+    glm::vec3 position;
+    glm::vec3 color;
+    float linear, quadratic, radius;
 };
 
 class ClusteredRenderer {
     uint compClusterSSBO;
     uint compLightSSBO;
 
-    std::vector<CompLight> gpuLightsCache;
-
     ComputeShader buildClustersShader, lightCullingShader;
+
+    std::vector<CompLight> gpuLightCache;
 
     // I'm going to move all this settings somewhere, yet don't know where.
     // I'll probably code something like Settings object or smth in future.

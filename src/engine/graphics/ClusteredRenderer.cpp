@@ -36,26 +36,24 @@ void ClusteredRenderer::createSSBOs() {
 void ClusteredRenderer::updateLightData(
     const std::vector<std::shared_ptr<Light>>& lights
 ) {
-    gpuLightsCache.reserve(lights.size());
-    
-    for (const auto& sceneLight: lights) {
-        CompLight gpuLight;
-        gpuLight.position = glm::vec4(
-            sceneLight->position,
-            sceneLight->calcRadius()
-        );
-        gpuLight.color = glm::vec4(
-            sceneLight->color,
-            1.0f
-        );
-        gpuLightsCache.push_back(gpuLight);
+    gpuLightCache.reserve(lights.size());
+
+    for (int i = 0; i < lights.size(); ++i) {
+        CompLight currLight;
+        currLight.position = lights[i]->position;
+        currLight.color = lights[i]->color;
+        currLight.linear = lights[i]->linear;
+        currLight.quadratic = lights[i]->quadratic;
+        currLight.radius = lights[i]->calcRadius();
+
+        gpuLightCache.push_back(currLight);
     }
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightSSBO);
     glBufferSubData(
         GL_SHADER_STORAGE_BUFFER, 0,
-        gpuLightsCache.size() * sizeof(CompLight),
-        gpuLightsCache.data()
+        gpuLightCache.size() * sizeof(CompLight),
+        gpuLightCache.data()
     );
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
