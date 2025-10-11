@@ -50,6 +50,7 @@ class ClusteredRenderer {
     void createSSBOs();
 public:
     ClusteredRenderer(AssetManager& _assetManager);
+    ~ClusteredRenderer() = default;
 
     void updateLightData(const std::vector<std::shared_ptr<Light>>& lights);
     void updateClusters(const Camera* cam);

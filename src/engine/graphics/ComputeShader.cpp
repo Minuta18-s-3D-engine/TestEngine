@@ -7,7 +7,7 @@ ComputeShader::ComputeShader(const std::string& name) {
 }
 
 ComputeShader::~ComputeShader() {
-    this->Shader::~Shader();
+    glDeleteProgram(glId);
 }
 
 void ComputeShader::compileComputeShader(const std::string& filename) {
