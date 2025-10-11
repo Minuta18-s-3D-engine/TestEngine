@@ -11,6 +11,7 @@
 #include <filesystem>
 
 #include "engine/graphics/Shader.hpp"
+#include "engine/graphics/ComputeShader.hpp"
 #include "engine/window/Window.hpp"
 #include "engine/window/UserInput.hpp"
 #include "engine/assets/coders/images/PngCoder.hpp"
@@ -174,17 +175,25 @@ int main() {
         }
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
-        Shader lightingShader("forward/main");
-        Shader lightSourceShader("forward/lightSource");
+        // Shader lightingShader("forward/main");
+        // Shader lightSourceShader("forward/lightSource");
 
-        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/forward/main");
-        assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/forward/lightSource");
+        // assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/forward/main");
+        // assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/forward/lightSource");
 
-        Shader geomShader("gbuffer/geomShader");
-        Shader lightingShader("gbuffer/lightingShader");
+        // Shader geomShader("gbuffer/geomShader");
+        // Shader lightingShader("gbuffer/lightingShader");
 
-        assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/gbuffer/geomShader");
-        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/gbuffer/lightingShader");
+        // assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/gbuffer/geomShader");
+        // assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/gbuffer/lightingShader");
+
+        ComputeShader buildClustersShader("buildClusters"), 
+            lightCullingShader("lightCulling");
+        Shader lightingShader("lightingShader");
+
+        assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
+        assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/lightCulling");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightSource");
 
         Scene mainScene(assetManager);
         std::shared_ptr<Light> l1Ptr = 

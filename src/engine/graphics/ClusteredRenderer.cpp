@@ -1,8 +1,12 @@
 #include "ClusteredRenderer.hpp"
 
-ClusteredRenderer::ClusteredRenderer() : buildClustersShader("buildClusters"),
-    lightCullingShader("lightCulling") {
+ClusteredRenderer::ClusteredRenderer(AssetManager& _assetManager) : 
+    assetManager(_assetManager) {
     this->createSSBOs();
+    this->buildClustersShader = 
+        _assetManager.get<ComputeShader>("shaders/buildClusters");
+    this->lightCullingShader = 
+        _assetManager.get<ComputeShader>("shaders/lightCulling");
 }
 
 void ClusteredRenderer::createSSBOs() {
@@ -59,10 +63,10 @@ void ClusteredRenderer::updateLightData(
 }
 
 void ClusteredRenderer::updateClusters(const Camera* cam) {
-    buildClustersShader.use();
+    buildClustersShader->use();
 
-    buildClustersShader.setUniform1f("zNear", cam->zNear);
-    buildClustersShader.setUniform1f("zFar", cam->zFar);
+    buildClustersShader->setUniform1f("zNear", cam->zNear);
+    buildClustersShader->setUniform1f("zFar", cam->zFar);
 
     glm::mat4 proj = glm::perspective(
         cam->getZoom(), 
@@ -71,19 +75,19 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     );
     glm::mat4 invProj = glm::inverse(proj);
 
-    buildClustersShader.setUniform4mat("inverseProjection", invProj);
-    buildClustersShader.setUniform3ui("gridSize", 
+    buildClustersShader->setUniform4mat("inverseProjection", invProj);
+    buildClustersShader->setUniform3ui("gridSize", 
         GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
-    buildClustersShader.setUniform2ui("screenDimensions", 
+    buildClustersShader->setUniform2ui("screenDimensions", 
         Window::width, Window::height);
     
     glDispatchCompute(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-    lightCullingShader.use();
+    lightCullingShader->use();
 
-    lightCullingShader.setUniform4mat("viewMat", cam->getViewMat());
-    lightCullingShader.setUniform1i("numLights", gpuLightsCache.size());
+    lightCullingShader->setUniform4mat("viewMat", cam->getViewMat());
+    lightCullingShader->setUniform1i("numLights", gpuLightCache.size());
 
     uint numWorkgroups = (NUM_CLUSTERS + LOCAL_SIZE - 1) / LOCAL_SIZE;
     glDispatchCompute(numWorkgroups, 1, 1);

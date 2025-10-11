@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "../materials/Light.hpp"
+#include "../assets/AssetManager.hpp"
 #include "ComputeShader.hpp"
 #include "Camera.hpp"
 #include "Window.hpp"
@@ -29,8 +30,9 @@ class ClusteredRenderer {
     uint compClusterSSBO;
     uint compLightSSBO;
 
-    ComputeShader buildClustersShader, lightCullingShader;
-
+    ComputeShader *buildClustersShader, *lightCullingShader;
+    AssetManager& assetManager;
+    
     std::vector<CompLight> gpuLightCache;
 
     // I'm going to move all this settings somewhere, yet don't know where.
@@ -47,7 +49,7 @@ class ClusteredRenderer {
 
     void createSSBOs();
 public:
-    ClusteredRenderer();
+    ClusteredRenderer(AssetManager& _assetManager);
 
     void updateLightData(const std::vector<std::shared_ptr<Light>>& lights);
     void updateClusters(const Camera* cam);
