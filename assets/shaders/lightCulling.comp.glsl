@@ -6,9 +6,12 @@
 layout(local_size_x = LOCAL_SIZE, local_size_y = 1, local_size_z = 1) in;
 
 struct PointLight {
-    vec4 position; // xyz - actual position
-                   // w   - radius
-    vec4 color;
+    vec3 position;
+    vec3 color;
+    
+    float linear;
+    float quadratic;
+    float radius;
 };
 
 struct Cluster {
@@ -45,9 +48,9 @@ bool sphereAABBIntersection(
 }
 
 bool testSphereAABB(uint lightInd, Cluster currCluster) {
-    vec4 lightViewPos = viewMat * vec4(lights[lightInd].position.xyz, 1.0);
+    vec4 lightViewPos = viewMat * vec4(lights[lightInd].position, 1.0);
     vec3 center = lightViewPos.xyz;
-    float radius = lights[lightInd].position.w;
+    float radius = lights[lightInd].radius;
 
     vec3 aabbMin = currCluster.minPoint.xyz;
     vec3 aabbMax = currCluster.maxPoint.xyz;

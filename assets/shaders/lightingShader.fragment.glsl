@@ -8,20 +8,7 @@ struct Cluster {
     uint lightIndices[100];
 };
 
-struct GPUPointLight {
-    vec4 position;
-    vec4 color;
-};
-
-layout (std430, binding = 1) restrict buffer clusterSSBO {
-    Cluster clusters[];
-}
-
-layout (std430, binding = 2) restrict buffer lightSSBO {
-    GPUPointLight GPULights[];
-}
-
-struct Light {
+struct PointLight {
     vec3 position;
     vec3 color;
     
@@ -30,9 +17,14 @@ struct Light {
     float radius;
 };
 
-const int MAX_NR_LIGHTS = 1224;
-uniform Light lights[MAX_NR_LIGHTS];
-uniform int lights_size;
+layout (std430, binding = 1) restrict buffer clusterSSBO {
+    Cluster clusters[];
+}
+
+layout (std430, binding = 2) restrict buffer lightSSBO {
+    PointLight lights[];
+}
+uniform int numLights;
 
 uniform float zNear;
 uniform float zFar;
@@ -45,7 +37,6 @@ in vec3 FragPos;
 in vec2 TexCoords;
 
 uniform vec3 viewPos;
-uniform int numLights;
 uniform Material mainMaterial;
 
 uniform TextureMaterial textureDiffuse1Mat;
@@ -114,9 +105,9 @@ void main() {
     for (int i = 0; i < cluster.count; ++i) {
         uint lightIndex = cluster.lightIndices[i];
 
-        float dist = length(GPULights[lightIndex].position.xyz - FragPos);
+        float dist = length(lights[lightIndex].position - FragPos);
 
-        if (dist < GPULights[lightIndex].position.w) {
+        if (dist < lights[lightIndex].position.radius) {
             vec3 diffuse = calcDiffuseLight(lightIndex);
             vec3 specular = calcSpecularLight(lightIndex);
             float attenuation = calcAttenuation(lightIndex, dist);
