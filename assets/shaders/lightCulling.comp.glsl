@@ -21,11 +21,11 @@ struct Cluster {
     uint lightIndices[100];
 };
 
-layout (std430, binding = 1) restrict buffer clusterSSBO {
+layout (std430, binding = 0) restrict buffer clusterSSBO {
     Cluster clusters[];
 };
 
-layout (std430, binding = 2) restrict buffer lightSSBO {
+layout (std430, binding = 1) restrict buffer lightSSBO {
     PointLight lights[];
 };
 
@@ -33,7 +33,7 @@ uniform mat4 viewMat;
 uniform uint numLights;
 uniform uvec3 gridSize;
 
-bool sphereAABBIntersection(vec3, float, vec2, vec3);
+bool sphereAABBIntersection(vec3, float, vec3, vec3);
 bool testSphereAABB(uint, uint);
 
 bool sphereAABBIntersection(
@@ -78,5 +78,7 @@ void main() {
         }
     }
 
+    currCluster.lightIndices[0] = 0;
+    currCluster.count = 1;
     clusters[clusterInd] = currCluster;
 }

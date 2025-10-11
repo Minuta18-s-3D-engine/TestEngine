@@ -175,10 +175,10 @@ int main() {
         }
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
-        // Shader lightingShader("forward/main");
+        Shader forlightingShader("forward/main");
         // Shader lightSourceShader("forward/lightSource");
 
-        // assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/forward/main");
+        assetManager.set<Shader>(std::make_shared<Shader>(forlightingShader), "shaders/forward/main");
         // assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/forward/lightSource");
 
         // Shader geomShader("gbuffer/geomShader");
@@ -308,7 +308,7 @@ int main() {
                 isInGame = !isInGame;
             }
 
-            Window::clearColor(glm::vec3(0.1f, 0.1f, 0.1f));
+            Window::clearColor(glm::vec3(0.0f, 0.0f, 0.0f));
             Window::clear();
 
             mainScene.drawAll(player.getCamera().get());

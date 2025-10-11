@@ -22,6 +22,7 @@ class Scene {
     uint quadVAO = 0, quadVBO; // I'll move this to mesh after i'll be sure 
                                // GBuffer works.
     void renderQuad();
+    bool firstRender;
 public:
     Scene(AssetManager& _assetManager);
     ~Scene();

@@ -12,7 +12,7 @@ struct Cluster {
     uint lightIndices[LIGHTS_PRE_CLUSTER_LIMIT];
 };
 
-layout(std430, binding = 1) restrict buffer clusterSSBO {
+layout(std430, binding = 0) restrict buffer clusterSSBO {
     Cluster clusters[];
 };
 

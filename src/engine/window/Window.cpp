@@ -33,7 +33,7 @@ void Window::initialize(
     Window::height = height;
 
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -60,6 +60,11 @@ void Window::initialize(
     glEnable(GL_DEPTH_TEST);
 
     Window::setCursorInputMode(GLFW_CURSOR_DISABLED);
+
+    const GLubyte* version = glGetString(GL_VERSION);
+    const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+    std::cout << "OpenGL Version: " << version << std::endl;
+    std::cout << "GLSL Version: " << glslVersion << std::endl;
 }
 
 void Window::terminate() {

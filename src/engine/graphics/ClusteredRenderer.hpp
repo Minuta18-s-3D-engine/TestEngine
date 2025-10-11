@@ -13,16 +13,16 @@
 #include "Camera.hpp"
 #include "../window/Window.hpp"
 
-struct alignas(16) CompCluster {
+struct CompCluster {
     glm::vec4 minPoint;
     glm::vec4 maxPoint;
     uint lightCount;
     uint lightIndicies[100];
 };
 
-struct alignas(16) CompLight {
-    glm::vec3 position;
-    glm::vec3 color;
+struct CompLight {
+    alignas(16) glm::vec3 position;
+    alignas(16) glm::vec3 color;
     float linear, quadratic, radius;
 };
 

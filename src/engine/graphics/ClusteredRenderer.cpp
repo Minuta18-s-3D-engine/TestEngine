@@ -33,13 +33,13 @@ void ClusteredRenderer::createSSBOs() {
         GL_DYNAMIC_DRAW
     );
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compLightSSBO);
-
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void ClusteredRenderer::updateLightData(
     const std::vector<std::shared_ptr<Light>>& lights
 ) {
+    gpuLightCache.clear();
     gpuLightCache.reserve(lights.size());
 
     for (int i = 0; i < lights.size(); ++i) {
@@ -49,6 +49,7 @@ void ClusteredRenderer::updateLightData(
         currLight.linear = lights[i]->linear;
         currLight.quadratic = lights[i]->quadratic;
         currLight.radius = lights[i]->calcRadius();
+        currLight.radius = 42;
 
         gpuLightCache.push_back(currLight);
     }

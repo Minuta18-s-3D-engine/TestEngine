@@ -16,7 +16,6 @@
 
 class Shader {
 protected:
-    uint glId;
     std::string name;
     const uint ERROR_BUFFER_SIZE = 512;
     std::unordered_map<std::string, uint> uniformLocations;
@@ -29,6 +28,7 @@ protected:
 
     uint getUniformLocation(const std::string& name);
 public:
+    uint glId;
     Shader();
     Shader(const std::string& name);
     virtual ~Shader();

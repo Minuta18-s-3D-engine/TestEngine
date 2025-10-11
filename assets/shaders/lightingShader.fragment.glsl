@@ -1,6 +1,8 @@
 #version 430
 out vec4 FragColor;
 
+#define MATH_EPS 0.00001
+
 struct Cluster {
     vec4 minPoint;
     vec4 maxPoint;
@@ -31,11 +33,11 @@ struct PointLight {
     float radius;
 };
 
-layout (std430, binding = 1) restrict buffer clusterSSBO {
+layout (std430, binding = 0) restrict buffer clusterSSBO {
     Cluster clusters[];
 };
 
-layout (std430, binding = 2) restrict buffer lightSSBO {
+layout (std430, binding = 1) restrict buffer lightSSBO {
     PointLight lights[];
 };
 uniform int numLights;
@@ -130,6 +132,13 @@ void main() {
         }
     }
 
-    FragColor = vec4(result, 1.0);
-}
+    FragColor = vec4(result, 1.0); 
 
+    if (currCluster.count > 10) {
+        FragColor = vec4(1.0, 0.0, 0.0, 1.0);    // Red: many lights
+    } else if (currCluster.count > 0) {
+        FragColor = vec4(1.0, 1.0, 0.0, 1.0);    // Yellow: some lights  
+    } else {
+        FragColor = vec4(0.0, 0.0, 1.0, 1.0);    // Blue: no lights
+    }
+}
