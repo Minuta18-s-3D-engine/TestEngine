@@ -8,6 +8,20 @@ struct Cluster {
     uint lightIndices[100];
 };
 
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    vec3 color;
+    float shininess;
+};
+
+struct TextureMaterial {
+    float scaleX, scaleY;
+    float shiftX, shiftY;
+    bool isActive;
+};
+
 struct PointLight {
     vec3 position;
     vec3 color;
@@ -19,11 +33,11 @@ struct PointLight {
 
 layout (std430, binding = 1) restrict buffer clusterSSBO {
     Cluster clusters[];
-}
+};
 
 layout (std430, binding = 2) restrict buffer lightSSBO {
     PointLight lights[];
-}
+};
 uniform int numLights;
 
 uniform float zNear;
@@ -60,13 +74,13 @@ vec3 calcAmbientLight(vec2 coords) {
     return texture(textureDiffuse1, coords).rgb * AMBIENT_LIGHT;
 }
 
-vec3 calcDiffuseLight(int lightId, vec2 coords) {
+vec3 calcDiffuseLight(uint lightId, vec2 coords) {
     vec3 Diffuse = texture(textureDiffuse1, coords).rgb;
     vec3 lightDir = normalize(lights[lightId].position - FragPos);
     return max(dot(Normal, lightDir), 0.0) * Diffuse * lights[lightId].color;
 }
 
-vec3 calcSpecularLight(int lightId, vec2 coords) {
+vec3 calcSpecularLight(uint lightId, vec2 coords) {
     float Specular = texture(textureSpecular1, coords).r;
     vec3 viewDir  = normalize(viewPos - FragPos);
     vec3 lightDir = normalize(lights[lightId].position - FragPos);
@@ -77,7 +91,7 @@ vec3 calcSpecularLight(int lightId, vec2 coords) {
     return specular;
 }
 
-float calcAttenuation(int lightId, float distToLightSource) {
+float calcAttenuation(uint lightId, float distToLightSource) {
     float linearPart = lights[lightId].linear * distToLightSource;
     float quadraticPart = lights[lightId].quadratic * distToLightSource 
         * distToLightSource;
@@ -102,14 +116,14 @@ void main() {
     Cluster currCluster = clusters[clusterIndex];
     
     vec3 result = calcAmbientLight(TexCoords);
-    for (int i = 0; i < cluster.count; ++i) {
-        uint lightIndex = cluster.lightIndices[i];
+    for (int i = 0; i < currCluster.count; ++i) {
+        uint lightIndex = currCluster.lightIndices[i];
 
         float dist = length(lights[lightIndex].position - FragPos);
 
-        if (dist < lights[lightIndex].position.radius) {
-            vec3 diffuse = calcDiffuseLight(lightIndex);
-            vec3 specular = calcSpecularLight(lightIndex);
+        if (dist < lights[lightIndex].radius) {
+            vec3 diffuse = calcDiffuseLight(lightIndex, TexCoords);
+            vec3 specular = calcSpecularLight(lightIndex, TexCoords);
             float attenuation = calcAttenuation(lightIndex, dist);
 
             result += (diffuse + specular) * attenuation;

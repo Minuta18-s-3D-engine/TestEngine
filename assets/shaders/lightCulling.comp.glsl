@@ -23,14 +23,15 @@ struct Cluster {
 
 layout (std430, binding = 1) restrict buffer clusterSSBO {
     Cluster clusters[];
-}
+};
 
 layout (std430, binding = 2) restrict buffer lightSSBO {
     PointLight lights[];
-}
+};
 
 uniform mat4 viewMat;
 uniform uint numLights;
+uniform uvec3 gridSize;
 
 bool sphereAABBIntersection(vec3, float, vec2, vec3);
 bool testSphereAABB(uint, uint);

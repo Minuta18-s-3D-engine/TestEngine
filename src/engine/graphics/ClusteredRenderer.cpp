@@ -88,6 +88,8 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
 
     lightCullingShader->setUniform4mat("viewMat", cam->getViewMat());
     lightCullingShader->setUniform1i("numLights", gpuLightCache.size());
+    lightCullingShader->setUniform3ui("gridSize",
+        GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
 
     uint numWorkgroups = (NUM_CLUSTERS + LOCAL_SIZE - 1) / LOCAL_SIZE;
     glDispatchCompute(numWorkgroups, 1, 1);
