@@ -212,7 +212,6 @@ int main() {
             glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f)
         );
         std::string textureKey = "materials/container";
-        AssetManager& manager = assetManager;
 
         // createRect(pos, scale, textureScale, mat, textureKey, 
         //     assetManager, mainScene);

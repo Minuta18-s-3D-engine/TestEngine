@@ -11,7 +11,7 @@
 #include "../assets/AssetManager.hpp"
 #include "ComputeShader.hpp"
 #include "Camera.hpp"
-#include "Window.hpp"
+#include "../window/Window.hpp"
 
 struct alignas(16) CompCluster {
     glm::vec4 minPoint;
