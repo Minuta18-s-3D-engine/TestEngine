@@ -44,7 +44,7 @@ void Mesh::setupMesh() {
 }
 
 void Mesh::draw(Shader& shader) {
-    // mainMaterial.passToShader(shader, "mainMaterial");
+    mainMaterial.passToShader(shader, "mainMaterial");
 
     uint diffuseNr = 1;
     uint specularNr = 1;

@@ -1,7 +1,7 @@
 #include "Scene.hpp"
 
 Scene::Scene(AssetManager& _assetManager) : assetManager(_assetManager) {
-    renderer = new ClusteredRenderer();
+    renderer = new ClusteredRenderer(_assetManager);
 
     // Window::addframebufferCallback([&] (GLFWwindow* win, int width, int height) {
     //     gBuffer->resize(width, height);
@@ -61,10 +61,54 @@ void Scene::drawAll(Camera* cam) {
     //     object->draw(mainShader);
     // }
 
-    Shader& geomShader = assetManager.require<Shader>("shaders/geomShader");
-    Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader");
+    // Shader& geomShader = assetManager.require<Shader>("shaders/geomShader");
+    // Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader");
 
-    // gBuffer->bind();
+    // // gBuffer->bind();
+
+    // glm::mat4 proj = glm::mat4(1.0f);
+    // proj = glm::perspective(
+    //     cam->getZoom(), 
+    //     (float) Window::width / (float) Window::height, 
+    //     cam->zNear, cam->zFar
+    // );
+    // glm::mat4 viewMat = cam->getViewMat();
+    // glm::mat4 worldModel = glm::mat4(1.0f);
+
+    // geomShader.use();
+    // geomShader.setUniform4mat("projection", proj);
+    // geomShader.setUniform4mat("view", viewMat);
+    // for (auto& object : this->objects) {
+    //     glm::mat4 model = glm::translate(worldModel, object.get()->position);
+        
+    //     geomShader.setUniform4mat("model", model);
+    //     object->draw(geomShader);
+    // }
+
+    // // gBuffer->unbind();
+
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // lightingShader.use();
+    // // gBuffer->bindBufffers();
+    // lightingShader.setUniform1i("gPosition", 0);
+    // lightingShader.setUniform1i("gNormal", 1);
+    // lightingShader.setUniform1i("gAlbedoSpec", 2);
+    // lightingShader.setUniform3f("viewPos", cam->pos);
+    // lightingShader.setUniform1i("lights_size", this->lights.size());
+    // for (int i = 0; i < this->lights.size(); ++i) {
+    //     auto light = this->lights[i];
+    //     light->passToShader(lightingShader, "lights", i);
+    // }
+    // renderQuad();
+
+    renderer->updateLightData(this->lights);
+    renderer->updateClusters(cam);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+
+    Shader& ligthingShader = assetManager.require<Shader>("shaders/lightingShader");
+    ligthingShader.use();
 
     glm::mat4 proj = glm::mat4(1.0f);
     proj = glm::perspective(
@@ -75,31 +119,27 @@ void Scene::drawAll(Camera* cam) {
     glm::mat4 viewMat = cam->getViewMat();
     glm::mat4 worldModel = glm::mat4(1.0f);
 
-    geomShader.use();
-    geomShader.setUniform4mat("projection", proj);
-    geomShader.setUniform4mat("view", viewMat);
+    ligthingShader.setUniform4mat("view", viewMat);
+    ligthingShader.setUniform4mat("projection", proj);
+
+    ligthingShader.setUniform1f("zNear", cam->zNear);
+    ligthingShader.setUniform1f("zFar", cam->zFar);
+    ligthingShader.setUniform4mat("inverseProjection", glm::inverse(proj));
+    ligthingShader.setUniform3ui("gridSize", renderer->getClusterGrid());
+    ligthingShader.setUniform2ui("screenDimensions", 
+        Window::width, Window::height);
+
+    ligthingShader.setUniform3f("viewPos", cam->pos);
+    ligthingShader.setUniform1i("numLights", lights.size());
+
+    renderer->bindClusterData();
+
     for (auto& object : this->objects) {
         glm::mat4 model = glm::translate(worldModel, object.get()->position);
         
-        geomShader.setUniform4mat("model", model);
-        object->draw(geomShader);
+        ligthingShader.setUniform4mat("model", model);
+        object->draw(ligthingShader);
     }
-
-    // gBuffer->unbind();
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    lightingShader.use();
-    // gBuffer->bindBufffers();
-    lightingShader.setUniform1i("gPosition", 0);
-    lightingShader.setUniform1i("gNormal", 1);
-    lightingShader.setUniform1i("gAlbedoSpec", 2);
-    lightingShader.setUniform3f("viewPos", cam->pos);
-    lightingShader.setUniform1i("lights_size", this->lights.size());
-    for (int i = 0; i < this->lights.size(); ++i) {
-        auto light = this->lights[i];
-        light->passToShader(lightingShader, "lights", i);
-    }
-    renderQuad();
 }
 
 void Scene::addObject(std::shared_ptr<SceneObject> obj) {

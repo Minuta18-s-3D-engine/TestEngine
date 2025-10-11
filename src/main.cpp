@@ -193,7 +193,7 @@ int main() {
 
         assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
         assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/lightCulling");
-        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightSource");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
 
         Scene mainScene(assetManager);
         std::shared_ptr<Light> l1Ptr = 

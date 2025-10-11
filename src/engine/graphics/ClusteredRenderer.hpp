@@ -53,6 +53,8 @@ public:
 
     void updateLightData(const std::vector<std::shared_ptr<Light>>& lights);
     void updateClusters(const Camera* cam);
+    glm::uvec3 getClusterGrid();
+    void bindClusterData();
 };
 
 #endif // ENGINE_GRAPHICS_CLUSTERED_RENDERER_H_

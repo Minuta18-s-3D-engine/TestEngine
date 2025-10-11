@@ -93,3 +93,12 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     glDispatchCompute(numWorkgroups, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
+
+glm::uvec3 ClusteredRenderer::getClusterGrid() {
+    return { GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z };
+}
+
+void ClusteredRenderer::bindClusterData() {
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, compClusterSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compLightSSBO);
+}
