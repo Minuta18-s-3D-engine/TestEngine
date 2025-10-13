@@ -150,7 +150,7 @@ void main() {
     } else if (clusters[clusterIndex].count == 0) {
         FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red: no data written
 
-        float viewZ = -ViewPos.z;
+        float viewZ = -ViewSpacePos.z;
         if (viewZ > zFar) {
             FragColor = vec4(1.0, 1.0, 0.0, 1.0); // Yellow: beyond far plane
         } else if (viewZ < zNear) {
