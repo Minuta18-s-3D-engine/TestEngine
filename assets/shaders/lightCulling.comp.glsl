@@ -79,8 +79,8 @@ void main() {
         }
     }
 
-    // currCluster.lightIndices[0] = 0;
-    // currCluster.count = 1;
+    currCluster.lightIndices[0] = 0;
+    currCluster.count = 1;
     
     // clusters[clusterInd] = currCluster;
 
@@ -89,8 +89,9 @@ void main() {
     //     clusters[clusterInd].lightIndices[0] = 0;
     // }
 
-    clusters[clusterInd].count = 888;
-    clusters[clusterInd].lightIndices[0] = 0;
+    // clusters[clusterInd].count = 888;
+    // clusters[clusterInd].lightIndices[0] = 0;
+    // clusters[clusterInd].count = clusterInd % 1000;
 
     // if (clusterInd >= gridSize.x * gridSize.y * gridSize.z) {
     //     clusters[clusterInd].count = 9999; // Out of bounds - yellow

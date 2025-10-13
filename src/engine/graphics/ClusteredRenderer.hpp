@@ -14,9 +14,9 @@
 #include "../window/Window.hpp"
 
 #pragma pack(push, 1)
-struct CompCluster {
-    glm::vec4 maxPoint;
+struct alignas(16) CompCluster {
     glm::vec4 minPoint;
+    glm::vec4 maxPoint;
     uint lightCount;
     uint lightIndicies[100];
 };

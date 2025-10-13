@@ -71,7 +71,7 @@ vec3 getSpecTexturePixel(vec2 coords) {
     return vec3(texture(textureSpecular1, coords));
 }
 
-const float AMBIENT_LIGHT = 0.5;
+const float AMBIENT_LIGHT = 0.3;
 
 vec3 calcAmbientLight(vec2 coords) {
     return texture(textureDiffuse1, coords).rgb * AMBIENT_LIGHT;
@@ -117,58 +117,28 @@ uint findClusterIndex() {
 void main() {
     uint clusterIndex = findClusterIndex();
     Cluster currCluster = clusters[clusterIndex];
-    
-    // vec3 result = calcAmbientLight(TexCoords);
-    // for (int i = 0; i < currCluster.count; ++i) {
-    //     uint lightIndex = currCluster.lightIndices[i];
 
-    //     float dist = length(lights[lightIndex].position - FragPos);
-
-    //     if (dist < lights[lightIndex].radius) {
-    //         vec3 diffuse = calcDiffuseLight(lightIndex, TexCoords);
-    //         vec3 specular = calcSpecularLight(lightIndex, TexCoords);
-    //         float attenuation = calcAttenuation(lightIndex, dist);
-
-    //         result += (diffuse + specular) * attenuation;
-    //     }
-    // }
-
-    // FragColor = vec4(result, 1.0); 
-
-    // if (currCluster.count > 10) {
-    //     FragColor = vec4(1.0, 0.0, 0.0, 1.0);    // Red: many lights
-    // } else if (currCluster.count > 0) {
-    //     FragColor = vec4(1.0, 1.0, 0.0, 1.0);    // Yellow: some lights  
-    // } else {
-    //     FragColor = vec4(0.0, 0.0, 1.0, 1.0);    // Blue: no lights
-    // }
-
-    if (clusters[clusterIndex].count == 888) {
-        FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Green: cull shader ran
-    } else if (clusters[clusterIndex].count == 999) {
-        FragColor = vec4(1.0, 1.0, 0.0, 1.0); // Yellow: build shader ran
-    } else if (clusters[clusterIndex].count == 0) {
-        FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red: no data written
-
-        float viewZ = -ViewSpacePos.z;
-        if (viewZ > zFar) {
-            FragColor = vec4(1.0, 1.0, 0.0, 1.0); // Yellow: beyond far plane
-        } else if (viewZ < zNear) {
-            FragColor = vec4(1.0, 0.0, 1.0, 1.0); // Magenta: too close
-        }
-    } else if (clusters[clusterIndex].count > 1000) {
-        FragColor = vec4(1.0, 0.0, 1.0, 1.0); 
-    } else {
-        FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue: some other value
+    uint totalClusters = gridSize.x * gridSize.y * gridSize.z;
+    if (clusterIndex >= totalClusters) {
+        return;
     }
 
-    // uint clusterThird = clusterIndex / (3456 / 3);
-    
-    // if (clusterThird == 0) {
-    //     FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red: first third of clusters
-    // } else if (clusterThird == 1) {
-    //     FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Green: second third
-    // } else {
-    //     FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue: last third
-    // }
+    vec3 result = calcAmbientLight(TexCoords);
+    for (int i = 0; i < currCluster.count; ++i) {
+        uint lightIndex = currCluster.lightIndices[i];
+
+        float dist = length(lights[lightIndex].position - FragPos);
+
+        if (dist < lights[lightIndex].radius) {
+            vec3 diffuse = calcDiffuseLight(lightIndex, TexCoords);
+            vec3 specular = calcSpecularLight(lightIndex, TexCoords);
+            float attenuation = calcAttenuation(lightIndex, dist);
+
+            result += (diffuse + specular) * attenuation;
+        }
+    }
+
+    return;
+
+    FragColor = vec4(result, 1.0); 
 }

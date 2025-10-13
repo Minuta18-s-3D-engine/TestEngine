@@ -49,7 +49,7 @@ void ClusteredRenderer::updateLightData(
         currLight.linear = lights[i]->linear;
         currLight.quadratic = lights[i]->quadratic;
         currLight.radius = lights[i]->calcRadius();
-        currLight.radius = 42;
+        currLight.radius = 42; // DEBUG
 
         gpuLightCache.push_back(currLight);
     }
