@@ -47,12 +47,13 @@ uniform float zFar;
 uniform mat4 inverseProjection;
 uniform uvec3 gridSize;
 uniform uvec2 screenDimensions;
+uniform vec3 ViewPos;
 
 in vec3 Normal;  
 in vec3 FragPos;  
 in vec2 TexCoords;
+in vec3 ViewSpacePos;
 
-uniform vec3 viewPos;
 uniform Material mainMaterial;
 
 uniform TextureMaterial textureDiffuse1Mat;
@@ -70,7 +71,7 @@ vec3 getSpecTexturePixel(vec2 coords) {
     return vec3(texture(textureSpecular1, coords));
 }
 
-const float AMBIENT_LIGHT = 0.05;
+const float AMBIENT_LIGHT = 0.5;
 
 vec3 calcAmbientLight(vec2 coords) {
     return texture(textureDiffuse1, coords).rgb * AMBIENT_LIGHT;
@@ -84,7 +85,7 @@ vec3 calcDiffuseLight(uint lightId, vec2 coords) {
 
 vec3 calcSpecularLight(uint lightId, vec2 coords) {
     float Specular = texture(textureSpecular1, coords).r;
-    vec3 viewDir  = normalize(viewPos - FragPos);
+    vec3 viewDir  = normalize(ViewPos - FragPos);
     vec3 lightDir = normalize(lights[lightId].position - FragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0); // shinessness 
@@ -106,7 +107,7 @@ uint findClusterIndex() {
     uvec2 tileXY = uvec2(gl_FragCoord.xy) / tileSize;
     tileXY = min(tileXY, gridSize.xy - 1u);
 
-    float viewZ = -FragPos.z;
+    float viewZ = -ViewSpacePos.z;
     uint tileZ = uint((log(viewZ / zNear) * gridSize.z) / log(zFar / zNear));
     tileZ = clamp(tileZ, 0u, gridSize.z - 1u);
 
@@ -117,28 +118,57 @@ void main() {
     uint clusterIndex = findClusterIndex();
     Cluster currCluster = clusters[clusterIndex];
     
-    vec3 result = calcAmbientLight(TexCoords);
-    for (int i = 0; i < currCluster.count; ++i) {
-        uint lightIndex = currCluster.lightIndices[i];
+    // vec3 result = calcAmbientLight(TexCoords);
+    // for (int i = 0; i < currCluster.count; ++i) {
+    //     uint lightIndex = currCluster.lightIndices[i];
 
-        float dist = length(lights[lightIndex].position - FragPos);
+    //     float dist = length(lights[lightIndex].position - FragPos);
 
-        if (dist < lights[lightIndex].radius) {
-            vec3 diffuse = calcDiffuseLight(lightIndex, TexCoords);
-            vec3 specular = calcSpecularLight(lightIndex, TexCoords);
-            float attenuation = calcAttenuation(lightIndex, dist);
+    //     if (dist < lights[lightIndex].radius) {
+    //         vec3 diffuse = calcDiffuseLight(lightIndex, TexCoords);
+    //         vec3 specular = calcSpecularLight(lightIndex, TexCoords);
+    //         float attenuation = calcAttenuation(lightIndex, dist);
 
-            result += (diffuse + specular) * attenuation;
-        }
-    }
+    //         result += (diffuse + specular) * attenuation;
+    //     }
+    // }
 
-    FragColor = vec4(result, 1.0); 
+    // FragColor = vec4(result, 1.0); 
 
-    if (currCluster.count > 10) {
-        FragColor = vec4(1.0, 0.0, 0.0, 1.0);    // Red: many lights
-    } else if (currCluster.count > 0) {
-        FragColor = vec4(1.0, 1.0, 0.0, 1.0);    // Yellow: some lights  
+    // if (currCluster.count > 10) {
+    //     FragColor = vec4(1.0, 0.0, 0.0, 1.0);    // Red: many lights
+    // } else if (currCluster.count > 0) {
+    //     FragColor = vec4(1.0, 1.0, 0.0, 1.0);    // Yellow: some lights  
+    // } else {
+    //     FragColor = vec4(0.0, 0.0, 1.0, 1.0);    // Blue: no lights
+    // }
+
+    // if (clusters[clusterIndex].count == 888) {
+    //     FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Green: cull shader ran
+    // } else if (clusters[clusterIndex].count == 999) {
+    //     FragColor = vec4(1.0, 1.0, 0.0, 1.0); // Yellow: build shader ran
+    // } else if (clusters[clusterIndex].count == 0) {
+    //     FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red: no data written
+
+    //     float viewZ = -FragPos.z;
+    //     if (viewZ > zFar) {
+    //         FragColor = vec4(1.0, 1.0, 0.0, 1.0); // Yellow: beyond far plane
+    //     } else if (viewZ < zNear) {
+    //         FragColor = vec4(1.0, 0.0, 1.0, 1.0); // Magenta: too close
+    //     }
+    // } else if (clusters[clusterIndex].count > 1000) {
+    //     FragColor = vec4(1.0, 0.0, 1.0, 1.0); 
+    // } else {
+    //     FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue: some other value
+    // }
+
+    uint clusterThird = clusterIndex / (3456 / 3);
+    
+    if (clusterThird == 0) {
+        FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red: first third of clusters
+    } else if (clusterThird == 1) {
+        FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Green: second third
     } else {
-        FragColor = vec4(0.0, 0.0, 1.0, 1.0);    // Blue: no lights
+        FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue: last third
     }
 }

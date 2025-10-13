@@ -34,6 +34,7 @@ public:
     static void clearColor(glm::vec3 color);
     static void clearColor(glm::vec4 color);
     static void clear();
+    static void setTitle(std::string newTitle);
     static void swapBuffers();
     static void setViewport(int x, int y, int width, int height);
 

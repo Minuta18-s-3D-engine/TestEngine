@@ -62,8 +62,7 @@ void Mesh::draw(Shader& shader) {
         textures[i].passToShader(shader, shaderName + "Mat");
         textures[i].passTextureToShader(i, shader, shaderName);
     }
-
-    glActiveTexture(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

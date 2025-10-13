@@ -102,12 +102,6 @@ void Scene::drawAll(Camera* cam) {
     // }
     // renderQuad();
 
-
-
-
-
-
-
     renderer->updateLightData(this->lights);
     renderer->updateClusters(cam);
 

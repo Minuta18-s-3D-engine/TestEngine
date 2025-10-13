@@ -21,6 +21,7 @@ uniform float zFar;
 uniform mat4 inverseProjection;
 uniform uvec3 gridSize;
 uniform uvec2 screenDimensions;
+uniform int currentDispatch;
 
 vec3 screenToView(vec2 screenCoord);
 vec3 lineIntersectionWithZPlane(
@@ -84,4 +85,10 @@ void main() {
     clusters[tileIndex].minPoint = vec4(min(minPointNear, minPointFar), 0.0);
     clusters[tileIndex].maxPoint = vec4(max(maxPointNear, maxPointFar), 0.0);
     clusters[tileIndex].count = 0; 
+
+    // DEBUG: Write obvious test values
+    // clusters[tileIndex].minPoint = vec4(1.0, 2.0, 3.0, 4.0);
+    // clusters[tileIndex].maxPoint = vec4(5.0, 6.0, 7.0, 8.0);
+    // clusters[tileIndex].count = 999;  // Obvious test value
+    // clusters[tileIndex].lightIndices[0] = 777;
 }

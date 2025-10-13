@@ -32,6 +32,7 @@ layout (std430, binding = 1) restrict buffer lightSSBO {
 uniform mat4 viewMat;
 uniform uint numLights;
 uniform uvec3 gridSize;
+uniform int currentDispatch;
 
 bool sphereAABBIntersection(vec3, float, vec3, vec3);
 bool testSphereAABB(uint, uint);
@@ -78,7 +79,20 @@ void main() {
         }
     }
 
-    currCluster.lightIndices[0] = 0;
-    currCluster.count = 1;
-    clusters[clusterInd] = currCluster;
+    // currCluster.lightIndices[0] = 0;
+    // currCluster.count = 1;
+    
+    // clusters[clusterInd] = currCluster;
+
+    // if (clusterInd < 100) {
+    //     clusters[clusterInd].count = 1;
+    //     clusters[clusterInd].lightIndices[0] = 0;
+    // }
+
+    clusters[clusterInd].count = 888;
+    clusters[clusterInd].lightIndices[0] = 0;
+
+    // if (clusterInd >= gridSize.x * gridSize.y * gridSize.z) {
+    //     clusters[clusterInd].count = 9999; // Out of bounds - yellow
+    // }
 }

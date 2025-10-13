@@ -13,18 +13,22 @@
 #include "Camera.hpp"
 #include "../window/Window.hpp"
 
+#pragma pack(push, 1)
 struct CompCluster {
-    glm::vec4 minPoint;
     glm::vec4 maxPoint;
+    glm::vec4 minPoint;
     uint lightCount;
     uint lightIndicies[100];
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct CompLight {
     alignas(16) glm::vec3 position;
     alignas(16) glm::vec3 color;
     float linear, quadratic, radius;
 };
+#pragma pack(pop)
 
 class ClusteredRenderer {
     uint compClusterSSBO;

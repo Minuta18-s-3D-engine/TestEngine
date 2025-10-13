@@ -91,6 +91,10 @@ void Window::clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void Window::setTitle(std::string newTitle) {
+    glfwSetWindowTitle(Window::window, newTitle.c_str());
+}
+
 void Window::swapBuffers() {
     glfwSwapBuffers(Window::window);
 }

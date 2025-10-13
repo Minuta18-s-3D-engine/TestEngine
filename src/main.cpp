@@ -192,7 +192,7 @@ int main() {
         Shader lightingShader("lightingShader");
 
         assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
-        assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/lightCulling");
+        assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
         assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
 
         Scene mainScene(assetManager);
@@ -278,6 +278,7 @@ int main() {
             currentFrame = glfwGetTime();
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
+            Window::setTitle("TestEng (fps = " + std::to_string(1 / std::max(deltaTime, 0.001f)) + ")");
 
             glm::vec3 frontVec = glm::normalize(player.getCamera()->front); 
                 // TODO: move this logic to player class
