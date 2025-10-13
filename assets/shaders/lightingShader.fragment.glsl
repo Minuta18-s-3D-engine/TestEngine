@@ -143,32 +143,32 @@ void main() {
     //     FragColor = vec4(0.0, 0.0, 1.0, 1.0);    // Blue: no lights
     // }
 
-    // if (clusters[clusterIndex].count == 888) {
-    //     FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Green: cull shader ran
-    // } else if (clusters[clusterIndex].count == 999) {
-    //     FragColor = vec4(1.0, 1.0, 0.0, 1.0); // Yellow: build shader ran
-    // } else if (clusters[clusterIndex].count == 0) {
-    //     FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red: no data written
+    if (clusters[clusterIndex].count == 888) {
+        FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Green: cull shader ran
+    } else if (clusters[clusterIndex].count == 999) {
+        FragColor = vec4(1.0, 1.0, 0.0, 1.0); // Yellow: build shader ran
+    } else if (clusters[clusterIndex].count == 0) {
+        FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red: no data written
 
-    //     float viewZ = -FragPos.z;
-    //     if (viewZ > zFar) {
-    //         FragColor = vec4(1.0, 1.0, 0.0, 1.0); // Yellow: beyond far plane
-    //     } else if (viewZ < zNear) {
-    //         FragColor = vec4(1.0, 0.0, 1.0, 1.0); // Magenta: too close
-    //     }
-    // } else if (clusters[clusterIndex].count > 1000) {
-    //     FragColor = vec4(1.0, 0.0, 1.0, 1.0); 
-    // } else {
-    //     FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue: some other value
-    // }
-
-    uint clusterThird = clusterIndex / (3456 / 3);
-    
-    if (clusterThird == 0) {
-        FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red: first third of clusters
-    } else if (clusterThird == 1) {
-        FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Green: second third
+        float viewZ = -ViewPos.z;
+        if (viewZ > zFar) {
+            FragColor = vec4(1.0, 1.0, 0.0, 1.0); // Yellow: beyond far plane
+        } else if (viewZ < zNear) {
+            FragColor = vec4(1.0, 0.0, 1.0, 1.0); // Magenta: too close
+        }
+    } else if (clusters[clusterIndex].count > 1000) {
+        FragColor = vec4(1.0, 0.0, 1.0, 1.0); 
     } else {
-        FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue: last third
+        FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue: some other value
     }
+
+    // uint clusterThird = clusterIndex / (3456 / 3);
+    
+    // if (clusterThird == 0) {
+    //     FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red: first third of clusters
+    // } else if (clusterThird == 1) {
+    //     FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Green: second third
+    // } else {
+    //     FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue: last third
+    // }
 }
