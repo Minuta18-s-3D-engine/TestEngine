@@ -123,6 +123,13 @@ void main() {
         return;
     }
 
+    if (currCluster.count > 0) {
+        float dist = length(lights[0].position - FragPos);
+
+        FragColor = vec4(lights[0].color.r, lights[0].color.g, lights[0].color.b, 1.0); 
+
+    }
+
     vec3 result = calcAmbientLight(TexCoords);
     for (int i = 0; i < currCluster.count; ++i) {
         uint lightIndex = currCluster.lightIndices[i];
