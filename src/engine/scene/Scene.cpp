@@ -102,10 +102,13 @@ void Scene::drawAll(Camera* cam) {
     // }
     // renderQuad();
 
+    renderer->bindClusterData();
     renderer->updateLightData(this->lights);
+    renderer->bindClusterData();
     renderer->updateClusters(cam);
+    renderer->bindClusterData();
 
-    Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader");
+    Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader"); 
     lightingShader.use();
 
     if (firstRender) {

@@ -31,6 +31,11 @@ struct alignas(16) CompLight {
 #pragma pack(pop)
 
 class ClusteredRenderer {
+    enum SSBOBindings {
+        CLUSTER_BINDING = 0,
+        LIGHT_BINDING = 1
+    };
+
     uint compClusterSSBO;
     uint compLightSSBO;
 
@@ -42,7 +47,7 @@ class ClusteredRenderer {
     // I'm going to move all this settings somewhere, yet don't know where.
     // I'll probably code something like Settings object or smth in future.
 
-    // Size according to DaveH355 recomendations. Not sure if it's best numbers
+    // Size according to DaveH355 recommendations. Not sure if it's best numbers
     // https://github.com/DaveH355/clustered-shading
     const uint GRID_SIZE_X = 12;
     const uint GRID_SIZE_Y = 12;

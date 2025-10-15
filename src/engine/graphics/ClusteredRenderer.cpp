@@ -20,7 +20,11 @@ void ClusteredRenderer::createSSBOs() {
         nullptr, 
         GL_DYNAMIC_DRAW
     );
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, compClusterSSBO);
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER, 
+        SSBOBindings::CLUSTER_BINDING, 
+        compClusterSSBO
+    );
 
     glGenBuffers(1, &compLightSSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightSSBO);
@@ -32,7 +36,11 @@ void ClusteredRenderer::createSSBOs() {
         nullptr, 
         GL_DYNAMIC_DRAW
     );
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compLightSSBO);
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER, 
+        SSBOBindings::LIGHT_BINDING, 
+        compLightSSBO
+    );
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -55,12 +63,37 @@ void ClusteredRenderer::updateLightData(
     }
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightSSBO);
-    glBufferSubData(
-        GL_SHADER_STORAGE_BUFFER, 0,
+    glBufferData(
+        GL_SHADER_STORAGE_BUFFER,
         gpuLightCache.size() * sizeof(CompLight),
-        gpuLightCache.data()
+        gpuLightCache.data(),
+        GL_DYNAMIC_COPY
     );
+
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    // glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightSSBO);
+    // void* mappedData = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, gpuLightCache.size() * sizeof(CompLight), GL_MAP_READ_BIT);
+    // if (mappedData) {
+    //     CompLight* lightedData = static_cast<CompLight*>(mappedData);
+
+    //     for (int i = 0; i < gpuLightCache.size(); ++i) {
+    //         std::cout << "Light " << i + 1 << ": color=" <<
+    //             lightedData[i].color.r << ";" <<
+    //             lightedData[i].color.g << ";" <<
+    //             lightedData[i].color.b << " pos=" <<
+    //             lightedData[i].position.r << ";" <<
+    //             lightedData[i].position.g << ";" <<
+    //             lightedData[i].position.b << " rad=" <<
+    //             lightedData[i].radius << std::endl;
+    //     }
+
+    //     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    // } else {
+    //     std::cout << "No data was written!" << std::endl;
+    // }
+    // std::cout << "=========================" << std::endl;
+    // glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void ClusteredRenderer::updateClusters(const Camera* cam) {
@@ -104,6 +137,14 @@ glm::uvec3 ClusteredRenderer::getClusterGrid() {
 }
 
 void ClusteredRenderer::bindClusterData() {
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, compClusterSSBO);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, compLightSSBO);
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER, 
+        SSBOBindings::CLUSTER_BINDING, 
+        compClusterSSBO
+    );
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER, 
+        SSBOBindings::LIGHT_BINDING, 
+        compLightSSBO
+    );
 }
