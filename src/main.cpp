@@ -264,6 +264,8 @@ int main() {
         // );
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
+        float lastFPSDisplay = -10.0f;
+        int framesCount = 0;
         bool isInGame = true;
         while (!Window::isShouldClose()) {
             UserInput::pollEvents();
@@ -278,7 +280,13 @@ int main() {
             currentFrame = glfwGetTime();
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
-            Window::setTitle("TestEng (fps = " + std::to_string(1 / std::max(deltaTime, 0.001f)) + ")");
+
+            framesCount += 1;
+            if (currentFrame - lastFPSDisplay >= 1.0) {
+                Window::setTitle("TestEng (fps = " + std::to_string(framesCount) + ")");
+                framesCount = 0;
+                lastFPSDisplay = currentFrame;
+            }
 
             glm::vec3 frontVec = glm::normalize(player.getCamera()->front); 
                 // TODO: move this logic to player class
