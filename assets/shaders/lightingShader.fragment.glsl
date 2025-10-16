@@ -33,11 +33,11 @@ struct PointLight {
     float radius;
 };
 
-layout (std430, binding = 0) restrict buffer clusterSSBO {
+layout (std430, binding = 0) restrict coherent buffer clusterSSBO {
     Cluster clusters[];
 };
 
-layout (std430, binding = 1) restrict buffer lightSSBO {
+layout (std430, binding = 1) restrict coherent buffer lightSSBO {
     PointLight lights[];
 };
 uniform int numLights;
@@ -76,7 +76,6 @@ void main() {
     }
 
     if (currCluster.count > 0) {
-        FragColor = vec4(lights[0].color.r, lights[0].color.g, lights[0].color.b, 1.0); 
-        return;
+        FragColor = vec4(lights[0].color.r, lights[0].color.g, lights[0].color.b, 1.0);
     }
 }

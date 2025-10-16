@@ -21,11 +21,11 @@ struct Cluster {
     uint lightIndices[100];
 };
 
-layout (std430, binding = 0) restrict buffer clusterSSBO {
+layout (std430, binding = 0) restrict coherent buffer clusterSSBO {
     Cluster clusters[];
 };
 
-layout (std430, binding = 1) restrict buffer lightSSBO {
+layout (std430, binding = 1) restrict coherent buffer lightSSBO {
     PointLight lights[];
 };
 
@@ -82,18 +82,5 @@ void main() {
     currCluster.lightIndices[0] = 0;
     currCluster.count = 1;
     
-    // clusters[clusterInd] = currCluster;
-
-    // if (clusterInd < 100) {
-    //     clusters[clusterInd].count = 1;
-    //     clusters[clusterInd].lightIndices[0] = 0;
-    // }
-
-    // clusters[clusterInd].count = 888;
-    // clusters[clusterInd].lightIndices[0] = 0;
-    // clusters[clusterInd].count = clusterInd % 1000;
-
-    // if (clusterInd >= gridSize.x * gridSize.y * gridSize.z) {
-    //     clusters[clusterInd].count = 9999; // Out of bounds - yellow
-    // }
+    clusters[clusterInd] = currCluster;
 }
