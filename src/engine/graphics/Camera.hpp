@@ -22,7 +22,7 @@ public:
         float pitch = 0.0f, 
         float fov = 90.0f,
         float zNear = 0.1f,
-        float zFar = 100.0f
+        float zFar = 1000.0f
     );
     ~Camera();
 

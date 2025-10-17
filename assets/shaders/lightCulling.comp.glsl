@@ -18,7 +18,7 @@ struct Cluster {
     vec4 minPoint;
     vec4 maxPoint;
     uint count;
-    uint lightIndices[100];
+    uint lightIndices[LIGHTS_PRE_CLUSTER_LIMIT];
 };
 
 layout (std430, binding = 0) restrict coherent buffer clusterSSBO {

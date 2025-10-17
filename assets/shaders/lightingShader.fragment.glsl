@@ -128,19 +128,21 @@ void main() {
     }
 
     vec3 result = calcAmbientLight(TexCoords);
-    // for (int i = 0; i < currCluster.count; ++i) {
-    //     uint lightIndex = currCluster.lightIndices[i];
+    for (int i = 0; i < currCluster.count; ++i) {
+        // if (i >= 1) continue;
+        uint lightIndex = currCluster.lightIndices[i];
 
-    //     float dist = length(lights[lightIndex].position - FragPos);
+        float dist = length(lights[lightIndex].position - FragPos);
 
-    //     if (dist < lights[lightIndex].radius) {
-    //         vec3 diffuse = calcDiffuseLight(lightIndex, TexCoords);
-    //         vec3 specular = calcSpecularLight(lightIndex, TexCoords);
-    //         float attenuation = calcAttenuation(lightIndex, dist);
+        if (dist < lights[lightIndex].radius) {
+    // //         vec3 diffuse = calcDiffuseLight(lightIndex, TexCoords);
+    // //         vec3 specular = calcSpecularLight(lightIndex, TexCoords);
+    // //         float attenuation = calcAttenuation(lightIndex, dist);
 
-    //         result += (diffuse + specular) * attenuation;
-    //     }
-    // }
+    // //         result += (diffuse + specular) * attenuation;
+            result += vec3(0.001, 0.001, 0.001);
+        }
+    }
 
     FragColor = vec4(result, 1.0); 
 }
