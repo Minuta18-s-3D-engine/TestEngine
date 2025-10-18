@@ -61,45 +61,10 @@ uniform TextureMaterial textureSpecular1Mat;
 uniform sampler2D textureDiffuse1;
 uniform sampler2D textureSpecular1;
 
-vec3 getDiffTexturePixel(vec2 coords) {
-    if (!textureDiffuse1Mat.isActive) return vec3(0.0, 0.0, 0.0);
-    return vec3(texture(textureDiffuse1, coords));
-}
-
-vec3 getSpecTexturePixel(vec2 coords) {
-    if (!textureSpecular1Mat.isActive) return vec3(0.0, 0.0, 0.0);
-    return vec3(texture(textureSpecular1, coords));
-}
-
 const float AMBIENT_LIGHT = 0.3;
 
 vec3 calcAmbientLight(vec2 coords) {
     return texture(textureDiffuse1, coords).rgb * AMBIENT_LIGHT;
-}
-
-vec3 calcDiffuseLight(uint lightId, vec2 coords) {
-    vec3 Diffuse = texture(textureDiffuse1, coords).rgb;
-    vec3 lightDir = normalize(lights[lightId].position - FragPos);
-    return max(dot(Normal, lightDir), 0.0) * Diffuse * lights[lightId].color;
-}
-
-vec3 calcSpecularLight(uint lightId, vec2 coords) {
-    float Specular = texture(textureSpecular1, coords).r;
-    vec3 viewDir  = normalize(ViewPos - FragPos);
-    vec3 lightDir = normalize(lights[lightId].position - FragPos);
-    vec3 halfwayDir = normalize(lightDir + viewDir);  
-    float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0); // shinessness 
-            // will go here
-    vec3 specular = lights[lightId].color * spec * Specular;
-    return specular;
-}
-
-float calcAttenuation(uint lightId, float distToLightSource) {
-    float linearPart = lights[lightId].linear * distToLightSource;
-    float quadraticPart = lights[lightId].quadratic * distToLightSource 
-        * distToLightSource;
-    float attenuation = 1.0 / (0.7 + linearPart + quadraticPart);
-    return attenuation;
 }
 
 uint findClusterIndex() {
@@ -118,6 +83,30 @@ float rand(vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+vec3 calcPointLight(PointLight pLight) {
+    // PointLight pLight = lights[lightId];
+    vec3 viewDir  = normalize(ViewPos - FragPos);
+    vec3 lightDir = normalize(pLight.position - FragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir); 
+
+    vec3 albedo = texture(textureDiffuse1, TexCoords).rgb;
+    float specular = texture(textureSpecular1, TexCoords).r;
+
+    float spec = pow(max(dot(Normal, halfwayDir), 0.0), mainMaterial.shininess);
+
+    vec3 diffuseLighting = max(dot(Normal, lightDir), 0.0) 
+        * albedo * pLight.color;
+    vec3 specularLighting = spec * specular * pLight.color;
+
+    float distToLightSource = length(pLight.position - FragPos);
+    float linearPart = pLight.linear * distToLightSource;
+    float quadraticPart = pLight.quadratic * distToLightSource 
+        * distToLightSource;
+    float attenuation = 1.0 / (0.7 + linearPart + quadraticPart);
+
+    return (diffuseLighting + specularLighting) * attenuation;
+}
+
 void main() {
     uint clusterIndex = findClusterIndex();
     Cluster currCluster = clusters[clusterIndex];
@@ -128,21 +117,20 @@ void main() {
     }
 
     vec3 result = calcAmbientLight(TexCoords);
-    for (int i = 0; i < currCluster.count; ++i) {
-        // if (i >= 1) continue;
+    uint lightCount = currCluster.count;
+    for (int i = 0; i < lightCount; ++i) {
         uint lightIndex = currCluster.lightIndices[i];
+        PointLight l = lights[lightIndex]; 
+        // float dist = length(lights[lightIndex].position - FragPos);
 
-        float dist = length(lights[lightIndex].position - FragPos);
-
-        if (dist < lights[lightIndex].radius) {
-    // //         vec3 diffuse = calcDiffuseLight(lightIndex, TexCoords);
-    // //         vec3 specular = calcSpecularLight(lightIndex, TexCoords);
-    // //         float attenuation = calcAttenuation(lightIndex, dist);
-
-    // //         result += (diffuse + specular) * attenuation;
-            result += vec3(0.001, 0.001, 0.001);
-        }
+        // if (dist < lights[lightIndex].radius) {
+            result += calcPointLight( l);
+        // }
     }
+
+    // if (dist < lights[lightIndex].radius) {
+        // result += calcPointLight(lightIndex);
+    // }
 
     FragColor = vec4(result, 1.0); 
 }

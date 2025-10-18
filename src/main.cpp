@@ -230,6 +230,7 @@ int main() {
             assetManager, mainScene
         );
 
+        srand(time(NULL));
         for (int i = 0; i < 500; ++i) {
             int size = rand() % 2 + 1;
             int tex = rand() % 2;
