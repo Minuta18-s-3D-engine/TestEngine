@@ -11,7 +11,7 @@
 
 ## Features
 
-- **3D Graphics**: Basic 3D rendering.
+- **3D Graphics**: Modern clustered lighting pipeline
 - **Material system**: Well, still in development.
 - **Lighting**: Blinn-Phong lighting model.
 - **Texture loading**: Only `.png` supported yet.
