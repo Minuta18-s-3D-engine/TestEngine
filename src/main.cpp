@@ -244,13 +244,13 @@ int main() {
             );
         }
 
-        // for (int i = 0; i < 100; ++i) {
-        //     mainScene.addLight(Light::calcLight(
-        //         glm::vec3(rand() % 100 - 50 + (rand() % 5) * 0.13, 0.1 + rand() % 5, rand() % 100 - 50 + (rand() % 5) * 0.13),
-        //         glm::vec3(0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005),
-        //         (rand() % 6 + 1) * 0.1, (rand() % 6 + 1) * 0.1
-        //     ));
-        // }
+        for (int i = 0; i < 100; ++i) {
+            mainScene.addLight(Light::calcLight(
+                glm::vec3(rand() % 100 - 50 + (rand() % 5) * 0.13, 0.1 + rand() % 5, rand() % 100 - 50 + (rand() % 5) * 0.13),
+                glm::vec3(0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005),
+                (rand() % 6 + 1) * 0.1, (rand() % 6 + 1) * 0.1
+            ));
+        }
 
         // createRect(
         //     glm::vec3(4.0f, 1.0f, 2.0f),
