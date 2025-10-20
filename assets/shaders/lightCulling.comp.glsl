@@ -47,15 +47,14 @@ bool sphereAABBIntersection(
     vec3 aabbMin, 
     vec3 aabbMax
 ) {
-    vec3 closestPoint = max(aabbMax, min(center, aabbMin));
+    vec3 closestPoint = clamp(center, aabbMin, aabbMax);
 
     float distanceSquared = dot(closestPoint - center, closestPoint - center);
     return distanceSquared <= (radius * radius);
 }
 
 bool testSphereAABB(uint lightInd, Cluster currCluster) {
-    vec4 lightViewPos = viewMat * vec4(lights[lightInd].position, 1.0);
-    vec3 center = lightViewPos.xyz;
+    vec3 center = vec3(viewMat * vec4(lights[lightInd].position, 1.0));
     float radius = lights[lightInd].radius;
 
     vec3 aabbMin = currCluster.minPoint.xyz;
@@ -83,9 +82,9 @@ void main() {
         }
     }
 
-    // pointLightIndicies[currCluster.lightStart] = 0;
-    // pointLightIndicies[currCluster.lightStart + 1] = 1;
-    // currCluster.count = 2;
+    pointLightIndicies[currCluster.lightStart] = 0;
+    pointLightIndicies[currCluster.lightStart + 1] = 1;
+    currCluster.count = 2;
     
     clusters[clusterInd] = currCluster;
 }
