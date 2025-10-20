@@ -18,7 +18,7 @@ struct Cluster {
     vec4 minPoint;
     vec4 maxPoint;
     uint count;
-    uint lightIndices[LIGHTS_PRE_CLUSTER_LIMIT];
+    uint lightStart;
 };
 
 layout (std430, binding = 0) restrict coherent buffer clusterSSBO {
@@ -27,6 +27,10 @@ layout (std430, binding = 0) restrict coherent buffer clusterSSBO {
 
 layout (std430, binding = 1) restrict coherent buffer lightSSBO {
     PointLight lights[];
+};
+
+layout(std430, binding = 2) restrict coherent buffer lightIndicesSSBO {
+    uint pointLightIndicies[];
 };
 
 uniform mat4 viewMat;
@@ -74,13 +78,14 @@ void main() {
     for (uint i = 0; i < numLights; ++i) {
         if (testSphereAABB(i, currCluster) && 
             currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT) {
-            currCluster.lightIndices[currCluster.count] = i;
+            pointLightIndicies[currCluster.lightStart + currCluster.count] = i;
             currCluster.count++;
         }
     }
 
-    currCluster.lightIndices[0] = 0;
-    currCluster.count = 1;
+    // pointLightIndicies[currCluster.lightStart] = 0;
+    // pointLightIndicies[currCluster.lightStart + 1] = 1;
+    // currCluster.count = 2;
     
     clusters[clusterInd] = currCluster;
 }

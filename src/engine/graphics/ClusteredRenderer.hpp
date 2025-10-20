@@ -17,7 +17,7 @@ struct alignas(16) CompCluster {
     glm::vec4 minPoint;
     glm::vec4 maxPoint;
     uint lightCount;
-    uint lightIndicies[100];
+    uint lightStart;
 };
 
 struct alignas(16) CompLight {
@@ -29,11 +29,15 @@ struct alignas(16) CompLight {
 class ClusteredRenderer {
     enum SSBOBindings {
         CLUSTER_BINDING = 0,
-        LIGHT_BINDING = 1
+        LIGHT_BINDING = 1,
+        LIGHT_INDICIES_BINDING = 2,
     };
 
     uint compClusterSSBO;
     uint compLightSSBO;
+    uint compLightIndiciesSSBO;
+
+    const uint MAX_LIGHTS_PER_CLUSTER = 100;
 
     ComputeShader *buildClustersShader, *lightCullingShader;
     AssetManager& assetManager;

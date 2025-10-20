@@ -42,6 +42,24 @@ void ClusteredRenderer::createSSBOs() {
         compLightSSBO
     );
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    glGenBuffers(1, &compLightIndiciesSSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightIndiciesSSBO);
+
+    size_t compLightIndiciesBufferSize = MAX_LIGHTS_PER_CLUSTER 
+        * NUM_CLUSTERS * sizeof(uint);
+    glBufferData(
+        GL_SHADER_STORAGE_BUFFER,
+        compLightIndiciesBufferSize,
+        nullptr,
+        GL_DYNAMIC_DRAW
+    );
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER,
+        SSBOBindings::LIGHT_INDICIES_BINDING,
+        compLightIndiciesSSBO
+    );
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void ClusteredRenderer::updateLightData(
@@ -122,7 +140,6 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     lightCullingShader->use();
 
     lightCullingShader->setUniform4mat("viewMat", cam->getViewMat());
-    lightCullingShader->setUniform1i("numLights", gpuLightCache.size());
     lightCullingShader->setUniform3ui("gridSize",
         GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
     lightCullingShader->setUniform1i("currentDispatch", 2);
@@ -146,5 +163,10 @@ void ClusteredRenderer::bindClusterData() {
         GL_SHADER_STORAGE_BUFFER, 
         SSBOBindings::LIGHT_BINDING, 
         compLightSSBO
+    );
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER,
+        SSBOBindings::LIGHT_INDICIES_BINDING,
+        compLightIndiciesSSBO
     );
 }

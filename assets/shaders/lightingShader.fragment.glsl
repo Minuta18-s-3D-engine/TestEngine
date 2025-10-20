@@ -7,7 +7,7 @@ struct Cluster {
     vec4 minPoint;
     vec4 maxPoint;
     uint count;
-    uint lightIndices[100];
+    uint lightStart;
 };
 
 struct Material {
@@ -40,7 +40,10 @@ layout (std430, binding = 0) restrict buffer clusterSSBO {
 layout (std430, binding = 1) restrict buffer lightSSBO {
     PointLight lights[];
 };
-uniform int numLights;
+
+layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
+    uint pointLightIndicies[];
+};
 
 uniform float zNear;
 uniform float zFar;
@@ -119,7 +122,7 @@ void main() {
     vec3 result = calcAmbientLight(TexCoords);
     uint lightCount = currCluster.count;
     for (int i = 0; i < lightCount; ++i) {
-        uint lightIndex = currCluster.lightIndices[i];
+        uint lightIndex = pointLightIndicies[currCluster.lightStart + i];
         PointLight l = lights[lightIndex]; 
         // float dist = length(lights[lightIndex].position - FragPos);
 

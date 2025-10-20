@@ -9,11 +9,15 @@ struct Cluster {
     vec4 minPoint;
     vec4 maxPoint;
     uint count;
-    uint lightIndices[LIGHTS_PRE_CLUSTER_LIMIT];
+    uint lightStart;
 };
 
 layout(std430, binding = 0) restrict coherent buffer clusterSSBO {
     Cluster clusters[];
+};
+
+layout(std430, binding = 2) restrict coherent buffer lightIndicesSSBO {
+    uint pointLightIndicies[];
 };
 
 uniform float zNear;
@@ -85,4 +89,5 @@ void main() {
     clusters[tileIndex].minPoint = vec4(min(minPointNear, minPointFar), 0.0);
     clusters[tileIndex].maxPoint = vec4(max(maxPointNear, maxPointFar), 0.0);
     clusters[tileIndex].count = 0; 
+    clusters[tileIndex].lightStart = LIGHTS_PRE_CLUSTER_LIMIT * tileIndex;
 }

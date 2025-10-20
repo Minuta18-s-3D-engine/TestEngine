@@ -200,7 +200,7 @@ int main() {
             std::make_shared<Light>(l1);
         mainScene.addLight(l1Ptr);
         mainScene.addLight(Light::calcLight(
-            glm::vec3(-2.0, 1.0, -4.0),
+            glm::vec3(-2.0, 2.0, -4.0),
             glm::vec3(1.0, 0.0, 0.0),
             2.0, 0.5
         ));
