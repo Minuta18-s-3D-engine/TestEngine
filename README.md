@@ -14,4 +14,4 @@
 - **3D Graphics**: Modern clustered lighting pipeline
 - **Material system**: Well, still in development.
 - **Lighting**: Blinn-Phong lighting model.
-- **Texture loading**: Only `.png` supported yet.
+- **Texture loading**: Only `.png` supported yet
