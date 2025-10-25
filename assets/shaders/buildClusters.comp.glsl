@@ -48,19 +48,15 @@ vec3 lineIntersectionWithZPlane(
     float zDistance
 ) {
     vec3 direction = endPoint - startPoint;
+    vec3 normal = vec3(0.0, 0.0, -1.0);
 
-    if (abs(direction.z) < MATH_EPS) {
-        return startPoint;
-    }
-
-    float t = (zDistance - startPoint.z) / direction.z;
+    float t = (zDistance - dot(normal, startPoint)) / dot(normal, direction);
     return startPoint + t * direction;
 }
 
 void main() {
     uint tileIndex = gl_WorkGroupID.x + (gl_WorkGroupID.y * gridSize.x) +
-            (gl_WorkGroupID.z * gridSize.x * gridSize.y);
-    
+            (gl_WorkGroupID.z * gridSize.x * gridSize.y);   
     vec2 tileSize = vec2(screenDimensions) / vec2(gridSize.xy);
 
     vec2 minTile_screenspace = gl_WorkGroupID.xy * tileSize;
