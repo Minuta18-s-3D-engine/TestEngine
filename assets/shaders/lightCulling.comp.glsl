@@ -21,15 +21,15 @@ struct Cluster {
     uint lightStart;
 };
 
-layout (std430, binding = 0) restrict coherent buffer clusterSSBO {
+layout (std430, binding = 0) restrict buffer clusterSSBO {
     Cluster clusters[];
 };
 
-layout (std430, binding = 1) restrict coherent buffer lightSSBO {
+layout (std430, binding = 1) restrict buffer lightSSBO {
     PointLight lights[];
 };
 
-layout(std430, binding = 2) restrict coherent buffer lightIndicesSSBO {
+layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
     uint pointLightIndicies[];
 };
 
