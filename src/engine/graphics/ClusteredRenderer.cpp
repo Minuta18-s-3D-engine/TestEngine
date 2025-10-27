@@ -12,7 +12,6 @@ ClusteredRenderer::ClusteredRenderer(AssetManager& _assetManager) :
 void ClusteredRenderer::createSSBOs() {
     glGenBuffers(1, &compClusterSSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, compClusterSSBO);
-
     size_t compClusterBufferSize = NUM_CLUSTERS * sizeof(CompCluster);
     glBufferData(
         GL_SHADER_STORAGE_BUFFER, 
@@ -28,7 +27,6 @@ void ClusteredRenderer::createSSBOs() {
 
     glGenBuffers(1, &compLightSSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightSSBO);
-
     size_t compLigthBufferSize = MAX_LIGHTS * sizeof(CompLight);
     glBufferData(
         GL_SHADER_STORAGE_BUFFER, 
@@ -45,7 +43,6 @@ void ClusteredRenderer::createSSBOs() {
 
     glGenBuffers(1, &compLightIndiciesSSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightIndiciesSSBO);
-
     size_t compLightIndiciesBufferSize = MAX_LIGHTS_PER_CLUSTER 
         * NUM_CLUSTERS * sizeof(uint);
     glBufferData(
@@ -59,6 +56,7 @@ void ClusteredRenderer::createSSBOs() {
         SSBOBindings::LIGHT_INDICIES_BINDING,
         compLightIndiciesSSBO
     );
+
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 

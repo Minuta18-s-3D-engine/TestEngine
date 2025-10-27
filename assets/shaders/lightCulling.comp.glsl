@@ -75,8 +75,8 @@ void main() {
 
     currCluster.count = 0;
     for (uint i = 0; i < numLights; ++i) {
-        if (testSphereAABB(i, currCluster) && 
-            currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT) {
+        if (currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT && 
+            testSphereAABB(i, currCluster)) {
             pointLightIndicies[currCluster.lightStart + currCluster.count] = i;
             currCluster.count++;
         }
