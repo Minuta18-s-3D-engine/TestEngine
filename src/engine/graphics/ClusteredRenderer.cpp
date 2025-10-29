@@ -32,7 +32,7 @@ void ClusteredRenderer::createSSBOs() {
         GL_SHADER_STORAGE_BUFFER, 
         compLigthBufferSize, 
         nullptr, 
-        GL_DYNAMIC_DRAW
+        GL_DYNAMIC_COPY
     );
     glBindBufferBase(
         GL_SHADER_STORAGE_BUFFER, 
@@ -49,7 +49,7 @@ void ClusteredRenderer::createSSBOs() {
         GL_SHADER_STORAGE_BUFFER,
         compLightIndiciesBufferSize,
         nullptr,
-        GL_DYNAMIC_DRAW
+        GL_DYNAMIC_COPY
     );
     glBindBufferBase(
         GL_SHADER_STORAGE_BUFFER,
