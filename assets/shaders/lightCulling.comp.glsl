@@ -60,7 +60,8 @@ bool testSphereAABB(uint lightInd, Cluster currCluster) {
     vec3 aabbMin = currCluster.minPoint.xyz;
     vec3 aabbMax = currCluster.maxPoint.xyz;
 
-    return sphereAABBIntersection(center, radius, aabbMin, aabbMax);
+    // return sphereAABBIntersection(center, radius, aabbMin, aabbMax);
+    // return true:
 }
 
 void main() {
