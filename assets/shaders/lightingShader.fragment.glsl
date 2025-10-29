@@ -124,15 +124,31 @@ void main() {
     for (int i = 0; i < lightCount; ++i) {
         uint lightIndex = pointLightIndicies[currCluster.lightStart + i];
         PointLight l = lights[lightIndex]; 
-        // float dist = length(lights[lightIndex].position - FragPos);
+        float dist = length(lights[lightIndex].position - FragPos);
 
-        // if (dist < lights[lightIndex].radius) {
+        if (dist < lights[lightIndex].radius) {
             result += calcPointLight( l);
-        // }
+        }
     }
 
+    // float cnt = currCluster.count;
+    // if (currCluster.count == 0) {
+    //     FragColor = vec4(1.0, 1.0, 1.0, 1.0); 
+    // } else if (currCluster.count == 1) {
+    //     FragColor = vec4(0.9, 0.9, 0.9, 1.0); 
+    // }else if (currCluster.count == 2) {
+    //     FragColor = vec4(0.8, 0.8, 0.8, 1.0); 
+    // }else if (currCluster.count == 3) {
+    //     FragColor = vec4(0.7, 0.7, 0.7, 1.0); 
+    // }else if (currCluster.count == 4) {
+    //     FragColor = vec4(0.6, 0.6, 0.6, 1.0); 
+    // }else if (currCluster.count >= 5) {
+    //     FragColor = vec4(0.5, 0.5, 0.5, 1.0); 
+    // }
+    // FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);
+    // return;
     // if (dist < lights[lightIndex].radius) {
-        // result += calcPointLight(lightIndex);
+    //     result += calcPointLight(lightIndex);
     // }
 
     FragColor = vec4(result, 1.0); 

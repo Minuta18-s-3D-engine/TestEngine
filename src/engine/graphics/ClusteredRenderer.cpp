@@ -73,7 +73,6 @@ void ClusteredRenderer::updateLightData(
         currLight.linear = lights[i]->linear;
         currLight.quadratic = lights[i]->quadratic;
         currLight.radius = lights[i]->calcRadius();
-        currLight.radius = 42; // DEBUG
 
         gpuLightCache.push_back(currLight);
     }
@@ -141,6 +140,8 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     lightCullingShader->setUniform3ui("gridSize",
         GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
     lightCullingShader->setUniform1i("currentDispatch", 2);
+    lightCullingShader->setUniform1ui("numLights", this->gpuLightCache.size());
+    // lightCullingShader->setUniform1ui("numLights", 2);
 
     uint numWorkgroups = (NUM_CLUSTERS + LOCAL_SIZE - 1) / LOCAL_SIZE;
     glDispatchCompute(numWorkgroups, 1, 1);
