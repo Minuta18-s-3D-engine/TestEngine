@@ -309,6 +309,13 @@ int main() {
             player.setPos(newPos);
             player.update(deltaTime);
 
+            if (UserInput::isKeyPressed(GLFW_KEY_F1)) 
+                mainScene.setDrawMode(0);
+            if (UserInput::isKeyPressed(GLFW_KEY_F2)) 
+                mainScene.setDrawMode(1);
+            if (UserInput::isKeyPressed(GLFW_KEY_F3)) 
+                mainScene.setDrawMode(2);
+
             if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) {
                 if (Window::getCursorInputMode() == GLFW_CURSOR_NORMAL) {
                     Window::setCursorInputMode(GLFW_CURSOR_DISABLED);

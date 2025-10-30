@@ -21,6 +21,8 @@ class Scene {
 
     uint quadVAO = 0, quadVBO; // I'll move this to mesh after i'll be sure 
                                // GBuffer works.
+    uint drawMode = 0;
+
     void renderQuad();
     bool firstRender;
 
@@ -32,6 +34,7 @@ public:
     void addObject(std::shared_ptr<SceneObject> obj);
     void addLight(std::shared_ptr<Light> obj);
     void drawAll(Camera* cam); // Move this to RenderSystem as fast as possible
+    void setDrawMode(uint newDrawMode);
 };
 
 #endif // ENGINE_SCENE_SCENE_H_

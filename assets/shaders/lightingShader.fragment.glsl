@@ -63,8 +63,9 @@ uniform TextureMaterial textureDiffuse1Mat;
 uniform TextureMaterial textureSpecular1Mat;
 uniform sampler2D textureDiffuse1;
 uniform sampler2D textureSpecular1;
+uniform uint drawMode;
 
-const float AMBIENT_LIGHT = 0.3;
+const float AMBIENT_LIGHT = 0.05;
 
 vec3 calcAmbientLight(vec2 coords) {
     return texture(textureDiffuse1, coords).rgb * AMBIENT_LIGHT;
@@ -124,32 +125,23 @@ void main() {
     for (int i = 0; i < lightCount; ++i) {
         uint lightIndex = pointLightIndicies[currCluster.lightStart + i];
         PointLight l = lights[lightIndex]; 
-        float dist = length(lights[lightIndex].position - FragPos);
+        // float dist = length(lights[lightIndex].position - FragPos);
 
-        if (dist < lights[lightIndex].radius) {
+        // if (dist < lights[lightIndex].radius) {
             result += calcPointLight( l);
-        }
+        // }
     }
 
-    // float cnt = currCluster.count;
-    // if (currCluster.count == 0) {
-    //     FragColor = vec4(1.0, 1.0, 1.0, 1.0); 
-    // } else if (currCluster.count == 1) {
-    //     FragColor = vec4(0.9, 0.9, 0.9, 1.0); 
-    // }else if (currCluster.count == 2) {
-    //     FragColor = vec4(0.8, 0.8, 0.8, 1.0); 
-    // }else if (currCluster.count == 3) {
-    //     FragColor = vec4(0.7, 0.7, 0.7, 1.0); 
-    // }else if (currCluster.count == 4) {
-    //     FragColor = vec4(0.6, 0.6, 0.6, 1.0); 
-    // }else if (currCluster.count >= 5) {
-    //     FragColor = vec4(0.5, 0.5, 0.5, 1.0); 
-    // }
-    // FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);
-    // return;
     // if (dist < lights[lightIndex].radius) {
     //     result += calcPointLight(lightIndex);
     // }
 
-    FragColor = vec4(result, 1.0); 
+    if (drawMode == 0) {
+        FragColor = vec4(result, 1.0); 
+    } else if (drawMode == 1) {
+        float cnt = currCluster.count;
+        FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);
+    } else {
+        FragColor = vec4(0.0, 0.0, 0.0, 1.0); 
+    }
 }

@@ -71,6 +71,7 @@ void Scene::drawAll(Camera* cam) {
 
     lightingShader.setUniform3f("viewPos", cam->pos);
     lightingShader.setUniform1i("numLights", lights.size());
+    lightingShader.setUniform1ui("drawMode", this->drawMode);
 
     renderer->bindClusterData();
 
@@ -89,3 +90,8 @@ void Scene::addObject(std::shared_ptr<SceneObject> obj) {
 void Scene::addLight(std::shared_ptr<Light> obj) {
     this->lights.push_back(obj);
 }
+
+void Scene::setDrawMode(uint newDrawMode) {
+    drawMode = newDrawMode;
+}
+
