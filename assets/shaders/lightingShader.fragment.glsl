@@ -150,6 +150,16 @@ void main() {
         float cnt = currCluster.count;
         FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);
     } else {
-        FragColor = vec4(0.0, 0.0, 0.0, 1.0); 
+        if (lightCount > 80) {
+            FragColor = vec4(1.0, 0.0, 0.0, 1.0);    // Red - too many lights
+        } else if (lightCount > 50) {
+            FragColor = vec4(1.0, 0.5, 0.0, 1.0);    // Orange - many lights  
+        } else if (lightCount > 20) {
+            FragColor = vec4(1.0, 1.0, 0.0, 1.0);    // Yellow - moderate
+        } else if (lightCount > 0) {
+            FragColor = vec4(0.0, 1.0, 0.0, 1.0);    // Green - good
+        } else {
+            FragColor = vec4(0.0, 0.0, 1.0, 1.0);    // Blue - no lights
+        }
     }
 }

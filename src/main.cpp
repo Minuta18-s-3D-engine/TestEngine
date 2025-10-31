@@ -244,7 +244,7 @@ int main() {
             );
         }
 
-        for (int i = 0; i < 1000; ++i) {
+        for (int i = 0; i < 100; ++i) {
             mainScene.addLight(Light::calcLight(
                 glm::vec3(rand() % 100 - 50 + (rand() % 5) * 0.13, 0.1 + rand() % 5, rand() % 100 - 50 + (rand() % 5) * 0.13),
                 glm::vec3(0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005),
