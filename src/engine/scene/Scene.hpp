@@ -8,8 +8,10 @@
 #include "../materials/Light.hpp"
 #include "../graphics/ClusteredRenderer.hpp"
 
+#include <chrono>
 #include <memory>
 #include <vector>
+#include <iostream>
 
 class Scene {
     AssetManager& assetManager;

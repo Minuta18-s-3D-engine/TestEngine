@@ -87,14 +87,22 @@ float rand(vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+vec3 currAlbedo = texture(textureDiffuse1, TexCoords).rgb;
+float currSpecular = texture(textureSpecular1, TexCoords).r;
+
 vec3 calcPointLight(PointLight pLight) {
-    // PointLight pLight = lights[lightId];
+    vec3 pathToLight = pLight.position - FragPos;
+    float distSq = dot(pathToLight, pathToLight);
+    float radiusSq = pLight.radius * pLight.radius;
+
+    if (distSq > radiusSq) return vec3(0.0);
+
     vec3 viewDir  = normalize(ViewPos - FragPos);
     vec3 lightDir = normalize(pLight.position - FragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir); 
 
-    vec3 albedo = texture(textureDiffuse1, TexCoords).rgb;
-    float specular = texture(textureSpecular1, TexCoords).r;
+    vec3 albedo = currAlbedo;
+    float specular = currSpecular;
 
     float spec = pow(max(dot(Normal, halfwayDir), 0.0), mainMaterial.shininess);
 
