@@ -175,25 +175,23 @@ int main() {
         }
 
         Player player(glm::vec3(0.0f, 0.0f, -1.0f));
-        Shader forlightingShader("forward/main");
+        // Shader forlightingShader("forward/main");
         // Shader lightSourceShader("forward/lightSource");
 
-        assetManager.set<Shader>(std::make_shared<Shader>(forlightingShader), "shaders/forward/main");
+        // assetManager.set<Shader>(std::make_shared<Shader>(forlightingShader), "shaders/forward/main");
         // assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/forward/lightSource");
 
-        // Shader geomShader("gbuffer/geomShader");
-        // Shader lightingShader("gbuffer/lightingShader");
+        Shader geomShader("geomShader");
+        Shader lightingShader("lightingShader");
 
-        // assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/gbuffer/geomShader");
-        // assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/gbuffer/lightingShader");
+        assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/geomShader");
+        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
 
         ComputeShader buildClustersShader("buildClusters"), 
             lightCullingShader("lightCulling");
-        Shader lightingShader("lightingShader");
 
         assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
         assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
-        assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
 
         Scene mainScene(assetManager);
         std::shared_ptr<Light> l1Ptr = 

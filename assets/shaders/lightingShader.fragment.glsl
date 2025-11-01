@@ -1,30 +1,16 @@
-#version 430
+#version 330 core
 out vec4 FragColor;
 
-#define MATH_EPS 0.00001
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D gAlbedoSpec;
 
-struct Cluster {
-    vec4 minPoint;
-    vec4 maxPoint;
-    uint count;
-    uint lightStart;
-};
+in vec2 TexCoords;
+uniform vec3 viewPos;
+vec3 FragPos = texture(gPosition, TexCoords).rgb;
+vec3 Normal = texture(gNormal, TexCoords).rgb;
 
-struct Material {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-    vec3 color;
-    float shininess;
-};
-
-struct TextureMaterial {
-    float scaleX, scaleY;
-    float shiftX, shiftY;
-    bool isActive;
-};
-
-struct PointLight {
+struct Light {
     vec3 position;
     vec3 color;
     
@@ -33,133 +19,58 @@ struct PointLight {
     float radius;
 };
 
-layout (std430, binding = 0) restrict buffer clusterSSBO {
-    Cluster clusters[];
-};
+const int MAX_NR_LIGHTS = 1224;
+uniform Light lights[MAX_NR_LIGHTS];
+uniform int lights_size;
 
-layout (std430, binding = 1) restrict buffer lightSSBO {
-    PointLight lights[];
-};
-
-layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
-    uint pointLightIndicies[];
-};
-
-uniform float zNear;
-uniform float zFar;
-uniform mat4 inverseProjection;
-uniform uvec3 gridSize;
-uniform uvec2 screenDimensions;
-uniform vec3 ViewPos;
-
-in vec3 Normal;  
-in vec3 FragPos;  
-in vec2 TexCoords;
-in vec3 ViewSpacePos;
-
-uniform Material mainMaterial;
-
-uniform TextureMaterial textureDiffuse1Mat;
-uniform TextureMaterial textureSpecular1Mat;
-uniform sampler2D textureDiffuse1;
-uniform sampler2D textureSpecular1;
-uniform uint drawMode;
-
-const float AMBIENT_LIGHT = 0.05;
+const float AMBIENT_LIGHT = 0.05; // Actually not sure if I should get this 
+                                 // from code.
 
 vec3 calcAmbientLight(vec2 coords) {
-    return texture(textureDiffuse1, coords).rgb * AMBIENT_LIGHT;
+    return texture(gAlbedoSpec, coords).rgb * AMBIENT_LIGHT;
 }
 
-uint findClusterIndex() {
-    uvec2 tileSize = screenDimensions / gridSize.xy;
-    uvec2 tileXY = uvec2(gl_FragCoord.xy) / tileSize;
-    tileXY = min(tileXY, gridSize.xy - 1u);
-
-    float viewZ = -ViewSpacePos.z;
-    uint tileZ = uint((log(viewZ / zNear) * gridSize.z) / log(zFar / zNear));
-    tileZ = clamp(tileZ, 0u, gridSize.z - 1u);
-
-    return tileXY.x + tileXY.y * gridSize.x + tileZ * gridSize.x * gridSize.y;
+vec3 calcDiffuseLight(int lightId, vec2 coords) {
+    vec3 Diffuse = texture(gAlbedoSpec, coords).rgb;
+    vec3 lightDir = normalize(lights[lightId].position - FragPos);
+    return max(dot(Normal, lightDir), 0.0) * Diffuse * lights[lightId].color;
 }
 
-float rand(vec2 co){
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+vec3 calcSpecularLight(int lightId, vec2 coords) {
+    float Specular = texture(gAlbedoSpec, coords).a;
+    vec3 viewDir  = normalize(viewPos - FragPos);
+    vec3 lightDir = normalize(lights[lightId].position - FragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0); // shinessness 
+            // will go here
+    vec3 specular = lights[lightId].color * spec * Specular;
+    return specular;
 }
 
-vec3 currAlbedo = texture(textureDiffuse1, TexCoords).rgb;
-float currSpecular = texture(textureSpecular1, TexCoords).r;
-
-vec3 calcPointLight(PointLight pLight) {
-    vec3 pathToLight = pLight.position - FragPos;
-    float distSq = dot(pathToLight, pathToLight);
-    float radiusSq = pLight.radius * pLight.radius;
-
-    if (distSq > radiusSq) return vec3(0.0);
-
-    vec3 viewDir  = normalize(ViewPos - FragPos);
-    vec3 lightDir = normalize(pLight.position - FragPos);
-    vec3 halfwayDir = normalize(lightDir + viewDir); 
-
-    vec3 albedo = currAlbedo;
-    float specular = currSpecular;
-
-    float spec = pow(max(dot(Normal, halfwayDir), 0.0), mainMaterial.shininess);
-
-    vec3 diffuseLighting = max(dot(Normal, lightDir), 0.0) 
-        * albedo * pLight.color;
-    vec3 specularLighting = spec * specular * pLight.color;
-
-    float distToLightSource = length(pLight.position - FragPos);
-    float linearPart = pLight.linear * distToLightSource;
-    float quadraticPart = pLight.quadratic * distToLightSource 
+float calcAttenuation(int lightId, float distToLightSource) {
+    float linearPart = lights[lightId].linear * distToLightSource;
+    float quadraticPart = lights[lightId].quadratic * distToLightSource 
         * distToLightSource;
     float attenuation = 1.0 / (0.7 + linearPart + quadraticPart);
-
-    return (diffuseLighting + specularLighting) * attenuation;
+    return attenuation;
 }
 
 void main() {
-    uint clusterIndex = findClusterIndex();
-    Cluster currCluster = clusters[clusterIndex];
-
-    uint totalClusters = gridSize.x * gridSize.y * gridSize.z;
-    if (clusterIndex >= totalClusters) {
-        return;
-    }
-
     vec3 result = calcAmbientLight(TexCoords);
-    uint lightCount = currCluster.count;
-    for (int i = 0; i < lightCount; ++i) {
-        uint lightIndex = pointLightIndicies[currCluster.lightStart + i];
-        PointLight l = lights[lightIndex]; 
-        // float dist = length(lights[lightIndex].position - FragPos);
 
-        // if (dist < lights[lightIndex].radius) {
-            result += calcPointLight( l);
-        // }
-    }
+    for (int i = 0; i < lights_size; ++i) {
+        float distToLightSource = length(lights[i].position - FragPos);
 
-    // if (dist < lights[lightIndex].radius) {
-    //     result += calcPointLight(lightIndex);
-    // }
+        if (distToLightSource < lights[i].radius) {
+            vec3 diffuse = calcDiffuseLight(i, TexCoords);
+            vec3 specular = calcSpecularLight(i, TexCoords);
+            float attenuation = calcAttenuation(i, distToLightSource);
 
-    if (drawMode == 0) {
-        FragColor = vec4(result, 1.0); 
-    } else if (drawMode == 1) {
-        float cnt = currCluster.count;
-        FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);
-    } else {
-        if (lightCount > 80) {
-            FragColor = vec4(1.0, 0.0, 0.0, 1.0);    // Red - too many lights
-        } else if (lightCount > 50) {
-            FragColor = vec4(1.0, 0.5, 0.0, 1.0);    // Orange - many lights  
-        } else if (lightCount > 20) {
-            FragColor = vec4(1.0, 1.0, 0.0, 1.0);    // Yellow - moderate
-        } else if (lightCount > 0) {
-            FragColor = vec4(0.0, 1.0, 0.0, 1.0);    // Green - good
-        } else {
-            FragColor = vec4(0.0, 0.0, 1.0, 1.0);    // Blue - no lights
+            diffuse *= attenuation;
+            specular *= attenuation;
+            result += diffuse + specular;
         }
     }
+
+    FragColor = vec4(result, 1.0);
 }

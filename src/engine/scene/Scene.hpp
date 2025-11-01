@@ -7,6 +7,7 @@
 #include "../window/Window.hpp"
 #include "../materials/Light.hpp"
 #include "../graphics/ClusteredRenderer.hpp"
+#include "../graphics/GBuffer.hpp"
 
 #include <chrono>
 #include <memory>
@@ -20,6 +21,7 @@ class Scene {
     std::vector<std::shared_ptr<Light>> lights; // temporary solution
 
     ClusteredRenderer* renderer;
+    GBuffer* gBuffer;
 
     uint quadVAO = 0, quadVBO; // I'll move this to mesh after i'll be sure 
                                // GBuffer works.
