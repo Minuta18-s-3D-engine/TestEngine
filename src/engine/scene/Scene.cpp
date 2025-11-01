@@ -85,48 +85,6 @@ void Scene::drawAll(Camera* cam) {
     }
 
     renderQuad();
-
-    // Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader"); 
-    // lightingShader.use();
-
-    // if (firstRender) {
-    //     firstRender = false;
-    // }
-
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glEnable(GL_DEPTH_TEST);
-
-    // glm::mat4 proj = glm::mat4(1.0f);
-    // proj = glm::perspective(
-    //     cam->getZoom(), 
-    //     (float) Window::width / (float) Window::height, 
-    //     cam->zNear, cam->zFar
-    // );
-    // glm::mat4 viewMat = cam->getViewMat();
-    // glm::mat4 worldModel = glm::mat4(1.0f);
-
-    // lightingShader.setUniform4mat("view", viewMat);
-    // lightingShader.setUniform4mat("projection", proj);
-
-    // lightingShader.setUniform1f("zNear", cam->zNear);
-    // lightingShader.setUniform1f("zFar", cam->zFar);
-    // lightingShader.setUniform4mat("inverseProjection", glm::inverse(proj));
-    // lightingShader.setUniform3ui("gridSize", renderer->getClusterGrid());
-    // lightingShader.setUniform2ui("screenDimensions", 
-    //     Window::width, Window::height);
-
-    // lightingShader.setUniform3f("viewPos", cam->pos);
-    // lightingShader.setUniform1i("numLights", lights.size());
-    // lightingShader.setUniform1ui("drawMode", this->drawMode);
-
-    // renderer->bindClusterData();
-
-    // for (auto& object : this->objects) {
-    //     glm::mat4 model = glm::translate(worldModel, object.get()->position);
-
-    //     lightingShader.setUniform4mat("model", model);
-    //     object->draw(lightingShader);
-    // }
 }
 
 void Scene::addObject(std::shared_ptr<SceneObject> obj) {
