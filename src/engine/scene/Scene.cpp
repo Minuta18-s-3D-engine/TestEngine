@@ -37,25 +37,8 @@ void Scene::renderQuad() {
 }
 
 void Scene::drawAll(Camera* cam) {
-    std::cout << "Frame render time: " << std::endl;
-
-    auto startTime = std::chrono::high_resolution_clock::now();
-    
     renderer->updateLightData(this->lights);
-    
-    auto endTime = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    std::cout << "renderer->updateLightData() -- " << duration.count() << " μs" << std::endl;
-
-    startTime = std::chrono::high_resolution_clock::now();
-
     renderer->updateClusters(cam);
-
-    endTime = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    std::cout << "renderer->updateClusters() -- " << duration.count() << " μs" << std::endl;
-
-    startTime = std::chrono::high_resolution_clock::now();
 
     Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader"); 
     lightingShader.use();
@@ -98,10 +81,6 @@ void Scene::drawAll(Camera* cam) {
         lightingShader.setUniform4mat("model", model);
         object->draw(lightingShader);
     }
-
-    endTime = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    std::cout << "object->draw() -- " << duration.count() << " μs" << std::endl;
 }
 
 void Scene::addObject(std::shared_ptr<SceneObject> obj) {
