@@ -72,18 +72,22 @@ void Scene::drawAll(Camera* cam) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     lightingShader.use();
+
     gBuffer->bindBufffers();
     lightingShader.setUniform1i("gPosition", 0);
     lightingShader.setUniform1i("gNormal", 1);
     lightingShader.setUniform1i("gAlbedoSpec", 2);
+
+    lightingShader.setUniform1ui("drawMode", drawMode);
     lightingShader.setUniform3f("viewPos", cam->pos);
-    lightingShader.setUniform1i("lights_size", this->lights.size());
+    lightingShader.setUniform1f("zNear", cam->zNear);
+    lightingShader.setUniform1f("zFar", cam->zFar);
+    lightingShader.setUniform3ui("gridSize", renderer->getClusterGrid());
+    lightingShader.setUniform2ui("screenDimensions", 
+        Window::width, Window::height);
 
-    for (int i = 0; i < this->lights.size(); ++i) {
-        auto light = this->lights[i];
-        light->passToShader(lightingShader, "lights", i);
-    }
-
+    renderer->bindClusterData();
+    
     renderQuad();
 }
 

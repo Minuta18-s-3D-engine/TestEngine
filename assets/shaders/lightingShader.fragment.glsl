@@ -7,6 +7,12 @@ uniform sampler2D gAlbedoSpec;
 
 in vec2 TexCoords;
 uniform vec3 viewPos;
+uniform uint drawMode;
+
+uniform float zNear;
+uniform float zFar;
+uniform uvec3 gridSize;
+uniform uvec2 screenDimensions;
 
 struct Cluster {
     vec4 minPoint;
@@ -47,12 +53,12 @@ vec3 calcPointLight(PointLight pLight) {
 
     if (distSq > radiusSq) return vec3(0.0);
 
-    vec3 viewDir  = normalize(ViewPos - FragPos);
+    vec3 viewDir  = normalize(viewPos - FragPos);
     vec3 lightDir = normalize(pLight.position - FragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir); 
 
-    vec3 albedo = texture(gAlbedoSpec, coords).rgb;
-    float specular = texture(gAlbedoSpec, coords).a;;
+    vec3 albedo = texture(gAlbedoSpec, TexCoords).rgb;
+    float specular = texture(gAlbedoSpec, TexCoords).a;;
 
     // TODO: shinessness will go here
     float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16);
@@ -76,14 +82,42 @@ vec3 calcAmbientLight(vec2 coords) {
     return texture(gAlbedoSpec, coords).rgb * AMBIENT_LIGHT;
 }
 
-void main() {
-    vec3 result = calcAmbientLight(TexCoords);
+uint findClusterIndex() {
+    uvec2 tileSize = screenDimensions / gridSize.xy;
+    uvec2 tileXY = uvec2(gl_FragCoord.xy) / tileSize;
+    tileXY = min(tileXY, gridSize.xy - 1u);
 
-    for (int i = 0; i < 100; ++i) {
-        PointLight l = lights[i]; 
-        
-        result += calcPointLight();
+    uint tileZ = uint((log(FragPos.z / zNear) * gridSize.z) / log(zFar / zNear));
+    tileZ = clamp(tileZ, 0u, gridSize.z - 1u);
+
+    return tileXY.x + tileXY.y * gridSize.x + tileZ * gridSize.x * gridSize.y;
+}
+
+void main() {
+    uint clusterIndex = findClusterIndex();
+    Cluster currCluster = clusters[clusterIndex];
+
+    uint totalClusters = gridSize.x * gridSize.y * gridSize.z;
+    if (clusterIndex >= totalClusters) {
+        return;
     }
 
-    FragColor = vec4(result, 1.0);
+    vec3 result = calcAmbientLight(TexCoords);
+    uint lightCount = currCluster.count;
+
+    for (int i = 0; i < lightCount; ++i) {
+        uint lightIndex = pointLightIndicies[currCluster.lightStart + i];
+        PointLight l = lights[lightIndex]; 
+        
+        result += calcPointLight(l);
+    }
+
+    if (drawMode == 0) {
+        FragColor = vec4(result, 1.0);
+    } else if (drawMode == 1) {
+        float cnt = currCluster.count;
+        FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);
+    } else {
+        FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
 }
