@@ -50,8 +50,8 @@ bool sphereAABBIntersection(
     vec3 closestPoint = clamp(center, aabbMin, aabbMax);
 
     float distanceSquared = dot(closestPoint - center, closestPoint - center);
-    return distanceSquared <= (radius * radius);
-}
+    return (distanceSquared <= (radius * radius));
+} 
 
 bool testSphereAABB(uint lightInd, Cluster currCluster) {
     vec3 center = vec3(viewMat * vec4(lights[lightInd].position, 1.0));

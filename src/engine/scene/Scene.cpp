@@ -82,6 +82,8 @@ void Scene::drawAll(Camera* cam) {
     lightingShader.setUniform3f("viewPos", cam->pos);
     lightingShader.setUniform1f("zNear", cam->zNear);
     lightingShader.setUniform1f("zFar", cam->zFar);
+    lightingShader.setUniform4mat("projection", proj);
+    lightingShader.setUniform4mat("view", viewMat);
     lightingShader.setUniform3ui("gridSize", renderer->getClusterGrid());
     lightingShader.setUniform2ui("screenDimensions", 
         Window::width, Window::height);

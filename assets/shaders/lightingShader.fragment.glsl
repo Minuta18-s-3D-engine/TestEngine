@@ -13,6 +13,8 @@ uniform float zNear;
 uniform float zFar;
 uniform uvec3 gridSize;
 uniform uvec2 screenDimensions;
+uniform mat4 projection;
+uniform mat4 view;
 
 struct Cluster {
     vec4 minPoint;
@@ -44,6 +46,7 @@ layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
 };
 
 vec3 FragPos = texture(gPosition, TexCoords).rgb;
+vec4 ViewSpacePos = view * vec4(FragPos, 1.0);
 vec3 Normal = texture(gNormal, TexCoords).rgb;
 
 vec3 calcPointLight(PointLight pLight) {
@@ -87,7 +90,7 @@ uint findClusterIndex() {
     uvec2 tileXY = uvec2(gl_FragCoord.xy) / tileSize;
     tileXY = min(tileXY, gridSize.xy - 1u);
 
-    uint tileZ = uint((log(FragPos.z / zNear) * gridSize.z) / log(zFar / zNear));
+    uint tileZ = uint((log(abs(ViewSpacePos.z) / zNear) * gridSize.z) / log(zFar / zNear));
     tileZ = clamp(tileZ, 0u, gridSize.z - 1u);
 
     return tileXY.x + tileXY.y * gridSize.x + tileZ * gridSize.x * gridSize.y;
@@ -118,6 +121,23 @@ void main() {
         float cnt = currCluster.count;
         FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);
     } else {
-        FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+
+        uint zTile = uint((log(abs(ViewSpacePos.z) / zNear) * gridSize.z) / log(zFar / zNear));
+
+        if (zTile % 5 == 0) {
+            FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        } else if (zTile % 5 == 1) {
+            FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+        } else if (zTile % 5 == 2) {
+            FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+        } else if (zTile % 5 == 3) {
+            FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+        } else {
+            FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+        }
+
+        if (clusterIndex >= totalClusters || clusterIndex < 0) {
+            FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        }
     }
 }
