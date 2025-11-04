@@ -1,7 +1,7 @@
 #version 430 core
 
 #define MATH_EPS 0.00001
-#define LIGHTS_PRE_CLUSTER_LIMIT 100
+#define LIGHTS_PRE_CLUSTER_LIMIT 150
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
