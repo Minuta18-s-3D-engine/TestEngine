@@ -174,7 +174,7 @@ int main() {
             );
         }
 
-        Player player(glm::vec3(0.0f, 0.0f, -1.0f));
+        Player player(glm::vec3(0.0f, 2.0f, -1.0f));
         // Shader forlightingShader("forward/main");
         // Shader lightSourceShader("forward/lightSource");
 
