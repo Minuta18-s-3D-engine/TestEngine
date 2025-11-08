@@ -19,7 +19,7 @@ public:
         glm::vec3 ambient = glm::vec3(0.1f, 0.1f, 0.1f),
         glm::vec3 diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
         glm::vec3 specular = glm::vec3(0.2f, 0.2f, 0.2f),
-        float shininess = 32
+        float shininess = 16
     );
     ~Material();
 
