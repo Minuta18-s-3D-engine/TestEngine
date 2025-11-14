@@ -40,8 +40,10 @@ find_package(PNG REQUIRED)
 
 include_directories( ${OPENGL_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} )
 
+add_subdirectory(lib/bvh)
+
 target_include_directories(glad PUBLIC ../lib/glad/include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm 
-    ${PNG_LIBRARY} assimp::assimp)
+    ${PNG_LIBRARY} assimp::assimp bvh)
