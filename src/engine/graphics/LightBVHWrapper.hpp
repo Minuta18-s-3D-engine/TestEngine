@@ -38,14 +38,13 @@ class LightBVHWrapper {
     std::vector<GPUBVHNode> gpuNodes;
     std::vector<uint32_t> gpuLightIndices;
 
-    Bvh* bvhTree;
-    Config* bvhConfig;
+    std::unique_ptr<Bvh> bvhTree;
+    std::unique_ptr<Config> bvhConfig;
 
     void initBVH(const LightArray& lights);
 public:
-    LightBVHWrapper();
+    LightBVHWrapper() = delete; // yet
     LightBVHWrapper(const LightArray& lights);
-    ~LightBVHWrapper();
 
     std::vector<GPUBVHNode>& getGpuNodes();
     std::vector<uint32_t> getGpuLightIndicies();

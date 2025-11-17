@@ -19,11 +19,11 @@ void LightBVHWrapper::initBVH(const LightBVHWrapper::LightArray& lights) {
         }
     });
 
-    bvhConfig = new Config();
+    bvhConfig = std::make_unique<Config>();
     bvhConfig->quality = bvh::v2::DefaultBuilder<Node>::Quality::High;
-    bvhTree = bvh::v2::DefaultBuilder<Node>::build(
-        thread_pool, bboxes, centers, bvhConfig
-    );
+    bvhTree = std::make_unique<Bvh>(bvh::v2::DefaultBuilder<Node>::build(
+        thread_pool, bboxes, centers, *bvhConfig.get()
+    ));
 }
 
 LightBVHWrapper::LightBVHWrapper() {
@@ -32,11 +32,6 @@ LightBVHWrapper::LightBVHWrapper() {
 
 LightBVHWrapper::LightBVHWrapper(const LightArray& lights) {
 
-}
-
-LightBVHWrapper::~LightBVHWrapper() {
-    delete bvh;
-    delete bvhConfig;
 }
 
 std::vector<GPUBVHNode>& LightBVHWrapper::getGpuNodes() {
