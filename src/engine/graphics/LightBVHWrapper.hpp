@@ -1,5 +1,5 @@
-#ifndef ENGINE_GRAPHICS_LIGHTBVHWRAPPER_H
-#define ENGINE_GRAPHICS_LIGHTBVHWRAPPER_H
+#ifndef ENGINE_GRAPHICS_LIGHTBVHWRAPPER_H_
+#define ENGINE_GRAPHICS_LIGHTBVHWRAPPER_H_
 
 #include <bvh/v2/bvh.h>
 #include <bvh/v2/vec.h>
@@ -29,11 +29,17 @@ class LightBVHWrapper {
     using Scalar  = float;
     using Vec3    = bvh::v2::Vec<Scalar, 3>;
     using BBox    = bvh::v2::BBox<Scalar, 3>;
+    using Node    = bvh::v2::Node<Scalar, 3>;
+    using Bvh     = bvh::v2::Bvh<Node>;
+    using Config  = bvh::v2::DefaultBuilder<Node>::Config;
 
     using LightArray = std::vector<std::shared_ptr<Light>>;
 
     std::vector<GPUBVHNode> gpuNodes;
     std::vector<uint32_t> gpuLightIndices;
+
+    Bvh* bvh;
+    Config* bvhConfig;
 
     void build(const LightArray& lights);
 public:
@@ -45,4 +51,4 @@ public:
     std::vector<uint32_t> geGpuLightIndicies();
 };
 
-#endif // ENGINE_GRAPHICS_LIGHTBVHWRAPPER_H
+#endif // ENGINE_GRAPHICS_LIGHTBVHWRAPPER_H_
