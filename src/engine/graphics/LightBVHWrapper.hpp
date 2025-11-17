@@ -38,7 +38,7 @@ class LightBVHWrapper {
     std::vector<GPUBVHNode> gpuNodes;
     std::vector<uint32_t> gpuLightIndices;
 
-    Bvh* bvh;
+    Bvh* bvhTree;
     Config* bvhConfig;
 
     void initBVH(const LightArray& lights);
