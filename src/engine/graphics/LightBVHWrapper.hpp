@@ -41,14 +41,14 @@ class LightBVHWrapper {
     Bvh* bvh;
     Config* bvhConfig;
 
-    void build(const LightArray& lights);
+    void initBVH(const LightArray& lights);
 public:
     LightBVHWrapper();
     LightBVHWrapper(const LightArray& lights);
     ~LightBVHWrapper();
 
     std::vector<GPUBVHNode>& getGpuNodes();
-    std::vector<uint32_t> geGpuLightIndicies();
+    std::vector<uint32_t> getGpuLightIndicies();
 };
 
 #endif // ENGINE_GRAPHICS_LIGHTBVHWRAPPER_H_
