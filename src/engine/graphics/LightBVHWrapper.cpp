@@ -26,18 +26,14 @@ void LightBVHWrapper::initBVH(const LightBVHWrapper::LightArray& lights) {
     ));
 }
 
-LightBVHWrapper::LightBVHWrapper() {
-
-}
-
 LightBVHWrapper::LightBVHWrapper(const LightArray& lights) {
-
+    this->initBVH(lights);
 }
 
-std::vector<GPUBVHNode>& LightBVHWrapper::getGpuNodes() {
-
+std::vector<LightBVHWrapper::Node>& LightBVHWrapper::getGpuNodes() {
+    return bvhTree->nodes;
 }
 
-std::vector<uint32_t> LightBVHWrapper::getGpuLightIndicies() {
-
+std::vector<size_t> LightBVHWrapper::getGpuLightIndicies() {
+    return bvhTree->prim_ids;
 }

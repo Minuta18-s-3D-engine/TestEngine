@@ -46,8 +46,8 @@ public:
     LightBVHWrapper() = delete; // yet
     LightBVHWrapper(const LightArray& lights);
 
-    std::vector<GPUBVHNode>& getGpuNodes();
-    std::vector<uint32_t> getGpuLightIndicies();
+    std::vector<LightBVHWrapper::Node>& getGpuNodes();
+    std::vector<size_t> getGpuLightIndicies();
 };
 
 #endif // ENGINE_GRAPHICS_LIGHTBVHWRAPPER_H_
