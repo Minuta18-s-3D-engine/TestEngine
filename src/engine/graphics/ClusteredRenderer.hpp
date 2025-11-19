@@ -12,6 +12,7 @@
 #include "ComputeShader.hpp"
 #include "Camera.hpp"
 #include "../window/Window.hpp"
+#include "LightBVHWrapper.hpp"
 
 struct alignas(16) CompCluster {
     glm::vec4 minPoint;
@@ -31,11 +32,15 @@ class ClusteredRenderer {
         CLUSTER_BINDING = 0,
         LIGHT_BINDING = 1,
         LIGHT_INDICIES_BINDING = 2,
+        BVH_NODES = 3,
+        BVH_INDICES = 4,
     };
 
     uint compClusterSSBO;
     uint compLightSSBO;
     uint compLightIndiciesSSBO;
+    uint bvhNodesSSBO;
+    uint bvhIndicesSSBO;
 
     const uint MAX_LIGHTS_PER_CLUSTER = 150;
 

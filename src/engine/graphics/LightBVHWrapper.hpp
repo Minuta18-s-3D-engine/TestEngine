@@ -26,13 +26,14 @@ struct GPUBVHNode {
 };
 
 class LightBVHWrapper {
+public:
     using Scalar  = float;
     using Vec3    = bvh::v2::Vec<Scalar, 3>;
     using BBox    = bvh::v2::BBox<Scalar, 3>;
     using Node    = bvh::v2::Node<Scalar, 3>;
     using Bvh     = bvh::v2::Bvh<Node>;
     using Config  = bvh::v2::DefaultBuilder<Node>::Config;
-
+private:
     using LightArray = std::vector<std::shared_ptr<Light>>;
 
     std::vector<GPUBVHNode> gpuNodes;

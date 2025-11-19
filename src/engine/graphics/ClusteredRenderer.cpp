@@ -10,6 +10,8 @@ ClusteredRenderer::ClusteredRenderer(AssetManager& _assetManager) :
 }
 
 void ClusteredRenderer::createSSBOs() {
+    // I really need an createSSBO() function
+
     glGenBuffers(1, &compClusterSSBO);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, compClusterSSBO);
     size_t compClusterBufferSize = NUM_CLUSTERS * sizeof(CompCluster);
@@ -56,7 +58,42 @@ void ClusteredRenderer::createSSBOs() {
         SSBOBindings::LIGHT_INDICIES_BINDING,
         compLightIndiciesSSBO
     );
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+    glGenBuffers(1, &bvhNodesSSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhNodesSSBO);
+    // 4 would be enough for any type of tree, especially for binary trees/bvhs
+    constexpr uint MaxDvhDepth = 4;
+    size_t bvhNodesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
+        sizeof(LightBVHWrapper::Node);
+    glBufferData(
+        GL_SHADER_STORAGE_BUFFER,
+        bvhNodesSSBO,
+        nullptr,
+        GL_DYNAMIC_COPY
+    );
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER,
+        SSBOBindings::BVH_NODES,
+        bvhNodesSSBO
+    );
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    glGenBuffers(1, &bvhIndicesSSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhIndicesSSBO);
+    size_t bvhIndicesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
+        sizeof(uint); // Indices type
+    glBufferData(
+        GL_SHADER_STORAGE_BUFFER,
+        bvhIndicesSSBO,
+        nullptr,
+        GL_DYNAMIC_COPY
+    );
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER,
+        SSBOBindings::BVH_INDICES,
+        bvhIndicesSSBO
+    );
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
