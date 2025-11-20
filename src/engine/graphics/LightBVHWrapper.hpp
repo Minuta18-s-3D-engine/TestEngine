@@ -48,7 +48,7 @@ public:
     LightBVHWrapper(const LightArray& lights);
 
     std::vector<LightBVHWrapper::Node>& getGpuNodes();
-    std::vector<size_t> getGpuLightIndicies();
+    std::vector<size_t>& getGpuLightIndicies();
 };
 
 #endif // ENGINE_GRAPHICS_LIGHTBVHWRAPPER_H_

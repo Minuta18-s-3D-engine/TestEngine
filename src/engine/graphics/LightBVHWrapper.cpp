@@ -34,6 +34,6 @@ std::vector<LightBVHWrapper::Node>& LightBVHWrapper::getGpuNodes() {
     return bvhTree->nodes;
 }
 
-std::vector<size_t> LightBVHWrapper::getGpuLightIndicies() {
+std::vector<size_t>& LightBVHWrapper::getGpuLightIndicies() {
     return bvhTree->prim_ids;
 }
