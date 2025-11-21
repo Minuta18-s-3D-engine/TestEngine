@@ -42,7 +42,7 @@ class ClusteredRenderer {
     uint bvhNodesSSBO;
     uint bvhIndicesSSBO;
 
-    const uint MAX_LIGHTS_PER_CLUSTER = 150;
+    const uint MAX_LIGHTS_PER_CLUSTER = 256;
 
     ComputeShader *buildClustersShader, *lightCullingShader;
     AssetManager& assetManager;

@@ -1,7 +1,7 @@
 #version 430 core
 
 #define LOCAL_SIZE 128
-#define LIGHTS_PRE_CLUSTER_LIMIT 100
+#define LIGHTS_PRE_CLUSTER_LIMIT 256
 
 layout(local_size_x = LOCAL_SIZE, local_size_y = 1, local_size_z = 1) in;
 

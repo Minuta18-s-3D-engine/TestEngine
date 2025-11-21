@@ -215,8 +215,8 @@ int main() {
         //     assetManager, mainScene);
         createRect(
             glm::vec3(0.0f, -0.6f, 0.0f),
-            glm::vec3(200.0f, 0.2, 200.0f),
-            glm::vec2(50.0f, 50.0f),
+            glm::vec3(1000.0f, 0.2, 1000.0f),
+            glm::vec2(250.0f, 250.0f),
             Material(
                 glm::vec3(0.8, 0.8, 0.8), 
                 glm::vec3(0.05, 0.05, 0.05),
@@ -229,11 +229,11 @@ int main() {
         );
 
         srand(time(NULL));
-        for (int i = 0; i < 500; ++i) {
+        for (int i = 0; i < 3000; ++i) {
             int size = rand() % 2 + 1;
             int tex = rand() % 2;
             createRect(
-                glm::vec3(rand() % 100 - 50 + (rand() % 5) * 0.13, (size - 1.0) * 0.5 - ((rand() % 2) * 0.1), rand() % 100 - 50 + (rand() % 5) * 0.13),
+                glm::vec3(rand() % 500 - 250 + (rand() % 5) * 0.13, (size - 1.0) * 0.5 - ((rand() % 2) * 0.1), rand() % 500 - 250 + (rand() % 5) * 0.13),
                 glm::vec3(size, size, size),
                 glm::vec2(1.0, 1.0),
                 Material(),
@@ -242,9 +242,9 @@ int main() {
             );
         }
 
-        for (int i = 0; i < 1000; ++i) {
+        for (int i = 0; i < 5000; ++i) {
             mainScene.addLight(Light::calcLight(
-                glm::vec3(rand() % 100 - 50 + (rand() % 5) * 0.13, 0.1 + rand() % 5, rand() % 100 - 50 + (rand() % 5) * 0.13),
+                glm::vec3(rand() % 500 - 250 + (rand() % 5) * 0.13, 0.1 + rand() % 5, rand() % 500 - 250 + (rand() % 5) * 0.13),
                 glm::vec3(0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005),
                 (rand() % 6 + 1) * 0.1, (rand() % 6 + 1) * 0.1
             ));
