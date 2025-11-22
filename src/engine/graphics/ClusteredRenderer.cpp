@@ -164,7 +164,7 @@ void ClusteredRenderer::updateLightData(
         bvhIndicesConverted.data(),
         GL_DYNAMIC_DRAW
     );
-   
+
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -224,5 +224,15 @@ void ClusteredRenderer::bindClusterData() {
         GL_SHADER_STORAGE_BUFFER,
         SSBOBindings::LIGHT_INDICIES_BINDING,
         compLightIndiciesSSBO
+    );
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER, 
+        SSBOBindings::BVH_NODES, 
+        bvhNodesSSBO
+    );
+    glBindBufferBase(
+        GL_SHADER_STORAGE_BUFFER,
+        SSBOBindings::BVH_INDICES,
+        bvhIndicesSSBO
     );
 }

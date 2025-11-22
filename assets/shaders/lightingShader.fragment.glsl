@@ -23,7 +23,6 @@ struct Cluster {
     uint lightStart;
 };
 
-
 struct PointLight {
     vec3 position;
     vec3 color;
@@ -31,6 +30,13 @@ struct PointLight {
     float linear;
     float quadratic;
     float radius;
+};
+
+struct BVHNode {
+    vec4 minPoint;
+    vec4 maxPoint;
+    uint first_child_or_primitive;
+    uint primitive_count;
 };
 
 layout (std430, binding = 0) restrict buffer clusterSSBO {
@@ -43,6 +49,14 @@ layout (std430, binding = 1) restrict buffer lightSSBO {
 
 layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
     uint pointLightIndicies[];
+};
+
+layout(std430, binding = 3) restrict buffer bvhNodesSSBO {
+    BVHNode bvhNodes[];
+};
+
+layout(std430, binding = 4) restrict buffer bvhIndicesSSBO {
+    uint bvhIndices[];
 };
 
 vec3 FragPos = texture(gPosition, TexCoords).rgb;
@@ -96,6 +110,47 @@ uint findClusterIndex() {
     return tileXY.x + tileXY.y * gridSize.x + tileZ * gridSize.x * gridSize.y;
 }
 
+BVHNode transformBVHNodeToViewSpace(BVHNode node) {
+    vec3 worldCorners[8] = {
+        node.minPoint.xyz,
+        vec3(node.minPoint.x, node.minPoint.y, node.maxPoint.z),
+        vec3(node.minPoint.x, node.maxPoint.y, node.minPoint.z),
+        vec3(node.minPoint.x, node.maxPoint.y, node.maxPoint.z),
+        vec3(node.maxPoint.x, node.minPoint.y, node.minPoint.z),
+        vec3(node.maxPoint.x, node.minPoint.y, node.maxPoint.z),
+        vec3(node.maxPoint.x, node.maxPoint.y, node.minPoint.z),
+        node.maxPoint.xyz
+    };
+    
+    vec3 viewMin = vec3(1e9);
+    vec3 viewMax = vec3(-1e9);
+    
+    for (int i = 0; i < 8; i++) {
+        vec3 viewCorner = vec3(view * vec4(worldCorners[i], 1.0));
+        viewMin = min(viewMin, viewCorner);
+        viewMax = max(viewMax, viewCorner);
+    }
+    
+    BVHNode result;
+    result.minPoint = vec4(viewMin, 0.0);
+    result.maxPoint = vec4(viewMax, 0.0);
+    result.first_child_or_primitive = node.first_child_or_primitive;
+    result.primitive_count = node.primitive_count;
+    
+    return result;
+}
+
+bool AABBIntersection(
+    vec3 aMax,
+    vec3 aMin,
+    vec3 bMax,
+    vec3 bMin
+) {
+    return (aMin.x <= bMax.x) && (aMax.x >= bMin.x) &&
+           (aMin.y <= bMax.y) && (aMax.y >= bMin.y) &&
+           (aMin.z <= bMax.z) && (aMax.z >= bMin.z);
+}
+
 void main() {
     uint clusterIndex = findClusterIndex();
     Cluster currCluster = clusters[clusterIndex];
@@ -121,23 +176,19 @@ void main() {
         float cnt = currCluster.count;
         FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);
     } else {
-
-        uint zTile = uint((log(abs(ViewSpacePos.z) / zNear) * gridSize.z) / log(zFar / zNear));
-
-        if (zTile % 5 == 0) {
-            FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-        } else if (zTile % 5 == 1) {
-            FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-        } else if (zTile % 5 == 2) {
-            FragColor = vec4(0.0, 0.0, 1.0, 1.0);
-        } else if (zTile % 5 == 3) {
-            FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+        BVHNode testNode = bvhNodes[1]; 
+        testNode = transformBVHNodeToViewSpace(testNode);
+        
+        bool intersects = AABBIntersection(
+            currCluster.maxPoint.xyz, currCluster.minPoint.xyz,
+            testNode.maxPoint.xyz, testNode.minPoint.xyz        
+        );
+        
+        if (intersects) {
+            FragColor = vec4(1.0, 0.0, 0.0, 1.0); 
         } else {
-            FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+            FragColor = vec4(0.0, 0.0, 1.0, 1.0); 
         }
-
-        if (clusterIndex >= totalClusters || clusterIndex < 0) {
-            FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-        }
+        return;
     }
 }

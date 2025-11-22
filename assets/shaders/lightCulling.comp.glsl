@@ -75,9 +75,9 @@ bool AABBIntersection(
     vec3 bMax,
     vec3 bMin
 ) {
-    return (aMax.x >= bMin.x) && (aMin.x <= bMax.x) &&
-           (aMax.y >= bMin.y) && (aMin.y <= bMax.y) && 
-           (aMax.z >= bMin.z) && (aMin.z <= bMax.z);
+    return (aMin.x <= bMax.x) && (aMax.x >= bMin.x) &&
+           (aMin.y <= bMax.y) && (aMax.y >= bMin.y) &&
+           (aMin.z <= bMax.z) && (aMax.z >= bMin.z);
 }
 
 bool testSphereAABB(uint lightInd, Cluster currCluster) {
@@ -88,6 +88,36 @@ bool testSphereAABB(uint lightInd, Cluster currCluster) {
     vec3 aabbMax = currCluster.maxPoint.xyz;
 
     return sphereAABBIntersection(center, radius, aabbMin, aabbMax);
+}
+
+BVHNode transformBVHNodeToViewSpace(BVHNode node) {
+    vec3 worldCorners[8] = {
+        node.minPoint.xyz,
+        vec3(node.minPoint.x, node.minPoint.y, node.maxPoint.z),
+        vec3(node.minPoint.x, node.maxPoint.y, node.minPoint.z),
+        vec3(node.minPoint.x, node.maxPoint.y, node.maxPoint.z),
+        vec3(node.maxPoint.x, node.minPoint.y, node.minPoint.z),
+        vec3(node.maxPoint.x, node.minPoint.y, node.maxPoint.z),
+        vec3(node.maxPoint.x, node.maxPoint.y, node.minPoint.z),
+        node.maxPoint.xyz
+    };
+    
+    vec3 viewMin = vec3(1e9);
+    vec3 viewMax = vec3(-1e9);
+    
+    for (int i = 0; i < 8; i++) {
+        vec3 viewCorner = vec3(viewMat * vec4(worldCorners[i], 1.0));
+        viewMin = min(viewMin, viewCorner);
+        viewMax = max(viewMax, viewCorner);
+    }
+    
+    BVHNode result;
+    result.minPoint = vec4(viewMin, 0.0);
+    result.maxPoint = vec4(viewMax, 0.0);
+    result.first_child_or_primitive = node.first_child_or_primitive;
+    result.primitive_count = node.primitive_count;
+    
+    return result;
 }
 
 void main() {
@@ -101,13 +131,19 @@ void main() {
     Cluster currCluster = clusters[clusterInd];
 
     currCluster.count = 0;
-    // for (uint i = 0; i < numLights; ++i) {
-    //     if (currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT && 
-    //         testSphereAABB(i, currCluster)) {
-    //         pointLightIndicies[currCluster.lightStart + currCluster.count] = i;
-    //         currCluster.count++;
-    //     }
-    // }
+
+// if (bvhNodes.length() > 0) {
+//     for (uint i = 0; i < numLights; ++i) {
+//         if (currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT && 
+//             testSphereAABB(i, currCluster)) {
+//             pointLightIndicies[currCluster.lightStart + currCluster.count] = i;
+//             currCluster.count++;
+//         }
+//     }
+
+//     clusters[clusterInd] = currCluster;
+//     return;
+// }
 
     uint stack[BVH_STACK_SIZE];
     uint stackPtr = 0;
@@ -116,10 +152,11 @@ void main() {
     while (stackPtr > 0 && currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT) {
         uint nodeIndex = stack[--stackPtr];
         BVHNode node = bvhNodes[nodeIndex];
+        node = transformBVHNodeToViewSpace(node);
 
         if (!AABBIntersection(
-            currCluster.maxPoint.xyz, currCluster.minPoint.xyz,
-            node.maxPoint.xyz, node.minPoint.xyz
+            currCluster.minPoint.xyz, currCluster.maxPoint.xyz, 
+            node.minPoint.xyz, node.maxPoint.xyz
         )) {
             continue;
         }
@@ -134,8 +171,9 @@ void main() {
             }
         } else {
             if (stackPtr < BVH_STACK_SIZE - 2) {
-                stack[stackPtr++] = node.first_child_or_primitive;
-                stack[stackPtr++] = nodeIndex + 1;
+                uint firstChild = node.first_child_or_primitive;
+                stack[stackPtr++] = firstChild + 1;
+                stack[stackPtr++] = firstChild;
             }
         }
     }
