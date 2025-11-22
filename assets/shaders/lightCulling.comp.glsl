@@ -124,6 +124,10 @@ BVHNode transformBVHNodeToViewSpace(BVHNode node) {
     return result;
 }
 
+bool isClusterInFrustum(Cluster cluster) {
+    return cluster.maxPoint.z < 0.0;
+}
+
 void main() {
     uint clusterInd = gl_WorkGroupID.x * LOCAL_SIZE + gl_LocalInvocationID.x;
 
@@ -133,8 +137,12 @@ void main() {
     }
 
     Cluster currCluster = clusters[clusterInd];
-
     currCluster.count = 0;
+
+    if (!isClusterInFrustum(currCluster)) {
+        clusters[clusterInd] = currCluster;
+        return;
+    }
 
     uint stack[BVH_STACK_SIZE];
     uint stackPtr = 0;
