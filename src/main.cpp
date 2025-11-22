@@ -229,7 +229,7 @@ int main() {
         );
 
         srand(time(NULL));
-        for (int i = 0; i < 3000; ++i) {
+        for (int i = 0; i < 1500; ++i) {
             int size = rand() % 2 + 1;
             int tex = rand() % 2;
             createRect(
@@ -242,11 +242,11 @@ int main() {
             );
         }
 
-        for (int i = 0; i < 5000; ++i) {
+        for (int i = 0; i < 1000; ++i) {
             mainScene.addLight(Light::calcLight(
                 glm::vec3(rand() % 500 - 250 + (rand() % 5) * 0.13, 0.1 + rand() % 5, rand() % 500 - 250 + (rand() % 5) * 0.13),
                 glm::vec3(0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005),
-                (rand() % 6 + 1) * 0.1, (rand() % 6 + 1) * 0.1
+                (rand() % 12 + 1) * 0.1, (rand() % 12 + 1) * 0.1
             ));
         }
 
