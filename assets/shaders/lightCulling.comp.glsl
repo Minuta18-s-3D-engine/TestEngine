@@ -2,7 +2,7 @@
 
 #define LOCAL_SIZE 128
 #define LIGHTS_PRE_CLUSTER_LIMIT 256
-#define BVH_STACK_SIZE 32
+#define BVH_STACK_SIZE 64
 
 layout(local_size_x = LOCAL_SIZE, local_size_y = 1, local_size_z = 1) in;
 
@@ -107,8 +107,12 @@ BVHNode transformBVHNodeToViewSpace(BVHNode node) {
     
     for (int i = 0; i < 8; i++) {
         vec3 viewCorner = vec3(viewMat * vec4(worldCorners[i], 1.0));
-        viewMin = min(viewMin, viewCorner);
-        viewMax = max(viewMax, viewCorner);
+        viewMin.x = min(viewMin.x, viewCorner.x);
+        viewMin.y = min(viewMin.y, viewCorner.y);
+        viewMin.z = min(viewMin.z, viewCorner.z);
+        viewMax.x = max(viewMax.x, viewCorner.x);
+        viewMax.y = max(viewMax.y, viewCorner.y);
+        viewMax.z = max(viewMax.z, viewCorner.z);
     }
     
     BVHNode result;
@@ -132,31 +136,20 @@ void main() {
 
     currCluster.count = 0;
 
-// if (bvhNodes.length() > 0) {
-//     for (uint i = 0; i < numLights; ++i) {
-//         if (currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT && 
-//             testSphereAABB(i, currCluster)) {
-//             pointLightIndicies[currCluster.lightStart + currCluster.count] = i;
-//             currCluster.count++;
-//         }
-//     }
-
-//     clusters[clusterInd] = currCluster;
-//     return;
-// }
-
     uint stack[BVH_STACK_SIZE];
     uint stackPtr = 0;
     stack[stackPtr++] = 0;
-    
+
+    uint leavesFound = 0;
+
     while (stackPtr > 0 && currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT) {
         uint nodeIndex = stack[--stackPtr];
         BVHNode node = bvhNodes[nodeIndex];
         node = transformBVHNodeToViewSpace(node);
 
         if (!AABBIntersection(
-            currCluster.minPoint.xyz, currCluster.maxPoint.xyz, 
-            node.minPoint.xyz, node.maxPoint.xyz
+            currCluster.maxPoint.xyz, currCluster.minPoint.xyz, 
+            node.maxPoint.xyz, node.minPoint.xyz
         )) {
             continue;
         }
@@ -172,11 +165,12 @@ void main() {
         } else {
             if (stackPtr < BVH_STACK_SIZE - 2) {
                 uint firstChild = node.first_child_or_primitive;
-                stack[stackPtr++] = firstChild + 1;
                 stack[stackPtr++] = firstChild;
+                stack[stackPtr++] = firstChild + 1;
             }
         }
     }
     
+    // currCluster.count = nodesSkipped;
     clusters[clusterInd] = currCluster;
 }

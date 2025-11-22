@@ -13,6 +13,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <iomanip>
 
 class Scene {
     AssetManager& assetManager;

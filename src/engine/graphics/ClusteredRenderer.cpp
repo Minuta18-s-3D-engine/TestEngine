@@ -149,6 +149,12 @@ void ClusteredRenderer::updateLightData(
         nodeConverted.primitive_count = node.index.prim_count();
     }
 
+    // for (int i = 0; i < 100; ++i) {
+    //     std::cout << "Node #" << i << std::endl;
+    //     std::cout << "first_child_or_primitive=" << bvhNodesConverted[i].first_child_or_primitive << std::endl;
+    //     std::cout << "primitive_count=" << bvhNodesConverted[i].primitive_count << std::endl;
+    // }
+
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhNodesSSBO);
     glBufferData(
         GL_SHADER_STORAGE_BUFFER,

@@ -38,7 +38,6 @@ class ClusteredRenderer {
 
     uint compClusterSSBO;
     uint compLightSSBO;
-    uint compLightIndiciesSSBO;
     uint bvhNodesSSBO;
     uint bvhIndicesSSBO;
 
@@ -63,6 +62,7 @@ class ClusteredRenderer {
 
     void createSSBOs();
 public:
+    uint compLightIndiciesSSBO;
     ClusteredRenderer(AssetManager& _assetManager);
     ~ClusteredRenderer() = default;
 
