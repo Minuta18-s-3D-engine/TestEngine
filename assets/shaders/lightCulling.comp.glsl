@@ -2,6 +2,7 @@
 
 #define LOCAL_SIZE 128
 #define LIGHTS_PRE_CLUSTER_LIMIT 256
+#define BVH_STACK_SIZE 32
 
 layout(local_size_x = LOCAL_SIZE, local_size_y = 1, local_size_z = 1) in;
 
@@ -21,7 +22,12 @@ struct Cluster {
     uint lightStart;
 };
 
-
+struct BVHNode {
+    vec4 minPoint;
+    vec4 maxPoint;
+    uint first_child_or_primitive;
+    uint primitive_count;
+};
 
 layout (std430, binding = 0) restrict buffer clusterSSBO {
     Cluster clusters[];
@@ -33,6 +39,14 @@ layout (std430, binding = 1) restrict buffer lightSSBO {
 
 layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
     uint pointLightIndicies[];
+};
+
+layout(std430, binding = 3) restrict buffer bvhNodesSSBO {
+    BVHNode bvhNodes[];
+};
+
+layout(std430, binding = 4) restrict buffer bvhIndicesSSBO {
+    uint bvhIndices[];
 };
 
 uniform mat4 viewMat;
@@ -55,6 +69,17 @@ bool sphereAABBIntersection(
     return (distanceSquared <= (radius * radius));
 } 
 
+bool AABBIntersection(
+    vec3 aMax,
+    vec3 aMin,
+    vec3 bMax,
+    vec3 bMin
+) {
+    return (aMax.x >= bMin.x) && (aMin.x <= bMax.x) &&
+           (aMax.y >= bMin.y) && (aMin.y <= bMax.y) && 
+           (aMax.z >= bMin.z) && (aMin.z <= bMax.z);
+}
+
 bool testSphereAABB(uint lightInd, Cluster currCluster) {
     vec3 center = vec3(viewMat * vec4(lights[lightInd].position, 1.0));
     float radius = lights[lightInd].radius;
@@ -76,11 +101,42 @@ void main() {
     Cluster currCluster = clusters[clusterInd];
 
     currCluster.count = 0;
-    for (uint i = 0; i < numLights; ++i) {
-        if (currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT && 
-            testSphereAABB(i, currCluster)) {
-            pointLightIndicies[currCluster.lightStart + currCluster.count] = i;
-            currCluster.count++;
+    // for (uint i = 0; i < numLights; ++i) {
+    //     if (currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT && 
+    //         testSphereAABB(i, currCluster)) {
+    //         pointLightIndicies[currCluster.lightStart + currCluster.count] = i;
+    //         currCluster.count++;
+    //     }
+    // }
+
+    uint stack[BVH_STACK_SIZE];
+    uint stackPtr = 0;
+    stack[stackPtr++] = 0;
+    
+    while (stackPtr > 0 && currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT) {
+        uint nodeIndex = stack[--stackPtr];
+        BVHNode node = bvhNodes[nodeIndex];
+
+        if (!AABBIntersection(
+            currCluster.maxPoint.xyz, currCluster.minPoint.xyz,
+            node.maxPoint.xyz, node.minPoint.xyz
+        )) {
+            continue;
+        }
+
+        if (node.primitive_count > 0) {
+            for (uint i = 0; i < node.primitive_count && currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT; ++i) {
+                uint lightIndex = bvhIndices[node.first_child_or_primitive + i];
+                if (testSphereAABB(lightIndex, currCluster)) {
+                    pointLightIndicies[currCluster.lightStart + currCluster.count] = lightIndex;
+                    currCluster.count++;
+                }
+            }
+        } else {
+            if (stackPtr < BVH_STACK_SIZE - 2) {
+                stack[stackPtr++] = node.first_child_or_primitive;
+                stack[stackPtr++] = nodeIndex + 1;
+            }
         }
     }
     

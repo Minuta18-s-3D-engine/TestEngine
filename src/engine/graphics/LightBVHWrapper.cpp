@@ -11,7 +11,9 @@ void LightBVHWrapper::initBVH(const LightBVHWrapper::LightArray& lights) {
         for (size_t i = begin; i < end; ++i) {
             auto light = lights[i]; 
             Vec3 center = Vec3(light->position.x, light->position.y, light->position.z);
-            Vec3 radius = Vec3(light->calcRadius());
+            // Vec3 radius = Vec3(light->calcRadius());
+            constexpr double lightRadius = 0.01;
+            Vec3 radius = Vec3(lightRadius, lightRadius, lightRadius);
 
             BBox lightBBox(center - radius, center + radius);
             bboxes[i] = lightBBox;
