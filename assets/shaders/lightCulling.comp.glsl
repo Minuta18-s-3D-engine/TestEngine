@@ -21,6 +21,8 @@ struct Cluster {
     uint lightStart;
 };
 
+
+
 layout (std430, binding = 0) restrict buffer clusterSSBO {
     Cluster clusters[];
 };

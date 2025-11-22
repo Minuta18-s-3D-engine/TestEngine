@@ -126,17 +126,34 @@ void ClusteredRenderer::updateLightData(
 
     std::vector<LightBVHWrapper::Node>& bvhNodes = bvh.getGpuNodes();
     std::vector<size_t>& bvhIndices = bvh.getGpuLightIndicies();
+    std::vector<GPUBVHNode> bvhNodesConverted(bvhNodes.size());
     std::vector<uint32_t> bvhIndicesConverted(bvhIndices.size());
     
     for (int i = 0; i < bvhIndicesConverted.size(); ++i) {
         bvhIndicesConverted[i] = (uint32_t) bvhIndices[i];
     }
 
+    for (int i = 0; i < bvhNodesConverted.size(); ++i) {
+        auto& node = bvhNodes[i];
+        auto& nodeConverted = bvhNodesConverted[i];
+        auto bbox = node.get_bbox();
+
+        nodeConverted.maxBounds = glm::vec4(
+            bbox.max.values[0], bbox.max.values[1], bbox.max.values[2], 0
+        );
+
+        nodeConverted.minBounds = glm::vec4(
+            bbox.min.values[0], bbox.min.values[1], bbox.min.values[2], 0
+        );
+        nodeConverted.first_child_or_primitive = node.index.first_id();
+        nodeConverted.primitive_count = node.index.prim_count();
+    }
+
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhNodesSSBO);
     glBufferData(
         GL_SHADER_STORAGE_BUFFER,
-        bvhNodes.size() * sizeof(LightBVHWrapper::Node),
-        bvhNodes.data(),
+        bvhNodesConverted.size() * sizeof(GPUBVHNode),
+        bvhNodesConverted.data(),
         GL_DYNAMIC_DRAW
     );
 

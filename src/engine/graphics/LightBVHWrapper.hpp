@@ -16,13 +16,11 @@
 
 #include "../materials/Light.hpp"
 
-struct GPUBVHNode {
+struct alignas(16) GPUBVHNode {
     glm::vec4 minBounds;
     glm::vec4 maxBounds;
-    uint32_t leftChild;
-    uint32_t rightChild;
-    uint32_t lightStart;
-    uint32_t lightCount;
+    uint32_t first_child_or_primitive;
+    uint32_t primitive_count;
 };
 
 class LightBVHWrapper {
@@ -35,9 +33,6 @@ public:
     using Config  = bvh::v2::DefaultBuilder<Node>::Config;
 private:
     using LightArray = std::vector<std::shared_ptr<Light>>;
-
-    std::vector<GPUBVHNode> gpuNodes;
-    std::vector<uint32_t> gpuLightIndices;
 
     std::unique_ptr<Bvh> bvhTree;
     std::unique_ptr<Config> bvhConfig;
