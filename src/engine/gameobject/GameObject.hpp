@@ -1,0 +1,10 @@
+#ifndef ENGINE_GAMEOBJECT_GAMEOBJECT_H
+#define ENGINE_GAMEOBJECT_GAMEOBJECT_H
+
+#include <uuid.h>
+
+class GameObject {
+
+};
+
+#endif ENGINE_GAMEOBJECT_GAMEOBJECT_H

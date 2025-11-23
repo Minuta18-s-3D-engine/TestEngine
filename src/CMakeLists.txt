@@ -5,6 +5,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
+FetchContent_Declare(
+  stduuid
+  GIT_REPOSITORY https://github.com/mariusbancila/stduuid
+  GIT_TAG        master
+  SOURCE_DIR     ${CMAKE_SOURCE_DIR}/lib/stduuid 
+)
+
+FetchContent_MakeAvailable(stduuid)
+
 set(ASSIMP_SOURCE_DIR ${CMAKE_SOURCE_DIR}/lib/assimp)
 set(ASSIMP_BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/assimp-build)
 

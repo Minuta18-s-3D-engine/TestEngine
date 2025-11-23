@@ -12,6 +12,7 @@ _deps
 CMakeUserPresets.json
 lib/glad
 lib/assimp
+lib/stduuid
 /src/lib/bvh
 
 /libglad.a
