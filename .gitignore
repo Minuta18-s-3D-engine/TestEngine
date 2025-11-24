@@ -13,8 +13,11 @@ CMakeUserPresets.json
 lib/glad
 lib/assimp
 lib/stduuid
+lib/*
 /src/lib/bvh
-
+tests/lib/bvh
+tests/engineTests*
+engineTests
 /libglad.a
 /TestEng
 /src/libglad.a

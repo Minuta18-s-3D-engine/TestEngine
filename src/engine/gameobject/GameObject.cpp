@@ -7,12 +7,11 @@ GameObject::GameObject() {
 GameObject::GameObject(const GameObject& other) {
     this->id = uuids::uuid_system_generator{}();
     for (const auto& [index, comp] : other.components) {
-        components[typeid(comp)] = 
-            std::make_unique<Component>(comp->clone());
+        components[typeid(comp)] = comp->clone();
     }
 }
 
-GameObject::GameObject(GameObject&& other)
+GameObject::GameObject(GameObject&& other) noexcept
     : id(std::move(other.id)),
       components(std::move(other.components)) {}
 
@@ -21,8 +20,7 @@ GameObject& GameObject::operator=(const GameObject& other) noexcept {
         this->id = uuids::uuid_system_generator{}();
         this->components.clear();
         for (const auto& [index, comp] : other.components) {
-            components[typeid(comp)] = 
-                std::make_unique<Component>(comp->clone());
+            components[typeid(comp)] = comp->clone();
         }
     }
     return *this;
@@ -57,9 +55,9 @@ T* GameObject::getComponent() const {
         std::is_base_of<Component, T>::value, "T must be Component"
     );
 
-    for (const auto& [index, comp] : components) {
+    for (auto& [index, comp] : components) {
         if (dynamic_cast<T*>(comp.get())) {
-            return components[comp].get();
+            return comp.get();
         }
     }
 
@@ -67,7 +65,7 @@ T* GameObject::getComponent() const {
 }
 
 template<typename T>
-void addComponent(std::unique_ptr<T> component, bool exc) {
+void GameObject::addComponent(std::unique_ptr<T> component, bool exc) {
     static_assert(
         std::is_base_of<Component, T>::value, "T must be Component"
     );
@@ -78,7 +76,7 @@ void addComponent(std::unique_ptr<T> component, bool exc) {
         }
     }
 
-    components.push_back(component);
+    components[typeid(component)] = component;
 }
 
 template<typename T>
