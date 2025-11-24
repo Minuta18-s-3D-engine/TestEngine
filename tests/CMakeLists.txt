@@ -10,7 +10,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB_RECURSE TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -21,6 +21,7 @@ include_directories( ${OPENGL_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} )
 
 add_executable(engineTests
     main.cpp
+    ${TEST_SOURCES}
 )
 
 target_link_libraries(engineTests PRIVATE 

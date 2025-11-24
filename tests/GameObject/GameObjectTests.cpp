@@ -1,19 +1,21 @@
 #include <gtest/gtest.h>
-#include "src/engine/gameobject/GameObject.hpp"
-#include "src/engine/gameobject/Component.hpp"
+#include "engine/gameobject/GameObject.hpp"
+#include "engine/gameobject/Component.hpp"
 
 // Mock component for testing
 class TestComponent : public Component {
 public:
     int value = 42;
     std::unique_ptr<Component> clone() const {
-        return std::make_unique<TestComponent>(*this);
+        auto ptr = std::make_unique<TestComponent>();
+        ptr->value = this->value;
+        return ptr;
     }
 };
 
 class AnotherComponent : public Component {
     std::unique_ptr<Component> clone() const {
-        return std::make_unique<AnotherComponent>(*this);
+        return std::make_unique<AnotherComponent>();
     }
 };
 
