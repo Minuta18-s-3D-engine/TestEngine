@@ -54,5 +54,9 @@ add_subdirectory(lib/bvh)
 target_include_directories(glad PUBLIC ../lib/glad/include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+if (UNIX AND NOT APPLE)
+    target_link_libraries(TestEngSrc uuid)
+endif()
+
 target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm 
-    ${PNG_LIBRARY} assimp::assimp bvh)
+    ${PNG_LIBRARY} assimp::assimp bvh stduuid)
