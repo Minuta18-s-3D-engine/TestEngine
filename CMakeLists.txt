@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(TestEng)
 
-option(BUILD_TESTS "Build unit tests" OFF) 
+option(BUILD_TESTS "Build unit tests") 
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

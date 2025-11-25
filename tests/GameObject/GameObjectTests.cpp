@@ -6,7 +6,8 @@
 class TestComponent : public Component {
 public:
     int value = 42;
-    std::unique_ptr<Component> clone() const {
+    
+    std::unique_ptr<Component> clone() override {
         auto ptr = std::make_unique<TestComponent>();
         ptr->value = this->value;
         return ptr;
@@ -14,7 +15,7 @@ public:
 };
 
 class AnotherComponent : public Component {
-    std::unique_ptr<Component> clone() const {
+    std::unique_ptr<Component> clone() override {
         return std::make_unique<AnotherComponent>();
     }
 };
@@ -29,7 +30,7 @@ TEST(GameObjectTest, AddGetComponent) {
     auto component = std::make_unique<TestComponent>();
     TestComponent* rawPtr = component.get();
     
-    obj.addComponent(std::move(component));
+    obj.addComponent<TestComponent>(component);
     
     TestComponent* retrieved = obj.getComponent<TestComponent>();
     EXPECT_EQ(retrieved, rawPtr);
@@ -40,7 +41,8 @@ TEST(GameObjectTest, HasComponent) {
     GameObject obj;
     EXPECT_FALSE(obj.hasComponent<TestComponent>());
     
-    obj.addComponent(std::make_unique<TestComponent>());
+    auto ptr = std::make_unique<TestComponent>();
+    obj.addComponent<TestComponent>(ptr);
     EXPECT_TRUE(obj.hasComponent<TestComponent>());
 }
 
@@ -51,7 +53,8 @@ TEST(GameObjectTest, GetComponentThrowsWhenNotFound) {
 
 TEST(GameObjectTest, MoveConstructor) {
     GameObject obj1;
-    obj1.addComponent(std::make_unique<TestComponent>());
+    auto ptr = std::make_unique<TestComponent>();
+    obj1.addComponent<TestComponent>(ptr);
     
     GameObject obj2 = std::move(obj1);
     
@@ -61,11 +64,12 @@ TEST(GameObjectTest, MoveConstructor) {
 
 TEST(GameObjectTest, UniqueComponents) {
     GameObject obj;
-    obj.addComponent(std::make_unique<TestComponent>());
+    auto ptr = std::make_unique<TestComponent>();
+    obj.addComponent<TestComponent>(ptr);
     
     auto secondComponent = std::make_unique<TestComponent>();
     secondComponent->value = 100;
-    obj.addComponent(std::move(secondComponent));
+    obj.addComponent<TestComponent>(secondComponent);
     
     EXPECT_EQ(obj.getComponent<TestComponent>()->value, 100);
 }

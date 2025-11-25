@@ -34,58 +34,6 @@ GameObject& GameObject::operator=(GameObject&& other) noexcept {
     return *this;
 }
 
-template<typename T>
-bool GameObject::hasComponent() const {
-    static_assert(
-        std::is_base_of<Component, T>::value, "T must be Component"
-    );
-
-    for (const auto& [index, comp] : components) {
-        if (dynamic_cast<T*>(comp.get())) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-template<typename T>
-T* GameObject::getComponent() const {
-    static_assert(
-        std::is_base_of<Component, T>::value, "T must be Component"
-    );
-
-    for (auto& [index, comp] : components) {
-        if (dynamic_cast<T*>(comp.get())) {
-            return comp.get();
-        }
-    }
-
-    throw std::invalid_argument("Component not found");
-}
-
-template<typename T>
-void GameObject::addComponent(std::unique_ptr<T> component, bool exc) {
-    static_assert(
-        std::is_base_of<Component, T>::value, "T must be Component"
-    );
-
-    if (exc) {
-        if (components.count(typeid(component))) {
-            throw std::invalid_argument("Component already exists");
-        }
-    }
-
-    components[typeid(component)] = component;
-}
-
-template<typename T>
-void GameObject::removeComponent() {
-    static_assert(std::is_base_of_v<Component, T>, "T must be Component");
-    
-    components.erase(typeid(T));
-}
-
 size_t GameObject::getComponentCount() const {
     return components.size();
 }
