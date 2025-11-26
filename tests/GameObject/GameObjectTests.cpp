@@ -48,7 +48,9 @@ TEST(GameObjectTest, HasComponent) {
 
 TEST(GameObjectTest, GetComponentThrowsWhenNotFound) {
     GameObject obj;
-    EXPECT_THROW(obj.getComponent<TestComponent>(), std::runtime_error);
+    EXPECT_THROW(obj.getComponent<TestComponent>(), std::invalid_argument);
+    Component* res = obj.getComponent<TestComponent>(false);
+    EXPECT_EQ(res, nullptr);
 }
 
 TEST(GameObjectTest, MoveConstructor) {
@@ -69,7 +71,10 @@ TEST(GameObjectTest, UniqueComponents) {
     
     auto secondComponent = std::make_unique<TestComponent>();
     secondComponent->value = 100;
-    obj.addComponent<TestComponent>(secondComponent);
-    
+    EXPECT_THROW(obj.addComponent<TestComponent>(secondComponent), 
+        std::invalid_argument);
+
+    obj.addComponent<TestComponent>(secondComponent, false);
+
     EXPECT_EQ(obj.getComponent<TestComponent>()->value, 100);
 }

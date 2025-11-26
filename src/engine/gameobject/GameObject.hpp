@@ -30,7 +30,7 @@ public:
     bool hasComponent() const;
 
     template<typename T>
-    T* getComponent() const;
+    T* getComponent(bool exc = true) const;
 
     template<typename T>
     void addComponent(std::unique_ptr<T>& component, bool exc = true);
@@ -66,7 +66,7 @@ bool GameObject::hasComponent() const {
 }
 
 template<typename T>
-T* GameObject::getComponent() const {
+T* GameObject::getComponent(bool exc) const {
     static_assert(
         std::is_base_of<Component, T>::value, "T must be Component"
     );
@@ -77,7 +77,11 @@ T* GameObject::getComponent() const {
         }
     }
 
-    throw std::invalid_argument("Component not found");
+    if (exc) {
+        throw std::invalid_argument("Component not found");
+    } else {
+        return nullptr;
+    }
 }
 
 template<typename T>
