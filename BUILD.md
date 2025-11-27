@@ -48,3 +48,13 @@ sudo apt-get install cmake clang libglfw3 libglfw3-dev libglm-dev libpng-dev uui
 > cmake .
 > cmake --build .
 ```
+
+# How to build tests
+
+1. Install BVH to tests/lib/bvh
+2. Run cmake with `-DBUILD_TESTS=ON`:
+
+```bash
+> cmake . -DBUILD_TESTS=ON
+> cmake --build .
+```
