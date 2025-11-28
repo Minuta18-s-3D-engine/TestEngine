@@ -47,7 +47,7 @@ std::vector<GameObject*> GameObjectManager::getObjectsWithComponents() {
     std::vector<GameObject*> result;
 
     for (auto& [ key, value ] : objects) {
-        if (value->template hasComponent<Components>()) {
+        if ((value->template hasComponent<Components>() && ...)) {
             result.push_back(value.get());
         }
     }
@@ -57,15 +57,11 @@ std::vector<GameObject*> GameObjectManager::getObjectsWithComponents() {
 
 template<typename... Components>
 void GameObjectManager::forEach(std::function<void(GameObject*)> callback) {
-    std::vector<GameObject*> result;
-
     for (auto& [ key, value ] : objects) {
-        if (value->template hasComponent<Components>()) {
+        if ((value->template hasComponent<Components>() && ...)) {
             callback(value.get());
         }
     }
-
-    return result;
 }
 
 #endif // ENGINE_GAMEOBJECT_GAMEOBJECTMANAGER_H_

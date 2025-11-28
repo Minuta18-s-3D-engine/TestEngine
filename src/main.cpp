@@ -26,6 +26,7 @@
 #include "engine/scene/Scene.hpp"
 #include "engine/scene/StaticObject.hpp"
 #include "engine/models/Model.hpp"
+#include "engine/gameobject/GameObjectManager.hpp"
 
 namespace fs = std::filesystem;
 
