@@ -2,6 +2,7 @@
 #define ENGINE_GAMEOBJECT_COMPONENTS_TRANSFORM_H_
 
 #include "glm/glm.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 #include <memory>
 

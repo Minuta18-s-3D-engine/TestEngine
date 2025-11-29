@@ -16,6 +16,9 @@
 #include <typeindex>
 
 #include "Component.hpp"
+#include "components/Transform.hpp"
+#include "components/Hierarchy.hpp"
+#include "components/Behavior.hpp"
 
 class GameObject {
     uuids::uuid id;
@@ -48,6 +51,8 @@ public:
     bool operator==(const GameObject& other) const noexcept { 
         return id == other.id; 
     }
+
+    static std::unique_ptr<GameObject> createGameObject();
 };
 
 template<typename T>
