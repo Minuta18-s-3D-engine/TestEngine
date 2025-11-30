@@ -12,6 +12,7 @@
 ## Features
 
 - **3D Graphics**: Modern clustered lighting pipeline
+- **ECS**: The engine provided Game object system which implements ECS principles
 - **Material system**: Well, still in development.
 - **Lighting**: Blinn-Phong lighting model.
 - **Texture loading**: Only `.png` supported yet
