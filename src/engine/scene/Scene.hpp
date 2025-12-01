@@ -30,8 +30,6 @@ class Scene {
 
     void renderQuad();
     bool firstRender;
-
-    void debugDraw(Camera* cam);
 public:
     Scene(AssetManager& _assetManager);
     ~Scene();
