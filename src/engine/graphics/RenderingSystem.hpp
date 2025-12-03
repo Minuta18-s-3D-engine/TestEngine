@@ -11,6 +11,7 @@
 #include "../assets/AssetManager.hpp"
 #include "../graphics/ClusteredRenderer.hpp"
 #include "../graphics/GBuffer.hpp"
+#include "../graphics/Camera.hpp"
 #include "../window/Window.hpp"
 
 #include <memory>
@@ -33,6 +34,7 @@ public:
     ~RenderingSystem();
 
     void update() override;
+    void render();
     void bindCamera(Camera* camera);
     void setDrawMode(uint newDrawMode);
 };
