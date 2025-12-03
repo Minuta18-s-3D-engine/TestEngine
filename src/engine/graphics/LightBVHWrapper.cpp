@@ -10,8 +10,14 @@ void LightBVHWrapper::initBVH(const LightBVHWrapper::LightArray& lights) {
     executor.for_each(0, lights.size(), [&] (size_t begin, size_t end) {
         for (size_t i = begin; i < end; ++i) {
             auto light = lights[i]; 
-            Vec3 center = Vec3(light->position.x, light->position.y, light->position.z);
-            Vec3 radius = Vec3(light->calcRadius());
+            auto transformComponent = light->getComponent<Transform>();
+            auto lightComponent = light->getComponent<PointLight>();
+            Vec3 center = Vec3(
+                transformComponent->position.x, 
+                transformComponent->position.y, 
+                transformComponent->position.z
+            );
+            Vec3 radius = Vec3(lightComponent->calcRadius());
             // constexpr double lightRadius = 0.01;
             // Vec3 radius = Vec3(lightRadius, lightRadius, lightRadius);
 

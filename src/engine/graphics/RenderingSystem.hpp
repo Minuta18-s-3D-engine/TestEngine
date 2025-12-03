@@ -2,6 +2,7 @@
 #define ENGINE_GRAPHICS_RENDERINGSYSTEM_H_
 
 #include "../gameobject/System.hpp"
+#include "../gameobject/GameObject.hpp"
 #include "../gameobject/GameObjectManager.hpp"
 #include "../gameobject/components/Transform.hpp"
 #include "../gameobject/components/Behavior.hpp"

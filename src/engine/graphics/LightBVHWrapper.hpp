@@ -14,7 +14,11 @@
 #include <vector>
 #include <memory>
 
-#include "../materials/Light.hpp"
+#include "../gameobject/GameObject.hpp"
+#include "../gameobject/GameObjectManager.hpp"
+#include "../gameobject/components/Transform.hpp"
+#include "../gameobject/components/Behavior.hpp"
+#include "components/PointLight.hpp"
 
 struct alignas(16) GPUBVHNode {
     glm::vec4 minBounds;
@@ -32,7 +36,7 @@ public:
     using Bvh     = bvh::v2::Bvh<Node>;
     using Config  = bvh::v2::DefaultBuilder<Node>::Config;
 private:
-    using LightArray = std::vector<std::shared_ptr<Light>>;
+    using LightArray = std::vector<GameObject*>;
 
     std::unique_ptr<Bvh> bvhTree;
     std::unique_ptr<Config> bvhConfig;

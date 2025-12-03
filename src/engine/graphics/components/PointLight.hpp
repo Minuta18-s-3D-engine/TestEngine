@@ -10,26 +10,22 @@
 
 class PointLight : public Component {
 public:
-    glm::vec3 position{ 0.0f };
     glm::vec3 color{ 1.0f };
     float linear;
     float quadratic;
 
     PointLight();
     PointLight(
-        glm::vec3 _position,
         glm::vec3 _color,
         float _linear,
         float _quadratic
     );
     PointLight(
-        glm::vec3 _position,
         glm::vec3 _color 
     );
 
     std::unique_ptr<Component> clone() override {
         auto ptr = std::make_unique<PointLight>();
-        ptr->position = position;
         ptr->color = color;
         ptr->linear = linear;
         ptr->quadratic = quadratic;

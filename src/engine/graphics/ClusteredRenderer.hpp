@@ -13,6 +13,11 @@
 #include "Camera.hpp"
 #include "../window/Window.hpp"
 #include "LightBVHWrapper.hpp"
+#include "../gameobject/GameObject.hpp"
+#include "../gameobject/GameObjectManager.hpp"
+#include "../gameobject/components/Transform.hpp"
+#include "../gameobject/components/Behavior.hpp"
+#include "components/PointLight.hpp"
 
 struct alignas(16) CompCluster {
     glm::vec4 minPoint;
@@ -67,6 +72,8 @@ public:
     ~ClusteredRenderer() = default;
 
     void updateLightData(const std::vector<std::shared_ptr<Light>>& lights);
+    // Assume only dynamic lights are given
+    void updateLightData(const std::vector<GameObject*>& lights);
     void updateClusters(const Camera* cam);
     glm::uvec3 getClusterGrid();
     void bindClusterData();

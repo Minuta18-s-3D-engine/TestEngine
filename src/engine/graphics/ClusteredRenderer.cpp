@@ -97,19 +97,17 @@ void ClusteredRenderer::createSSBOs() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void ClusteredRenderer::updateLightData(
-    const std::vector<std::shared_ptr<Light>>& lights
-) {
+void ClusteredRenderer::updateLightData(const std::vector<GameObject*>& lights) {
     gpuLightCache.clear();
     gpuLightCache.reserve(lights.size());
 
     for (int i = 0; i < lights.size(); ++i) {
         CompLight currLight;
-        currLight.position = lights[i]->position;
-        currLight.color = lights[i]->color;
-        currLight.linear = lights[i]->linear;
-        currLight.quadratic = lights[i]->quadratic;
-        currLight.radius = lights[i]->calcRadius();
+        currLight.position = lights[i]->getComponent<Transform>()->position;
+        currLight.color = lights[i]->getComponent<PointLight>()->color;
+        currLight.linear = lights[i]->getComponent<PointLight>()->linear;
+        currLight.quadratic = lights[i]->getComponent<PointLight>()->quadratic;
+        currLight.radius = lights[i]->getComponent<PointLight>()->calcRadius();
 
         gpuLightCache.push_back(currLight);
     }
@@ -149,11 +147,6 @@ void ClusteredRenderer::updateLightData(
         nodeConverted.primitive_count = node.index.prim_count();
     }
 
-    // for (int i = 0; i < 100; ++i) {
-    //     std::cout << "Node #" << i << std::endl;
-    //     std::cout << "first_child_or_primitive=" << bvhNodesConverted[i].first_child_or_primitive << std::endl;
-    //     std::cout << "primitive_count=" << bvhNodesConverted[i].primitive_count << std::endl;
-    // }
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhNodesSSBO);
     glBufferData(
