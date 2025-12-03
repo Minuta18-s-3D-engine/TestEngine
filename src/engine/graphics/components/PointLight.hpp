@@ -15,6 +15,18 @@ public:
     float linear;
     float quadratic;
 
+    PointLight();
+    PointLight(
+        glm::vec3 _position,
+        glm::vec3 _color,
+        float _linear,
+        float _quadratic
+    );
+    PointLight(
+        glm::vec3 _position,
+        glm::vec3 _color 
+    );
+
     std::unique_ptr<Component> clone() override {
         auto ptr = std::make_unique<PointLight>();
         ptr->position = position;
@@ -23,6 +35,8 @@ public:
         ptr->quadratic = quadratic;
         return ptr;
     }
+
+    float calcRadius();
 };
 
 #endif // ENGINE_GRAPHICS_COMPONENTS_POINTLIGHT_H_
