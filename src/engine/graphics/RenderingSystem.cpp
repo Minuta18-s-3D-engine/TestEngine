@@ -24,6 +24,28 @@ void RenderingSystem::setDrawMode(uint newDrawMode) {
 void RenderingSystem::bindCamera(Camera* camera) {
     this->camera = camera;
 }
+void RenderingSystem::renderQuad() {
+    if (quadVAO == 0) {
+        float quadVertices[] = {
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
 
 void RenderingSystem::render() {
     // camera is not bound, its possible to place here some effect in future
@@ -67,4 +89,29 @@ void RenderingSystem::render() {
     }
 
     gBuffer->unbind();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    lightingShader.use();
+
+    gBuffer->bindBufffers();
+    lightingShader.setUniform1i("gPosition", 0);
+    lightingShader.setUniform1i("gNormal", 1);
+    lightingShader.setUniform1i("gAlbedoSpec", 2);
+
+    lightingShader.setUniform1ui("drawMode", drawMode);
+    lightingShader.setUniform3f("viewPos", camera->pos);
+    lightingShader.setUniform1f("zNear", camera->zNear);
+    lightingShader.setUniform1f("zFar", camera->zFar);
+    lightingShader.setUniform4mat("projection", proj);
+    lightingShader.setUniform4mat("view", viewMat);
+    lightingShader.setUniform3ui("gridSize", renderer->getClusterGrid());
+    lightingShader.setUniform2ui("screenDimensions", 
+        Window::width, Window::height);
+
+    renderer->bindClusterData();
+}
+
+void RenderingSystem::update() {
+    this->render();
 }

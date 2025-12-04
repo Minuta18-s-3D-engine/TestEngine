@@ -26,6 +26,9 @@ class RenderingSystem : public System {
     Camera* camera = nullptr;
 
     uint drawMode = 0;
+
+    uint quadVAO = 0, quadVBO;
+    void renderQuad();
 public:
     RenderingSystem(
         AssetManager& _assetManager, 
