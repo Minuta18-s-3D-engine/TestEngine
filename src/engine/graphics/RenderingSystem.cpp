@@ -57,7 +57,8 @@ void RenderingSystem::render() {
 
     // TODO: add cache
     std::vector<GameObject*> lights = 
-        gameObjectManager.getObjectsWithComponents<Transform, Behavior, PointLight>();
+        gameObjectManager.getObjectsWithComponents
+            <Transform, Behavior, PointLight, ModelComponent>();
     renderer->updateLightData(lights);
     renderer->updateClusters(camera);
     
@@ -83,11 +84,13 @@ void RenderingSystem::render() {
     geomShader.setUniform4mat("view", viewMat);
     for (auto& object : objects) {
         auto transformComponent = object->getComponent<Transform>();
+        auto modelComponent = object->getComponent<ModelComponent>();
         glm::mat4 model = glm::translate(
             worldModel, transformComponent->position);
 
         geomShader.setUniform4mat("model", model);
-        // object->draw(geomShader); // TODO
+        auto objModel = modelManager.get(modelComponent->managerId);
+        objModel->draw(geomShader); 
     }
 
     gBuffer->unbind();
@@ -112,6 +115,8 @@ void RenderingSystem::render() {
         Window::width, Window::height);
 
     renderer->bindClusterData();
+
+    renderQuad();
 }
 
 void RenderingSystem::update() {

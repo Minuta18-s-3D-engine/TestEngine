@@ -6,6 +6,7 @@
 #include "../gameobject/GameObjectManager.hpp"
 #include "../gameobject/components/Transform.hpp"
 #include "../gameobject/components/Behavior.hpp"
+#include "../models/ModelComponent.hpp"
 #include "components/PointLight.hpp"
 
 #include "../assets/AssetManager.hpp"
