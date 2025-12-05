@@ -2,8 +2,10 @@
 
 RenderingSystem::RenderingSystem(
     AssetManager& _assetManager,
-    GameObjectManager& _gameObjectManager 
-    ): assetManager(_assetManager), gameObjectManager(_gameObjectManager) {
+    GameObjectManager& _gameObjectManager, 
+    ModelManager& _modelManager
+): assetManager(_assetManager), gameObjectManager(_gameObjectManager),
+    modelManager(_modelManager) {
     renderer = new ClusteredRenderer(_assetManager);
     gBuffer = new GBuffer(Window::width, Window::height);
 

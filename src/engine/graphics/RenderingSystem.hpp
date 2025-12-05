@@ -13,6 +13,7 @@
 #include "../graphics/GBuffer.hpp"
 #include "../graphics/Camera.hpp"
 #include "../window/Window.hpp"
+#include "../models/ModelManager.hpp"
 
 #include <memory>
 #include <vector>
@@ -20,6 +21,7 @@
 class RenderingSystem : public System {
     AssetManager& assetManager;
     GameObjectManager& gameObjectManager;
+    ModelManager& modelManager;
 
     ClusteredRenderer* renderer;
     GBuffer* gBuffer;
@@ -32,7 +34,8 @@ class RenderingSystem : public System {
 public:
     RenderingSystem(
         AssetManager& _assetManager, 
-        GameObjectManager& _gameObjectManager
+        GameObjectManager& _gameObjectManager,
+        ModelManager& _modelManager
     );
     ~RenderingSystem();
 
