@@ -29,6 +29,8 @@ class RenderingSystem : public System {
     GBuffer* gBuffer;
     Camera* camera = nullptr;
 
+    std::vector<GameObject*> lightCache, objectsCache;
+
     uint drawMode = 0;
 
     uint quadVAO = 0, quadVBO;
@@ -45,6 +47,7 @@ public:
     void render();
     void bindCamera(Camera* camera);
     void setDrawMode(uint newDrawMode);
+    void updateCache();
 };
 
 #endif // ENGINE_GRAPHICS_RENDERINGSYSTEM_H_

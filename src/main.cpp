@@ -299,6 +299,7 @@ int main() {
             );
         }
 
+        renderingSystem.updateCache();
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         float lastFPSDisplay = -10.0f;

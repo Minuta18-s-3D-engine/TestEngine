@@ -49,18 +49,20 @@ void RenderingSystem::renderQuad() {
     glBindVertexArray(0);
 }
 
+void RenderingSystem::updateCache() {
+    lightCache = gameObjectManager.getObjectsWithComponents
+        <Transform, Behavior, PointLight>();
+    objectsCache = gameObjectManager.getObjectsWithComponents
+        <Transform, ModelComponent, Behavior>();
+}
+
 void RenderingSystem::render() {
     // camera is not bound, its possible to place here some effect in future
     if (camera == nullptr) {
         return;
     }
-
-    // TODO: add cache
-    std::vector<GameObject*> lights = 
-        gameObjectManager.getObjectsWithComponents
-            <Transform, Behavior, PointLight>();
     
-    renderer->updateLightData(lights);
+    renderer->updateLightData(lightCache);
     renderer->updateClusters(camera);
     
     Shader& geomShader = assetManager.require<Shader>("shaders/geomShader");
@@ -77,14 +79,10 @@ void RenderingSystem::render() {
     glm::mat4 viewMat = camera->getViewMat();
     glm::mat4 worldModel = glm::mat4(1.0f);
 
-    std::vector<GameObject*> objects = 
-        gameObjectManager.getObjectsWithComponents
-            <Transform, ModelComponent, Behavior>();
-
     geomShader.use();
     geomShader.setUniform4mat("projection", proj);
     geomShader.setUniform4mat("view", viewMat);
-    for (auto& object : objects) {
+    for (auto& object : objectsCache) {
         auto transformComponent = object->getComponent<Transform>();
         auto modelComponent = object->getComponent<ModelComponent>();
         glm::mat4 model = glm::translate(
