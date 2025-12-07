@@ -11,6 +11,7 @@ enum BehaviorType {
 };
 
 class Behavior : public Component {
+public:
     BehaviorType type = BehaviorType::DYNAMIC;
 
     std::unique_ptr<Component> clone() override {

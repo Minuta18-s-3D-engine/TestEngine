@@ -7,6 +7,7 @@
 #include <typeindex>
 #include <exception>
 #include <stdexcept>
+#include <iostream>
 
 // Used this for reference:
 // https://github.com/MihailRis/voxelcore/blob/main/src/assets/Assets.hpp

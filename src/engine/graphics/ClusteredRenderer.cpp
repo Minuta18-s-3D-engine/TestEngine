@@ -4,9 +4,9 @@ ClusteredRenderer::ClusteredRenderer(AssetManager& _assetManager) :
     assetManager(_assetManager) {
     this->createSSBOs();
     this->buildClustersShader = 
-        _assetManager.get<ComputeShader>("shaders/buildClusters");
+        &(_assetManager.require<ComputeShader>("shaders/buildClusters"));
     this->lightCullingShader = 
-        _assetManager.get<ComputeShader>("shaders/lightCulling");
+        &(_assetManager.require<ComputeShader>("shaders/lightCulling"));
 }
 
 void ClusteredRenderer::createSSBOs() {

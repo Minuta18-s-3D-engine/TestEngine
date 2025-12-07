@@ -58,7 +58,8 @@ void RenderingSystem::render() {
     // TODO: add cache
     std::vector<GameObject*> lights = 
         gameObjectManager.getObjectsWithComponents
-            <Transform, Behavior, PointLight, ModelComponent>();
+            <Transform, Behavior, PointLight>();
+    
     renderer->updateLightData(lights);
     renderer->updateClusters(camera);
     
@@ -77,7 +78,8 @@ void RenderingSystem::render() {
     glm::mat4 worldModel = glm::mat4(1.0f);
 
     std::vector<GameObject*> objects = 
-        gameObjectManager.getObjectsWithComponents<Transform>();
+        gameObjectManager.getObjectsWithComponents
+            <Transform, ModelComponent, Behavior>();
 
     geomShader.use();
     geomShader.setUniform4mat("projection", proj);

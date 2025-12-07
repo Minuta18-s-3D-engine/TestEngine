@@ -15,9 +15,9 @@ public:
     ModelManager() = default;
 
     uuids::uuid add(Model* model);
-    uuids::uuid add(std::unique_ptr<Model> model);
+    uuids::uuid add(std::unique_ptr<Model>& model);
     void set(uuids::uuid id, Model* model);
-    void set(uuids::uuid id, std::unique_ptr<Model> model);
+    void set(uuids::uuid id, std::unique_ptr<Model>& model);
     Model* get(uuids::uuid id);
 };
 

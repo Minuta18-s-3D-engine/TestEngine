@@ -24,9 +24,13 @@
 #include "engine/materials/TextureMaterial.hpp"
 #include "engine/models/Mesh.hpp"
 #include "engine/scene/Scene.hpp"
-#include "engine/scene/StaticObject.hpp"
 #include "engine/models/Model.hpp"
+#include "engine/models/ModelManager.hpp"
+#include "engine/models/ModelComponent.hpp"
 #include "engine/gameobject/GameObjectManager.hpp"
+#include "engine/gameobject/GameObject.hpp"
+#include "engine/graphics/components/PointLight.hpp"
+#include "engine/graphics/RenderingSystem.hpp"
 
 namespace fs = std::filesystem;
 
@@ -85,7 +89,8 @@ const float MOUSE_SENSITIVITY = 0.1;
 // temporary solution
 void createRect(
     glm::vec3 pos, glm::vec3 scale, glm::vec2 textureScale, Material mat, 
-    std::string textureKey, AssetManager& manager, Scene& scene 
+    std::string textureKey, AssetManager& manager,
+    GameObjectManager& objectManager, ModelManager& modelManager
 ) {
     std::vector<Vertex> cubeVertices;
     for (int i = 0; i < 36; ++i) {
@@ -120,11 +125,39 @@ void createRect(
 
     std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
     cubeMeshArray.push_back(cubeMesh);
-    std::shared_ptr<Model> cubeModel = std::make_shared<Model>(cubeMeshArray);
-    std::shared_ptr<StaticObject> cubeObject = std::make_shared<StaticObject>(
-        cubeModel, pos);
+    std::unique_ptr<Model> cubeModel = std::make_unique<Model>(cubeMeshArray);
+    
+    auto modelId = modelManager.add(cubeModel);
 
-    scene.addObject(cubeObject);
+    std::unique_ptr<GameObject> cubeObject = GameObject::createGameObject();
+    auto transformComponent = cubeObject->getComponent<Transform>();
+    transformComponent->position = pos;
+    transformComponent->scale = scale;
+    auto behaviorComponent = cubeObject->getComponent<Behavior>();
+    behaviorComponent->type = BehaviorType::STATIC;
+    auto modelComponent = std::make_unique<ModelComponent>();
+    modelComponent->managerId = modelId;
+    cubeObject->addComponent<ModelComponent>(modelComponent);
+
+    objectManager.addObject(cubeObject);
+}
+
+void createPointLight(
+    glm::vec3 pos, glm::vec3 color, float linear, float quadratic,
+    GameObjectManager& objectManager
+) {
+    std::unique_ptr<GameObject> lightObject = GameObject::createGameObject();
+    auto transformComponent = lightObject->getComponent<Transform>();
+    transformComponent->position = pos;
+    auto behaviorComponent = lightObject->getComponent<Behavior>();
+    behaviorComponent->type = BehaviorType::STATIC;
+    auto pointLightComponent = std::make_unique<PointLight>();
+    pointLightComponent->color = color;
+    pointLightComponent->linear = linear;
+    pointLightComponent->quadratic = quadratic;
+    lightObject->addComponent<PointLight>(pointLightComponent);
+
+    objectManager.addObject(lightObject);
 }
 
 void loadTexture(
@@ -175,13 +208,6 @@ int main() {
             );
         }
 
-        Player player(glm::vec3(0.0f, 2.0f, -1.0f));
-        // Shader forlightingShader("forward/main");
-        // Shader lightSourceShader("forward/lightSource");
-
-        // assetManager.set<Shader>(std::make_shared<Shader>(forlightingShader), "shaders/forward/main");
-        // assetManager.set<Shader>(std::make_shared<Shader>(lightSourceShader), "shaders/forward/lightSource");
-
         Shader geomShader("geomShader");
         Shader lightingShader("lightingShader");
 
@@ -194,15 +220,28 @@ int main() {
         assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
         assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
 
-        Scene mainScene(assetManager);
-        std::shared_ptr<Light> l1Ptr = 
-            std::make_shared<Light>(l1);
-        mainScene.addLight(l1Ptr);
-        mainScene.addLight(Light::calcLight(
-            glm::vec3(-2.0, 2.0, -4.0),
-            glm::vec3(1.0, 0.0, 0.0),
-            2.0, 0.5
-        ));
+        GameObjectManager objectManager;
+        ModelManager modelManager;
+        RenderingSystem renderingSystem(
+            assetManager,
+            objectManager,
+            modelManager
+        );
+
+        
+
+        Player player(glm::vec3(0.0f, 2.0f, -1.0f));
+        renderingSystem.bindCamera(player.getCamera().get());
+
+        createPointLight(
+            glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.01f, 
+            0.04f, objectManager
+        );
+
+        createPointLight(
+            glm::vec3(-2.0, 2.0, -4.0), glm::vec3(1.0, 0.0, 0.0), 
+            glm::pow(10.0f, -2.0f), glm::pow(10.0f, -0.5f), objectManager
+        );
 
         glm::vec3 pos(0, 0, 0), scale(1, 1, 1);
         glm::vec2 textureScale(1, 1);
@@ -212,8 +251,6 @@ int main() {
         );
         std::string textureKey = "materials/container";
 
-        // createRect(pos, scale, textureScale, mat, textureKey, 
-        //     assetManager, mainScene);
         createRect(
             glm::vec3(0.0f, -0.6f, 0.0f),
             glm::vec3(1000.0f, 0.2, 1000.0f),
@@ -226,7 +263,7 @@ int main() {
                 16.0f
             ),
             "materials/pavingStone",
-            assetManager, mainScene
+            assetManager, objectManager, modelManager
         );
 
         srand(time(NULL));
@@ -239,29 +276,29 @@ int main() {
                 glm::vec2(1.0, 1.0),
                 Material(),
                 (tex == 0 ? "materials/container" : "materials/paintedPlaster"),
-                assetManager, mainScene
+                assetManager, objectManager, modelManager
             );
         }
 
         for (int i = 0; i < 1000; ++i) {
-            mainScene.addLight(Light::calcLight(
-                glm::vec3(rand() % 500 - 250 + (rand() % 5) * 0.13, 0.1 + rand() % 5, rand() % 500 - 250 + (rand() % 5) * 0.13),
-                glm::vec3(0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005, 0.5 + (rand() % 100) * 0.005),
-                (rand() % 12 + 1) * 0.1, (rand() % 12 + 1) * 0.1
-            ));
+            float lightX = rand() % 500 - 250 + (rand() % 5) * 0.13;
+            float lightY = 0.1 + rand() % 5;
+            float lightZ = rand() % 500 - 250 + (rand() % 5) * 0.13;
+
+            float lightColotR = 0.5 + (rand() % 100) * 0.005;
+            float lightColotG = 0.5 + (rand() % 100) * 0.005;
+            float lightColotB = 0.5 + (rand() % 100) * 0.005;
+
+            float lightLinear = glm::pow(10.0f, -(rand() % 12 + 1) * 0.1);
+            float lightQuadratic = glm::pow(10.0f, -(rand() % 12 + 1) * 0.1);
+        
+            createPointLight(
+                glm::vec3(lightX, lightY, lightZ),
+                glm::vec3(lightColotR, lightColotG, lightColotB),
+                lightLinear, lightQuadratic, objectManager
+            );
         }
 
-        // createRect(
-        //     glm::vec3(4.0f, 1.0f, 2.0f),
-        //     glm::vec3(1.0f, 3.0f, 6.0f),
-        //     glm::vec2(3.0f, 3.0f),
-        //     Material(
-        //         glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.1f, 0.1f, 0.1f), 
-        //         glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.8f, 0.8f, 0.8f)
-        //     ),
-        //     "materials/bricksRed",
-        //     assetManager, mainScene
-        // );
 
         float lastFrame = 0.0f, currentFrame = 0.0f, deltaTime;
         float lastFPSDisplay = -10.0f;
@@ -309,11 +346,11 @@ int main() {
             player.update(deltaTime);
 
             if (UserInput::isKeyPressed(GLFW_KEY_F1)) 
-                mainScene.setDrawMode(0);
+                renderingSystem.setDrawMode(0);
             if (UserInput::isKeyPressed(GLFW_KEY_F2)) 
-                mainScene.setDrawMode(1);
+                renderingSystem.setDrawMode(1);
             if (UserInput::isKeyPressed(GLFW_KEY_F3)) 
-                mainScene.setDrawMode(2);
+                renderingSystem.setDrawMode(2);
 
             if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) {
                 if (Window::getCursorInputMode() == GLFW_CURSOR_NORMAL) {
@@ -327,7 +364,7 @@ int main() {
             Window::clearColor(glm::vec3(0.0f, 0.0f, 0.0f));
             Window::clear();
 
-            mainScene.drawAll(player.getCamera().get());
+            renderingSystem.update();
 
             Window::swapBuffers();
         }

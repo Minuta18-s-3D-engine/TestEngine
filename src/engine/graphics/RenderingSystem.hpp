@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <vector>
+#include <chrono>
 
 class RenderingSystem : public System {
     AssetManager& assetManager;

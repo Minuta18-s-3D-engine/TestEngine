@@ -45,10 +45,8 @@ uuids::uuid GameObject::getUuid() const {
 std::unique_ptr<GameObject> GameObject::createGameObject() {
     auto object = std::make_unique<GameObject>();
     auto transformComponent = std::make_unique<Transform>();
-    auto hierarchyComponent = std::make_unique<Hierarchy>();
     auto behaviorComponent = std::make_unique<Behavior>();
     object->addComponent<Transform>(transformComponent);    
-    object->addComponent<Hierarchy>(hierarchyComponent);    
     object->addComponent<Behavior>(behaviorComponent);
     return object;    
 }
