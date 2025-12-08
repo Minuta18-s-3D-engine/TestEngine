@@ -11,11 +11,6 @@ TextureMaterial::TextureMaterial(
     TextureType type
 ) : tex(tex), isActive(true), type(type) {}
 
-TextureMaterial::TextureMaterial(
-    std::shared_ptr<Texture> tex,
-    TextureType type
-) : tex(tex), isActive(true), type(type) {}
-
 TextureMaterial::~TextureMaterial() {}
 
 void TextureMaterial::passToShader(Shader& shader, std::string name) {

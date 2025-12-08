@@ -3,7 +3,7 @@
 // learnopengl.com saves the day once again
 // https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/model.h
 
-std::unique_ptr<Model>& ModelLoader::loadModel(std::string filename) {
+std::unique_ptr<Model> ModelLoader::loadModel(std::string filename) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
         filename, 
@@ -12,9 +12,8 @@ std::unique_ptr<Model>& ModelLoader::loadModel(std::string filename) {
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || 
         !scene->mRootNode) {
-        std::cerr << "Assimp error: " << importer.GetErrorString() << std::endl;
-        createdModel = std::make_unique<Model>(nullptr);
-        return createdModel;
+        throw std::runtime_error(
+            std::string("Assimp error: ") + importer.GetErrorString());
     }
 
     directory = filename.substr(0, filename.find_last_of('/'));
@@ -23,7 +22,7 @@ std::unique_ptr<Model>& ModelLoader::loadModel(std::string filename) {
 
     processNode(scene->mRootNode, scene);
 
-    return createdModel;
+    return std::move(createdModel);
 }
 
 void ModelLoader::processNode(aiNode* node, const aiScene* scene) {
@@ -132,9 +131,10 @@ std::vector<TextureMaterial> ModelLoader::loadMaterialTextures(
 
         if (!skip) {
             size_t len = 0;
-            auto textureContent = read_bytes(str.C_Str(), len);
+            auto path = directory + "/" + std::string(str.C_Str());
+            auto textureContent = read_bytes(path, len);
             auto texture = PngCodec::load_texture(
-                textureContent.get(), len, str.C_Str());
+                textureContent.get(), len, path);
 
             TextureType texType;
             if (typeName == "texture_diffuse") {
@@ -148,7 +148,7 @@ std::vector<TextureMaterial> ModelLoader::loadMaterialTextures(
             }
 
             auto textureMat = TextureMaterial(texture, texType);
-            textureMat.filename = str.C_Str();
+            textureMat.filename = path;
 
             textures.push_back(textureMat);
             loadedTextures.push_back(textureMat);

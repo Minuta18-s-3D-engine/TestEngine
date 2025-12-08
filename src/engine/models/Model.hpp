@@ -14,6 +14,7 @@ class Model {
 public:
     std::vector<std::shared_ptr<Mesh>> meshes;
     Model(std::vector<std::shared_ptr<Mesh>>& meshes);
+    Model() = default;
 
     void draw(Shader& shader);
 

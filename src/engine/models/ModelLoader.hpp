@@ -28,7 +28,7 @@ class ModelLoader {
         std::string typeName
     );
 public:
-    std::unique_ptr<Model>& loadModel(std::string filename);
+    std::unique_ptr<Model> loadModel(std::string filename);
 };
 
 #endif // ENGINE_MODELS_MODELLOADER_H_

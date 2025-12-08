@@ -31,6 +31,7 @@
 #include "engine/gameobject/GameObject.hpp"
 #include "engine/graphics/components/PointLight.hpp"
 #include "engine/graphics/RenderingSystem.hpp"
+#include "engine/models/ModelLoader.hpp"
 
 namespace fs = std::filesystem;
 
@@ -242,6 +243,22 @@ int main() {
             glm::vec3(-2.0, 2.0, -4.0), glm::vec3(1.0, 0.0, 0.0), 
             glm::pow(10.0f, -2.0f), glm::pow(10.0f, -0.5f), objectManager
         );
+
+        ModelLoader modelLoader;
+        auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
+        auto modelId = modelManager.add(sponzaModel);
+
+        std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
+        auto transformComponent = sponzaObject->getComponent<Transform>();
+        transformComponent->position = glm::vec3(0.0f, 0.0f, 0.0f);
+        transformComponent->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        auto behaviorComponent = sponzaObject->getComponent<Behavior>();
+        behaviorComponent->type = BehaviorType::STATIC;
+        auto modelComponent = std::make_unique<ModelComponent>();
+        modelComponent->managerId = modelId;
+        sponzaObject->addComponent<ModelComponent>(modelComponent);
+
+        objectManager.addObject(sponzaObject);
 
         // glm::vec3 pos(0, 0, 0), scale(1, 1, 1);
         // glm::vec2 textureScale(1, 1);
