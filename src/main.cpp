@@ -243,68 +243,68 @@ int main() {
             glm::pow(10.0f, -2.0f), glm::pow(10.0f, -0.5f), objectManager
         );
 
-        glm::vec3 pos(0, 0, 0), scale(1, 1, 1);
-        glm::vec2 textureScale(1, 1);
-        Material mat(
-            glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.2f, 0.2f, 0.2f), 
-            glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f)
-        );
-        std::string textureKey = "materials/container";
+        // glm::vec3 pos(0, 0, 0), scale(1, 1, 1);
+        // glm::vec2 textureScale(1, 1);
+        // Material mat(
+        //     glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.2f, 0.2f, 0.2f), 
+        //     glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f)
+        // );
+        // std::string textureKey = "materials/container";
 
-        createRect(
-            glm::vec3(0.0f, -0.6f, 0.0f),
-            glm::vec3(1000.0f, 0.2, 1000.0f),
-            glm::vec2(250.0f, 250.0f),
-            Material(
-                glm::vec3(0.8, 0.8, 0.8), 
-                glm::vec3(0.05, 0.05, 0.05),
-                glm::vec3(0.4, 0.4, 0.4),
-                glm::vec3(0.4, 0.4, 0.4),
-                16.0f
-            ),
-            "materials/pavingStone",
-            assetManager, objectManager, modelManager
-        );
+        // createRect(
+        //     glm::vec3(0.0f, -0.6f, 0.0f),
+        //     glm::vec3(1000.0f, 0.2, 1000.0f),
+        //     glm::vec2(250.0f, 250.0f),
+        //     Material(
+        //         glm::vec3(0.8, 0.8, 0.8), 
+        //         glm::vec3(0.05, 0.05, 0.05),
+        //         glm::vec3(0.4, 0.4, 0.4),
+        //         glm::vec3(0.4, 0.4, 0.4),
+        //         16.0f
+        //     ),
+        //     "materials/pavingStone",
+        //     assetManager, objectManager, modelManager
+        // );
 
-        srand(time(NULL));
-        int cubesCount = 500;
-        int cubesArea = 100;
-        for (int i = 0; i < cubesCount; ++i) {
-            int size = rand() % 2 + 1;
-            int tex = rand() % 2;
-            createRect(
-                glm::vec3(
-                    rand() % cubesArea - cubesArea / 2 + (rand() % 5) * 0.13, 
-                    (size - 1.0) * 0.5 - ((rand() % 2) * 0.1), 
-                    rand() % cubesArea - cubesArea / 2 + (rand() % 5) * 0.13),
-                glm::vec3(size, size, size),
-                glm::vec2(1.0, 1.0),
-                Material(),
-                (tex == 0 ? "materials/container" : "materials/paintedPlaster"),
-                assetManager, objectManager, modelManager
-            );
-        }
+        // srand(time(NULL));
+        // int cubesCount = 500;
+        // int cubesArea = 100;
+        // for (int i = 0; i < cubesCount; ++i) {
+        //     int size = rand() % 2 + 1;
+        //     int tex = rand() % 2;
+        //     createRect(
+        //         glm::vec3(
+        //             rand() % cubesArea - cubesArea / 2 + (rand() % 5) * 0.13, 
+        //             (size - 1.0) * 0.5 - ((rand() % 2) * 0.1), 
+        //             rand() % cubesArea - cubesArea / 2 + (rand() % 5) * 0.13),
+        //         glm::vec3(size, size, size),
+        //         glm::vec2(1.0, 1.0),
+        //         Material(),
+        //         (tex == 0 ? "materials/container" : "materials/paintedPlaster"),
+        //         assetManager, objectManager, modelManager
+        //     );
+        // }
 
-        int lightArea = 100;
-        int lightCount = 300;
-        for (int i = 0; i < lightCount; ++i) {
-            float lightX = rand() % lightArea - lightArea / 2 + (rand() % 5) * 0.13;
-            float lightY = 0.1 + rand() % 5;
-            float lightZ = rand() % lightArea - lightArea / 2 + (rand() % 5) * 0.13;
+        // int lightArea = 100;
+        // int lightCount = 300;
+        // for (int i = 0; i < lightCount; ++i) {
+        //     float lightX = rand() % lightArea - lightArea / 2 + (rand() % 5) * 0.13;
+        //     float lightY = 0.1 + rand() % 5;
+        //     float lightZ = rand() % lightArea - lightArea / 2 + (rand() % 5) * 0.13;
 
-            float lightColotR = 0.5 + (rand() % 100) * 0.005;
-            float lightColotG = 0.5 + (rand() % 100) * 0.005;
-            float lightColotB = 0.5 + (rand() % 100) * 0.005;
+        //     float lightColotR = 0.5 + (rand() % 100) * 0.005;
+        //     float lightColotG = 0.5 + (rand() % 100) * 0.005;
+        //     float lightColotB = 0.5 + (rand() % 100) * 0.005;
 
-            float lightLinear = glm::pow(10.0f, -(rand() % 12 + 1) * 0.1);
-            float lightQuadratic = glm::pow(10.0f, -(rand() % 12 + 1) * 0.1);
+        //     float lightLinear = glm::pow(10.0f, -(rand() % 12 + 1) * 0.1);
+        //     float lightQuadratic = glm::pow(10.0f, -(rand() % 12 + 1) * 0.1);
         
-            createPointLight(
-                glm::vec3(lightX, lightY, lightZ),
-                glm::vec3(lightColotR, lightColotG, lightColotB),
-                lightLinear, lightQuadratic, objectManager
-            );
-        }
+        //     createPointLight(
+        //         glm::vec3(lightX, lightY, lightZ),
+        //         glm::vec3(lightColotR, lightColotG, lightColotB),
+        //         lightLinear, lightQuadratic, objectManager
+        //     );
+        // }
 
         renderingSystem.updateCache();
 
