@@ -267,11 +267,16 @@ int main() {
         );
 
         srand(time(NULL));
-        for (int i = 0; i < 1500; ++i) {
+        int cubesCount = 500;
+        int cubesArea = 100;
+        for (int i = 0; i < cubesCount; ++i) {
             int size = rand() % 2 + 1;
             int tex = rand() % 2;
             createRect(
-                glm::vec3(rand() % 500 - 250 + (rand() % 5) * 0.13, (size - 1.0) * 0.5 - ((rand() % 2) * 0.1), rand() % 500 - 250 + (rand() % 5) * 0.13),
+                glm::vec3(
+                    rand() % cubesArea - cubesArea / 2 + (rand() % 5) * 0.13, 
+                    (size - 1.0) * 0.5 - ((rand() % 2) * 0.1), 
+                    rand() % cubesArea - cubesArea / 2 + (rand() % 5) * 0.13),
                 glm::vec3(size, size, size),
                 glm::vec2(1.0, 1.0),
                 Material(),
@@ -280,10 +285,12 @@ int main() {
             );
         }
 
-        for (int i = 0; i < 1000; ++i) {
-            float lightX = rand() % 500 - 250 + (rand() % 5) * 0.13;
+        int lightArea = 100;
+        int lightCount = 300;
+        for (int i = 0; i < lightCount; ++i) {
+            float lightX = rand() % lightArea - lightArea / 2 + (rand() % 5) * 0.13;
             float lightY = 0.1 + rand() % 5;
-            float lightZ = rand() % 500 - 250 + (rand() % 5) * 0.13;
+            float lightZ = rand() % lightArea - lightArea / 2 + (rand() % 5) * 0.13;
 
             float lightColotR = 0.5 + (rand() % 100) * 0.005;
             float lightColotG = 0.5 + (rand() % 100) * 0.005;
