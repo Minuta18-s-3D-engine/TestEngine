@@ -6,6 +6,17 @@ Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices,
     indices = _indices;
     textures = _textures;
     mainMaterial = _mainMaterial;
+    hasMaterial = false;
+
+    setupMesh();
+}
+
+Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
+    std::vector<TextureMaterial> _textures) {
+    vertices = _vertices;
+    indices = _indices;
+    textures = _textures;
+    hasMaterial = false;
 
     setupMesh();
 }
@@ -41,10 +52,19 @@ void Mesh::setupMesh() {
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
         (void*) offsetof(Vertex, texCords));
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
+        (void*) offsetof(Vertex, tangent));
+
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
+        (void*) offsetof(Vertex, bitangent));
 }
 
 void Mesh::draw(Shader& shader) {
-    mainMaterial.passToShader(shader, "mainMaterial");
+    if (hasMaterial)
+        mainMaterial.passToShader(shader, "mainMaterial");
 
     uint diffuseNr = 1;
     uint specularNr = 1;

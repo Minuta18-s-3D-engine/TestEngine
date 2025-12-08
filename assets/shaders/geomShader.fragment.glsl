@@ -8,8 +8,6 @@ in vec3 FragPos;
 in vec3 Normal;
 
 struct TextureMaterial {
-    float scaleX, scaleY;
-    float shiftX, shiftY;
     bool isActive;
 };
 

@@ -11,6 +11,7 @@
 struct Vertex {
     glm::vec3 pos, normal;
     glm::vec2 texCords;
+    glm::vec3 tangent, bitangent;
 };
 
 class Mesh {
@@ -22,9 +23,12 @@ public:
     std::vector<uint> indices;
     std::vector<TextureMaterial> textures;
     Material mainMaterial;
+    bool hasMaterial;
 
     Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
         std::vector<TextureMaterial> _textures, Material _mainMaterial);
+    Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
+        std::vector<TextureMaterial> _textures);
     ~Mesh();
     
     void draw(Shader& shader);

@@ -10,25 +10,20 @@
 
 enum TextureType {
     DIFFUSE,
-    SPECULAR
+    SPECULAR,
+    NORMAL,
+    HEIGHT
 };
 
 class TextureMaterial : public BaseMaterial {
 public:
-    float scaleX, scaleY;
-    float shiftX, shiftY;
     bool isActive;
     std::shared_ptr<Texture> tex;
+    std::string filename = "";
     TextureType type;
 
     TextureMaterial();
     TextureMaterial(std::shared_ptr<Texture> tex);
-    TextureMaterial(
-        std::shared_ptr<Texture> tex,
-        float scaleX, float scaleY,
-        float shiftX, float shiftY, 
-        TextureType type
-    );
     TextureMaterial(
         std::shared_ptr<Texture> tex,
         TextureType type
