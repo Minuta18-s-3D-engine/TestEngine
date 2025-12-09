@@ -3,7 +3,7 @@
 // learnopengl.com saves the day once again
 // https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/model.h
 
-std::unique_ptr<Model> ModelLoader::loadModel(std::string filename) {
+std::unique_ptr<Model> ModelLoader::loadModel(const std::string& filename) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
         filename, 
@@ -90,19 +90,19 @@ Mesh ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
     std::vector<TextureMaterial> diffuseMaps = loadMaterialTextures(
-        material, aiTextureType_DIFFUSE, "texture_diffuse");
+        material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
     std::vector<TextureMaterial> specularMaps = loadMaterialTextures(
-        material, aiTextureType_SPECULAR, "texture_specular");
+        material, aiTextureType_SPECULAR, "texture_specular", scene);
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
     std::vector<TextureMaterial> normalMaps = loadMaterialTextures(
-        material, aiTextureType_HEIGHT, "texture_normal");
+        material, aiTextureType_HEIGHT, "texture_normal", scene);
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
     std::vector<TextureMaterial> heightMaps = loadMaterialTextures(
-        material, aiTextureType_AMBIENT, "texture_height");
+        material, aiTextureType_AMBIENT, "texture_height", scene);
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     return Mesh(vertices, indices, textures);
@@ -111,7 +111,8 @@ Mesh ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 std::vector<TextureMaterial> ModelLoader::loadMaterialTextures(
     aiMaterial* mat, 
     aiTextureType type, 
-    std::string typeName
+    const std::string& typeName,
+    const aiScene* scene
 ) {
     std::vector<TextureMaterial> textures;
     for (uint i = 0; i < mat->GetTextureCount(type); ++i) {
@@ -130,12 +131,6 @@ std::vector<TextureMaterial> ModelLoader::loadMaterialTextures(
         }        
 
         if (!skip) {
-            size_t len = 0;
-            auto path = directory + "/" + std::string(str.C_Str());
-            auto textureContent = read_bytes(path, len);
-            auto texture = PngCodec::load_texture(
-                textureContent.get(), len, path);
-
             TextureType texType;
             if (typeName == "texture_diffuse") {
                 texType = TextureType::DIFFUSE;
@@ -147,11 +142,65 @@ std::vector<TextureMaterial> ModelLoader::loadMaterialTextures(
                 texType = TextureType::HEIGHT;
             }
 
-            auto textureMat = TextureMaterial(texture, texType);
-            textureMat.filename = path;
+            TextureMaterial textureMat;
+
+            std::string texturePath = str.C_Str();
+            // IMPORTANT: Embedded textures are marked "*" in assimp
+            if (texturePath[0] == '*') {
+                int textureIndex = std::stoi(texturePath.substr(1));
+                if (textureIndex >= 0 && 
+                    textureIndex < (int) scene->mNumTextures) {
+                    textureMat = loadEmbeddedTexture(
+                        scene->mTextures[textureIndex],
+                        texType,
+                        texturePath
+                    );
+                }
+            } else {
+                textureMat = loadExternalTexture(texturePath, texType);
+            }
 
             textures.push_back(textureMat);
             loadedTextures.push_back(textureMat);
         }
+    }
+
+    return textures;
+}
+
+TextureMaterial ModelLoader::loadExternalTexture(
+    const std::string& path, TextureType type
+) {    
+    size_t len = 0;
+    auto fullPath = directory + "/" + path;
+    auto textureContent = read_bytes(fullPath, len);
+    auto texture = PngCodec::load_texture(
+        textureContent.get(), len, fullPath);
+
+    auto textureMat = TextureMaterial(texture, type);
+        textureMat.filename = fullPath;
+
+    return textureMat;
+}
+
+TextureMaterial ModelLoader::loadEmbeddedTexture(
+    const aiTexture* embeddedTexture, TextureType texType,
+    const std::string& embeddedId
+) {
+    if (embeddedTexture->mHeight == 0) {
+        auto texture = PngCodec::load_texture(
+            reinterpret_cast<const uint8_t*>(embeddedTexture->pcData),
+            embeddedTexture->mWidth,
+            embeddedId
+        );
+
+        auto res = TextureMaterial(texture, texType);
+        res.filename = embeddedId;
+
+        return res;
+    } else {
+        throw std::runtime_error(
+            "Uncompressed textures are not implemented yet"
+        );
     }
 }

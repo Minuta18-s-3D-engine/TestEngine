@@ -25,10 +25,20 @@ class ModelLoader {
     std::vector<TextureMaterial> loadMaterialTextures(
         aiMaterial* mat, 
         aiTextureType type, 
-        std::string typeName
+        const std::string& typeName,
+        const aiScene* scene
+    );
+
+    TextureMaterial loadExternalTexture(
+        const std::string& path, TextureType type
+    );
+    
+    TextureMaterial loadEmbeddedTexture(
+        const aiTexture* embeddedTexture, TextureType texType,
+        const std::string& embeddedId
     );
 public:
-    std::unique_ptr<Model> loadModel(std::string filename);
+    std::unique_ptr<Model> loadModel(const std::string& filename);
 };
 
 #endif // ENGINE_MODELS_MODELLOADER_H_

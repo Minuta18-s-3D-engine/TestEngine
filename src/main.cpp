@@ -245,7 +245,7 @@ int main() {
         );
 
         ModelLoader modelLoader;
-        auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
+        auto sponzaModel = modelLoader.loadModel("assets/models/sponza.obj");
         auto modelId = modelManager.add(sponzaModel);
 
         std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
