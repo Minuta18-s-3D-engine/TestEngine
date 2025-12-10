@@ -211,8 +211,6 @@ std::shared_ptr<Texture> ModelLoader::loadTexture(
     std::string name
 ) {
     ImageType imgFormat = getImageType(imgData, imgSize);
-    std::cout << std::hex << imgData[0] << imgData[1] << imgData[2] << std::endl;
-    std::cout << (imgFormat == ImageType::JPG) << std::endl;
     if (imgFormat == ImageType::PNG) {
         return PngCoder::load_texture(
             imgData,
