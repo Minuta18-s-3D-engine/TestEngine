@@ -1,5 +1,5 @@
-#ifndef ENGINE_ASSETS_CODECS_IMAGES_PNGCODEC_HPP_
-#define ENGINE_ASSETS_CODECS_IMAGES_PNGCODEC_HPP_
+#ifndef ENGINE_ASSETS_CODECS_IMAGES_PNGCODER_HPP_
+#define ENGINE_ASSETS_CODECS_IMAGES_PNGCODER_HPP_
 
 #include "../../utils/ImageData.hpp"
 #include "../../../graphics/Texture.hpp"
@@ -15,7 +15,7 @@
  * for a good example (I copied it :) ) of libpng
  */
 
-class PngCodec {
+class PngCoder {
 public:
     static std::shared_ptr<ImageData> load_image(
         const uint8_t* bytes, size_t size, std::string name
@@ -26,4 +26,4 @@ public:
     );
 };
 
-#endif // ENGINE_ASSETS_CODECS_IMAGES_PNGCODEC_HPP_
+#endif // ENGINE_ASSETS_CODECS_IMAGES_PNGCODER_HPP_

@@ -42,7 +42,7 @@ static void read_in_memory(
     reader.offset += toread;
 }
 
-std::shared_ptr<ImageData> PngCodec::load_image(
+std::shared_ptr<ImageData> PngCoder::load_image(
     const uint8_t* bytes, size_t size, std::string name
 ) {
     png_structp pngPtr = png_create_read_struct(
@@ -139,10 +139,10 @@ std::shared_ptr<ImageData> PngCodec::load_image(
     return image;
 }
 
-std::shared_ptr<Texture> PngCodec::load_texture(
+std::shared_ptr<Texture> PngCoder::load_texture(
     const uint8_t* bytes, size_t size, std::string name
 ) {
-    std::shared_ptr<ImageData> image = PngCodec::load_image(bytes, size, name);
+    std::shared_ptr<ImageData> image = PngCoder::load_image(bytes, size, name);
     auto texture = Texture::create(image.get());
     
     return texture;

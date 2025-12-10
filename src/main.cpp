@@ -167,7 +167,7 @@ void loadTexture(
 ) {
     size_t len = 0;
     auto texture_content = read_bytes(path, len);
-    auto texture = PngCodec::load_texture(
+    auto texture = PngCoder::load_texture(
         texture_content.get(), len, key);
     manager.set<Texture>(texture, key);
 
@@ -245,7 +245,7 @@ int main() {
         );
 
         ModelLoader modelLoader;
-        auto sponzaModel = modelLoader.loadModel("assets/models/sponza.obj");
+        auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
         auto modelId = modelManager.add(sponzaModel);
 
         std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();

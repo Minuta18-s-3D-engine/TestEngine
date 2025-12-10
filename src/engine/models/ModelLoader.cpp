@@ -174,7 +174,7 @@ TextureMaterial ModelLoader::loadExternalTexture(
     size_t len = 0;
     auto fullPath = directory + "/" + path;
     auto textureContent = read_bytes(fullPath, len);
-    auto texture = PngCodec::load_texture(
+    auto texture = PngCoder::load_texture(
         textureContent.get(), len, fullPath);
 
     auto textureMat = TextureMaterial(texture, type);
@@ -188,7 +188,7 @@ TextureMaterial ModelLoader::loadEmbeddedTexture(
     const std::string& embeddedId
 ) {
     if (embeddedTexture->mHeight == 0) {
-        auto texture = PngCodec::load_texture(
+        auto texture = PngCoder::load_texture(
             reinterpret_cast<const uint8_t*>(embeddedTexture->pcData),
             embeddedTexture->mWidth,
             embeddedId
