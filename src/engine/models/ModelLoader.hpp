@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 #include "Model.hpp"
 #include "Mesh.hpp"
@@ -36,6 +37,12 @@ class ModelLoader {
     TextureMaterial loadEmbeddedTexture(
         const aiTexture* embeddedTexture, TextureType texType,
         const std::string& embeddedId
+    );
+
+    std:shared_ptr<Texture> loadTexture(
+        const uint8_t* imgData,
+        size_t imgSize,
+        std::string name
     );
 public:
     std::unique_ptr<Model> loadModel(const std::string& filename);
