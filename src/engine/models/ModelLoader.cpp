@@ -204,3 +204,26 @@ TextureMaterial ModelLoader::loadEmbeddedTexture(
         );
     }
 }
+
+std::shared_ptr<Texture> ModelLoader::loadTexture(
+    const uint8_t* imgData,
+    size_t imgSize,
+    std::string name
+) {
+    ImageType imgFormat = getImageType(imgData, imgSize);
+    if (imgFormat == ImageType::PNG) {
+        return PngCoder::load_texture(
+            imgData,
+            imgSize,
+            name
+        );
+    } else if (imgFormat == ImageType::JPG) {
+        return JpgCoder::load_texture(
+            imgData,
+            imgSize,
+            name
+        );
+    } else {
+        throw std::runtime_error("Unsupported image type");
+    }
+}

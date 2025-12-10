@@ -13,6 +13,7 @@
 #include "Model.hpp"
 #include "Mesh.hpp"
 #include "../assets/coders/images/PngCoder.hpp"
+#include "../assets/coders/images/JpgCoder.hpp"
 #include "../assets/utils/Files.hpp"
 #include "../assets/utils/ImageData.hpp"
 
@@ -39,7 +40,7 @@ class ModelLoader {
         const std::string& embeddedId
     );
 
-    std:shared_ptr<Texture> loadTexture(
+    std::shared_ptr<Texture> loadTexture(
         const uint8_t* imgData,
         size_t imgSize,
         std::string name

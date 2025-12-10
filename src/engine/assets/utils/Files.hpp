@@ -20,6 +20,6 @@ enum ImageType {
     UNKNOWN
 };
 
-ImageType getImageType(std::unique_ptr<uint8_t[]> imageData, size_t length);
+ImageType getImageType(const uint8_t* imageData, size_t length);
 
 #endif // ENGINE_ASSETS_UTILS_FILES_H_

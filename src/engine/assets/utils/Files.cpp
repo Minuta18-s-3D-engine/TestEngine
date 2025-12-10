@@ -17,15 +17,15 @@ std::unique_ptr<uint8_t[]> read_bytes(
     return data;
 }
 
-ImageType getImageType(std::unique_ptr<uint8_t[]> imageData, size_t length) {
+ImageType getImageType(const uint8_t* imageData, size_t length) {
     if (length < 16) return ImageType::UNKNOWN;
 
     // .jpg:  FF D8 FF
     // .png:  89 50 4E 47 0D 0A 1A 0A
 
-    if (std::strncmp((const char*) (imageData.get()), "\xFF\xD8\xFF", 3))
+    if (std::strncmp((const char*) (imageData), "\xFF\xD8\xFF", 3))
         return ImageType::JPG;
-    if (std::strncmp((const char*) (imageData.get()), "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8))
+    if (std::strncmp((const char*) (imageData), "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8))
         return ImageType::PNG;
     return ImageType::UNKNOWN;
 }
