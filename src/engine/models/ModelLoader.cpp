@@ -174,7 +174,7 @@ TextureMaterial ModelLoader::loadExternalTexture(
     size_t len = 0;
     auto fullPath = directory + "/" + path;
     auto textureContent = read_bytes(fullPath, len);
-    auto texture = PngCoder::load_texture(
+    auto texture = this->loadTexture(
         textureContent.get(), len, fullPath);
 
     auto textureMat = TextureMaterial(texture, type);
@@ -188,7 +188,7 @@ TextureMaterial ModelLoader::loadEmbeddedTexture(
     const std::string& embeddedId
 ) {
     if (embeddedTexture->mHeight == 0) {
-        auto texture = PngCoder::load_texture(
+        auto texture = this->loadTexture(
             reinterpret_cast<const uint8_t*>(embeddedTexture->pcData),
             embeddedTexture->mWidth,
             embeddedId
@@ -211,6 +211,8 @@ std::shared_ptr<Texture> ModelLoader::loadTexture(
     std::string name
 ) {
     ImageType imgFormat = getImageType(imgData, imgSize);
+    std::cout << std::hex << imgData[0] << imgData[1] << imgData[2] << std::endl;
+    std::cout << (imgFormat == ImageType::JPG) << std::endl;
     if (imgFormat == ImageType::PNG) {
         return PngCoder::load_texture(
             imgData,
