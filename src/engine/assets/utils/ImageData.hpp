@@ -8,6 +8,7 @@
 enum class ImageFormat {
     rgb,
     rgba,
+    grayscale
 };
 
 class ImageData {

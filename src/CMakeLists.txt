@@ -46,6 +46,7 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 find_package(PNG REQUIRED)
+find_package(JPEG REQUIRED)
 
 include_directories( ${OPENGL_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} )
 
@@ -59,4 +60,4 @@ if (UNIX AND NOT APPLE)
 endif()
 
 target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm 
-    ${PNG_LIBRARY} assimp::assimp bvh stduuid)
+    ${PNG_LIBRARY} assimp::assimp bvh stduuid ${JPEG_LIBRARIES})
