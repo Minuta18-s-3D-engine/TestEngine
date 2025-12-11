@@ -9,6 +9,7 @@
 #include <cstring>
 #include <memory>
 #include <filesystem>
+#include <sstream>
 
 #include "engine/graphics/Shader.hpp"
 #include "engine/graphics/ComputeShader.hpp"
@@ -229,20 +230,8 @@ int main() {
             modelManager
         );
 
-        
-
         Player player(glm::vec3(0.0f, 2.0f, -1.0f));
         renderingSystem.bindCamera(player.getCamera().get());
-
-        createPointLight(
-            glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0.01f, 
-            0.04f, objectManager
-        );
-
-        createPointLight(
-            glm::vec3(-2.0, 2.0, -4.0), glm::vec3(1.0, 0.0, 0.0), 
-            glm::pow(10.0f, -2.0f), glm::pow(10.0f, -0.5f), objectManager
-        );
 
         ModelLoader modelLoader;
         auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
@@ -261,66 +250,17 @@ int main() {
 
         objectManager.addObject(sponzaObject);
 
-        // glm::vec3 pos(0, 0, 0), scale(1, 1, 1);
-        // glm::vec2 textureScale(1, 1);
-        // Material mat(
-        //     glm::vec3(1.0f, 0.5f, 0.35f), glm::vec3(0.2f, 0.2f, 0.2f), 
-        //     glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(1.0f, 1.0f, 1.0f)
-        // );
-        // std::string textureKey = "materials/container";
+        std::ifstream lightsFile("assets/lights.txt");
+        std::string line;
+        while (getline(lightsFile, line)) {
+            std::stringstream parseLine(line);
+            float lightX, lightY, lightZ;
+            parseLine >> lightX >> lightY >> lightZ;
 
-        createRect(
-            glm::vec3(0.0f, -0.6f, 0.0f),
-            glm::vec3(1000.0f, 0.2, 1000.0f),
-            glm::vec2(250.0f, 250.0f),
-            Material(
-                glm::vec3(0.8, 0.8, 0.8), 
-                glm::vec3(0.05, 0.05, 0.05),
-                glm::vec3(0.4, 0.4, 0.4),
-                glm::vec3(0.4, 0.4, 0.4),
-                16.0f
-            ),
-            "materials/pavingStone",
-            assetManager, objectManager, modelManager
-        );
-
-        // srand(time(NULL));
-        // int cubesCount = 500;
-        // int cubesArea = 100;
-        // for (int i = 0; i < cubesCount; ++i) {
-        //     int size = rand() % 2 + 1;
-        //     int tex = rand() % 2;
-        //     createRect(
-        //         glm::vec3(
-        //             rand() % cubesArea - cubesArea / 2 + (rand() % 5) * 0.13, 
-        //             (size - 1.0) * 0.5 - ((rand() % 2) * 0.1), 
-        //             rand() % cubesArea - cubesArea / 2 + (rand() % 5) * 0.13),
-        //         glm::vec3(size, size, size),
-        //         glm::vec2(1.0, 1.0),
-        //         Material(),
-        //         (tex == 0 ? "materials/container" : "materials/paintedPlaster"),
-        //         assetManager, objectManager, modelManager
-        //     );
-        // }
-
-        int lightArea = 100;
-        int lightCount = 300;
-        for (int i = 0; i < lightCount; ++i) {
-            float lightX = rand() % lightArea - lightArea / 2 + (rand() % 5) * 0.13;
-            float lightY = 0.1 + rand() % 5;
-            float lightZ = rand() % lightArea - lightArea / 2 + (rand() % 5) * 0.13;
-
-            float lightColotR = 0.5 + (rand() % 100) * 0.005;
-            float lightColotG = 0.5 + (rand() % 100) * 0.005;
-            float lightColotB = 0.5 + (rand() % 100) * 0.005;
-
-            float lightLinear = glm::pow(10.0f, -(rand() % 12 + 1) * 0.1);
-            float lightQuadratic = glm::pow(10.0f, -(rand() % 12 + 1) * 0.1);
-        
             createPointLight(
                 glm::vec3(lightX, lightY, lightZ),
-                glm::vec3(lightColotR, lightColotG, lightColotB),
-                lightLinear, lightQuadratic, objectManager
+                glm::vec3(1.0, 1.0, 0.9),
+                0.01, 0.02, objectManager
             );
         }
 
@@ -367,6 +307,9 @@ int main() {
                 newPos.y += deltaTime * player.getSpeed();
             if (UserInput::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
                 newPos.y -= deltaTime * player.getSpeed();
+            if (UserInput::isKeyPressed(GLFW_KEY_P)) {
+                std::cout << player.getCamera()->pos.x << " " << player.getCamera()->pos.y << " " << player.getCamera()->pos.z << std::endl;
+            }
 
             player.setPos(newPos);
             player.update(deltaTime);
