@@ -23,7 +23,7 @@ class ModelLoader {
     std::string directory;
     
     void processNode(aiNode* node, const aiScene* scene);
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+    std::shared_ptr<Mesh> processMesh(aiMesh* mesh, const aiScene* scene);
     std::vector<TextureMaterial> loadMaterialTextures(
         aiMaterial* mat, 
         aiTextureType type, 

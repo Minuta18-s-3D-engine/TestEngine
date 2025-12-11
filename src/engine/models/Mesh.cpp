@@ -53,13 +53,17 @@ void Mesh::setupMesh() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
         (void*) offsetof(Vertex, texCords));
 
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
-        (void*) offsetof(Vertex, tangent));
+    // glEnableVertexAttribArray(3);
+    // glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
+    //     (void*) offsetof(Vertex, tangent));
 
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
-        (void*) offsetof(Vertex, bitangent));
+    // glEnableVertexAttribArray(4);
+    // glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
+    //     (void*) offsetof(Vertex, bitangent));
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void Mesh::draw(Shader& shader) {

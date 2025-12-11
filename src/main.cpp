@@ -246,11 +246,12 @@ int main() {
 
         ModelLoader modelLoader;
         auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
+
         auto modelId = modelManager.add(sponzaModel);
 
         std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
         auto transformComponent = sponzaObject->getComponent<Transform>();
-        transformComponent->position = glm::vec3(0.0f, 0.0f, 0.0f);
+        transformComponent->position = glm::vec3(0.0f, 1.0f, 0.0f);
         transformComponent->scale = glm::vec3(1.0f, 1.0f, 1.0f);
         auto behaviorComponent = sponzaObject->getComponent<Behavior>();
         behaviorComponent->type = BehaviorType::STATIC;

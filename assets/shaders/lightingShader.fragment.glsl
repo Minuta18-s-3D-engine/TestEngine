@@ -151,7 +151,16 @@ bool AABBIntersection(
            (aMin.z <= bMax.z) && (aMax.z >= bMin.z);
 }
 
+bool isCenterCross() {
+    return (distance(gl_FragCoord.xy, screenDimensions.xy / 2) < 2);
+}
+
 void main() {
+    int modifier = 1;
+    if (isCenterCross()) {
+        modifier = -1;
+    }
+
     uint clusterIndex = findClusterIndex();
     Cluster currCluster = clusters[clusterIndex];
 
@@ -171,7 +180,13 @@ void main() {
     }
 
     if (drawMode == 0) {
+        if (modifier == -1) {
+            FragColor = vec4(vec3(1.0) - result, 1.0);
+            return;
+        }
+
         FragColor = vec4(result, 1.0);
+
     } else if (drawMode == 1) {
         float cnt = currCluster.count;
         FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);

@@ -28,9 +28,7 @@ std::unique_ptr<Model> ModelLoader::loadModel(const std::string& filename) {
 void ModelLoader::processNode(aiNode* node, const aiScene* scene) {
     for (uint i = 0; i < node->mNumMeshes; ++i) {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        createdModel->meshes.push_back(
-            std::make_shared<Mesh>(processMesh(mesh, scene))
-        );
+        createdModel->meshes.push_back(processMesh(mesh, scene));
     }
 
     for (uint i = 0; i < node->mNumChildren; ++i) {
@@ -38,7 +36,9 @@ void ModelLoader::processNode(aiNode* node, const aiScene* scene) {
     }
 }
 
-Mesh ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
+std::shared_ptr<Mesh> ModelLoader::processMesh(
+    aiMesh* mesh, const aiScene* scene) 
+{
     std::vector<Vertex> vertices;
     std::vector<uint> indices;
     std::vector<TextureMaterial> textures;
@@ -105,7 +105,7 @@ Mesh ModelLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
         material, aiTextureType_AMBIENT, "texture_height", scene);
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
-    return Mesh(vertices, indices, textures);
+    return std::make_shared<Mesh>(vertices, indices, textures);
 }
 
 std::vector<TextureMaterial> ModelLoader::loadMaterialTextures(
