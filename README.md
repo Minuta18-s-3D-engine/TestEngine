@@ -15,4 +15,5 @@
 - **ECS**: The engine provided Game object system which implements ECS principles
 - **Material system**: Well, still in development.
 - **Lighting**: Blinn-Phong lighting model.
-- **Texture loading**: Only `.png` supported yet
+- **Texture loading**: `.png` and `.jpg` support.
+- **Model loading**: all popular formats (thanks to assimp), however this system is not fully comoplete
