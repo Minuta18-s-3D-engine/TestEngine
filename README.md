@@ -1,4 +1,4 @@
-<img src="https://github.com/Minuta18-s-3D-engine/.github/blob/main/profile/Screenshot2.png">
+<img src="https://github.com/Minuta18-s-3D-engine/.github/blob/main/profile/Screenshot3.png">
 
 <p align="center">
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=34&duration=3000&pause=1000&color=35F724&center=true&repeat=false&width=435&lines=3D+engine+in+C%2B%2B" alt="Typing SVG" />

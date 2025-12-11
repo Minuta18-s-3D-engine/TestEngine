@@ -13,7 +13,7 @@
 class Player {
     std::shared_ptr<Camera> camera;
     glm::vec3 pos;
-    const float PLAYER_SPEED = 5.0f;
+    const float PLAYER_SPEED = 15.0f;
 public:
     Player(glm::vec3 pos);
     ~Player();
