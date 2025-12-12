@@ -181,7 +181,11 @@ void main() {
 
     if (drawMode == 0) {
         if (modifier == -1) {
-            FragColor = vec4(vec3(1.0) - result, 1.0);
+            FragColor = vec4(vec3(
+                1.0 - result.x,
+                1.0 - result.y,
+                1.0 - result.z
+            ), 1.0);
             return;
         }
 

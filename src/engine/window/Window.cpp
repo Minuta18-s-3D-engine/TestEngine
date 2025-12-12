@@ -60,6 +60,10 @@ void Window::initialize(
     
     glEnable(GL_DEPTH_TEST);
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);  
+    glFrontFace(GL_CCW);
+
     Window::setCursorInputMode(GLFW_CURSOR_DISABLED);
 
     const GLubyte* version = glGetString(GL_VERSION);

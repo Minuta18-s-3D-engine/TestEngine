@@ -33,56 +33,12 @@
 #include "engine/graphics/components/PointLight.hpp"
 #include "engine/graphics/RenderingSystem.hpp"
 #include "engine/models/ModelLoader.hpp"
+#include "engine/assets/utils/MeshGen.hpp"
 
 namespace fs = std::filesystem;
 
 const int INITIAL_WINDOW_WIDTH = 1920;
 const int INITIAL_WINDOW_HEIGHT = 1080;
-
-float vertices[] = {
-    // positions          // normals           // texture coords
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-    0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-    0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-    0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-    0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-    0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-
-    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-    0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-    0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-    0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-    0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-    0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-    0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-    0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-    0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-};
 
 Light l1(glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
@@ -94,36 +50,9 @@ void createRect(
     std::string textureKey, AssetManager& manager,
     GameObjectManager& objectManager, ModelManager& modelManager
 ) {
-    std::vector<Vertex> cubeVertices;
-    for (int i = 0; i < 36; ++i) {
-        Vertex v;
-        v.pos = glm::vec3(
-            vertices[i * 8] * scale.x, 
-            vertices[i * 8 + 1] * scale.y, 
-            vertices[i * 8 + 2] * scale.z
-        );
-        v.normal = glm::vec3(
-            vertices[i * 8 + 3], 
-            vertices[i * 8 + 4], 
-            vertices[i * 8 + 5]
-        );
-        v.texCords = glm::vec2(
-            vertices[i * 8 + 6] * textureScale.x, 
-            vertices[i * 8 + 7] * textureScale.y
-        );
-        cubeVertices.push_back(v);
-    }
-
-    std::vector<uint> cubeIndices(36);
-    for (int i = 0; i < 36; ++i) cubeIndices[i] = i;
-    std::vector<TextureMaterial> cubeTextures = { 
-        manager.require<TextureMaterial>(textureKey), 
-        manager.require<TextureMaterial>(textureKey + "Specular")
-    };
-
-    std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>(
-        cubeVertices, cubeIndices, cubeTextures, mat);
-    // manager.set(std::make_shared<Mesh>(cubeMesh), "meshes/cubeMesh");
+    std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(
+        scale, textureScale, textureKey, manager, mat
+    );
 
     std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
     cubeMeshArray.push_back(cubeMesh);
@@ -232,6 +161,12 @@ int main() {
 
         Player player(glm::vec3(0.0f, 2.0f, -1.0f));
         renderingSystem.bindCamera(player.getCamera().get());
+
+        createRect(
+            glm::vec3(2.0, 2.0, 5.0), glm::vec3(1.0, 1.0, 1.0), 
+            glm::vec2(1.0, 1.0), Material(), "materials/container",
+            assetManager, objectManager, modelManager
+        );
 
         ModelLoader modelLoader;
         auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
