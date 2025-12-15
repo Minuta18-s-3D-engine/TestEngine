@@ -42,7 +42,7 @@ const int INITIAL_WINDOW_HEIGHT = 1080;
 
 Light l1(glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-const float MOUSE_SENSITIVITY = 0.1;
+const float MOUSE_SENSITIVITY = 0.15;
 
 // temporary solution
 void createRect(
