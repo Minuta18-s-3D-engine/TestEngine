@@ -242,10 +242,14 @@ int main() {
                 newPos.y += deltaTime * player.getSpeed();
             if (UserInput::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
                 newPos.y -= deltaTime * player.getSpeed();
-            if (UserInput::isKeyPressed(GLFW_KEY_P)) {
+            if (UserInput::isKeyJustPressed(GLFW_KEY_P)) {
+                std::cout << "Player position: ";
                 std::cout << player.getCamera()->pos.x << " " 
                           << player.getCamera()->pos.y << " " 
                           << player.getCamera()->pos.z << std::endl;
+                std::cout << "Player camera angle: ";
+                std::cout << player.getCamera()->getYaw() << " "
+                          << player.getCamera()->getPitch() << std::endl;
             }
 
             player.setPos(newPos);

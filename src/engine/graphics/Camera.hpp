@@ -28,8 +28,10 @@ public:
 
     float getFov() const;
     float getZoom() const;
+    float getYaw() const;
+    float getPitch() const;
     void processMouseMovement(float xOffset, float yOffset, float sensitivity);
-
+    void setRotation(float yaw, float pitch);
     glm::mat4 getViewMat() const;
 };
 

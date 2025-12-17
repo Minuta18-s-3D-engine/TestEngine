@@ -56,3 +56,15 @@ void Camera::processMouseMovement(
     // std::cout << front.x << " " << front.y << " " << front.z << std::endl;
 }
 
+void Camera::setRotation(
+    float yaw, float pitch
+) {
+    this->yaw = yaw;
+    this->pitch = pitch;
+    updateCameraVectors();
+}
+
+float Camera::getYaw() const { return yaw; }
+float Camera::getPitch() const { return pitch; }
+
+

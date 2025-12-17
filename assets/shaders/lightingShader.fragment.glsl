@@ -156,6 +156,13 @@ bool isCenterCross() {
 }
 
 void main() {
+    // uniform sampler2D gPosition;
+    // uniform sampler2D gNormal;
+    // uniform sampler2D gAlbedoSpec;
+
+    // FragColor = vec4(texture(gPosition, TexCoords).xyz, 1.0);
+    // return;
+
     int modifier = 1;
     if (isCenterCross()) {
         modifier = -1;
