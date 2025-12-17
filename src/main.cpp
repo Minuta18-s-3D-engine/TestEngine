@@ -171,21 +171,23 @@ int main() {
         );
 
         ModelLoader modelLoader;
-        auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
+        
+        {
+            auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
+            auto modelId = modelManager.add(sponzaModel);
 
-        auto modelId = modelManager.add(sponzaModel);
+            std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
+            auto transformComponent = sponzaObject->getComponent<Transform>();
+            transformComponent->position = glm::vec3(0.0f, 1.0f, 0.0f);
+            transformComponent->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+            auto behaviorComponent = sponzaObject->getComponent<Behavior>();
+            behaviorComponent->type = BehaviorType::STATIC;
+            auto modelComponent = std::make_unique<ModelComponent>();
+            modelComponent->managerId = modelId;
+            sponzaObject->addComponent<ModelComponent>(modelComponent);
 
-        std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
-        auto transformComponent = sponzaObject->getComponent<Transform>();
-        transformComponent->position = glm::vec3(0.0f, 1.0f, 0.0f);
-        transformComponent->scale = glm::vec3(1.0f, 1.0f, 1.0f);
-        auto behaviorComponent = sponzaObject->getComponent<Behavior>();
-        behaviorComponent->type = BehaviorType::STATIC;
-        auto modelComponent = std::make_unique<ModelComponent>();
-        modelComponent->managerId = modelId;
-        sponzaObject->addComponent<ModelComponent>(modelComponent);
-
-        objectManager.addObject(sponzaObject);
+            objectManager.addObject(sponzaObject);
+        }
 
         std::ifstream lightsFile("assets/lights.txt");
         std::string line;
