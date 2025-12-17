@@ -160,6 +160,8 @@ int main() {
         );
 
         Player player(glm::vec3(0.0f, 2.0f, -1.0f));
+        player.setPos(glm::vec3(37.153, 4.26025, 3.34797));
+        player.getCamera()->setRotation(198.795, 4.16543);
         renderingSystem.bindCamera(player.getCamera().get());
 
         createRect(
