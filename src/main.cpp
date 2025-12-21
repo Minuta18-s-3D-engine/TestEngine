@@ -195,10 +195,12 @@ int main() {
             std::stringstream parseLine(line);
             float lightX, lightY, lightZ;
             parseLine >> lightX >> lightY >> lightZ;
+            float lightR, lightG, lightB;
+            parseLine >> lightR >> lightG >> lightB;
 
             createPointLight(
                 glm::vec3(lightX, lightY, lightZ),
-                glm::vec3(1.0, 1.0, 0.9),
+                glm::vec3(lightR, lightG, lightB),
                 0.01, 0.02, objectManager
             );
         }
