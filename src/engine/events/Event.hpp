@@ -3,9 +3,11 @@
 
 class Event {
     bool handled = false;
+public:
+    bool isHandled() const { return handled; };
+    void setIsHandled() { handled = true; }
 
-    
-    virtual ~Event();
+    virtual ~Event() = default;
 };
 
 #endif // ENGINE_EVENTS_EVENT_H_

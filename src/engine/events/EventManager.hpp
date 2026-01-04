@@ -7,27 +7,63 @@
 #include <memory>
 #include <typeindex>
 
+class Event;
+
+template <typename T>
+concept DerivedEvent = std::is_base_of<Event, T>::value;
+
 #include "Event.hpp"
 
-class EventManager {
+template <typename T>
+using Subscriber = std::function<void(const T&)>;
+
+class EventHandlerInterface {
+    virtual void call(const Event& event) = 0;
 public:
-    using EventHandler = std::function<void(const Event&)>;
+    void exec(const Event& event) { call(event); }
+
+    virtual ~EventHandlerInterface() = default;
+};
+
+template <DerivedEvent T>
+class EventHandler : public EventHandlerInterface {
+    Subscriber<T> func;
+
+    void call(const Event& event) override {
+        func(static_cast<const T&>(event));
+    }
+public:
+    EventHandler(Subscriber<T> f) : func(f) {}
+};
+
+class EventManager {
 private:
     std::vector<std::unique_ptr<Event>> eventQueue;
-    std::unordered_map<std::type_index, std::vector<EventHandler>> subscribers;
+    std::unordered_map<std::type_index, 
+        std::vector<std::unique_ptr<EventHandlerInterface>>> subscribers;
 public:
-    template<typename T>
-    void subscribe(EventHandler eventHandler);
+    EventManager(const EventManager&) = delete;
+    EventManager& operator=(const EventManager&) = delete;
+
+    template<DerivedEvent T>
+    void subscribe(Subscriber<T> eventHandler);
     
-    void triggerEvent(std::unique_ptr<Event> event);
+    template<DerivedEvent T>
+    void triggerEvent(const T& event);
+    
     void dispatchEvents();
 };
 
-template<typename T>
-void EventManager::subscribe(EventManager::EventHandler eventHandler) {
-    static_assert(std::is_base_of_v<Event, T>, "T must be Event");
+template<DerivedEvent T>
+void EventManager::subscribe(Subscriber<T> eventHandler) {
+    subscribers[typeid(T)].push_back(
+        std::make_unique<EventHandler<T>>(eventHandler)
+    );
+}
 
-    subscribers[typeid(T)].push_back(eventHandler);
+template<DerivedEvent T>
+void EventManager::triggerEvent(const T& event) {
+    eventQueue.push_back(std::make_unique<T>(event));
 }
 
 #endif // ENGINE_EVENTS_EVENTMANAGER_H_
