@@ -6,48 +6,34 @@
 #include <vector>
 #include <memory>
 #include <typeindex>
+#include <algorithm>
 
-class Event;
-
-template <typename T>
-concept DerivedEvent = std::is_base_of<Event, T>::value;
-
+#include "EventConnection.hpp"
 #include "Event.hpp"
-
-template <typename T>
-using Subscriber = std::function<void(const T&)>;
-
-class EventHandlerInterface {
-    virtual void call(const Event& event) = 0;
-public:
-    void exec(const Event& event) { call(event); }
-
-    virtual ~EventHandlerInterface() = default;
-};
-
-template <DerivedEvent T>
-class EventHandler : public EventHandlerInterface {
-    Subscriber<T> func;
-
-    void call(const Event& event) override {
-        func(static_cast<const T&>(event));
-    }
-public:
-    EventHandler(Subscriber<T> f) : func(f) {}
-};
+#include "EventHandler.hpp"
 
 class EventManager {
 private:
     std::vector<std::unique_ptr<Event>> eventQueue;
     std::unordered_map<std::type_index, 
         std::vector<std::unique_ptr<EventHandlerInterface>>> subscribers;
+
+    // -1 so ids will start from 0
+    int nextConnectionId = -1;
 public:
     EventManager(const EventManager&) = delete;
     EventManager& operator=(const EventManager&) = delete;
 
     template<DerivedEvent T>
-    void subscribe(Subscriber<T> eventHandler);
+    EventConnection subscribe(Subscriber<T> eventHandler);
+
+    void unsubscribe(EventConnection& conn);
+
+    template<DerivedEvent T>
+    void clearSubscribers();
     
+    void clearAllSubscribers();
+
     template<DerivedEvent T>
     void triggerEvent(const T& event);
     
@@ -55,15 +41,28 @@ public:
 };
 
 template<DerivedEvent T>
-void EventManager::subscribe(Subscriber<T> eventHandler) {
+EventConnection EventManager::subscribe(Subscriber<T> eventHandler) {
+    nextConnectionId++;
+
     subscribers[typeid(T)].push_back(
-        std::make_unique<EventHandler<T>>(eventHandler)
+        std::make_unique<EventHandler<T>>(eventHandler, nextConnectionId)
     );
+
+    return EventConnection(nextConnectionId, typeid(T));
 }
 
 template<DerivedEvent T>
 void EventManager::triggerEvent(const T& event) {
     eventQueue.push_back(std::make_unique<T>(event));
+}
+
+template<DerivedEvent T>
+void EventManager::clearSubscribers() {
+    subscribers.erase(typeid(T));
+}
+
+void EventManager::clearAllSubscribers() {
+    subscribers.clear();
 }
 
 #endif // ENGINE_EVENTS_EVENTMANAGER_H_
