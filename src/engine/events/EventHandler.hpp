@@ -12,16 +12,16 @@ template <typename T>
 concept DerivedEvent = std::is_base_of<Event, T>::value;
 
 template <typename T>
-using Subscriber = std::function<void(const T&)>;
+using Subscriber = std::function<void(T&)>;
 
 class EventHandlerInterface {
-    virtual void call(const Event& event) = 0;
+    virtual void call(Event& event) = 0;
 
     int id;
 public:   
     EventHandlerInterface(int _id) : id(_id) {}
 
-    void exec(const Event& event) { call(event); }
+    void exec(Event& event) { call(event); }
     int getId() const { return id; }
 
     virtual ~EventHandlerInterface() = default;
@@ -31,8 +31,8 @@ template <DerivedEvent T>
 class EventHandler : public EventHandlerInterface {
     Subscriber<T> func;
 
-    void call(const Event& event) override {
-        func(static_cast<const T&>(event));
+    void call(Event& event) override {
+        func(static_cast<T&>(event));
     }
 
 public:

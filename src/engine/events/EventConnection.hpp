@@ -14,9 +14,9 @@ class EventConnection {
     bool valid = false;
     std::type_index type = typeid(void);
 
+public:
     EventConnection(int _id, std::type_index _type) noexcept
         : id(_id), valid(true), type(_type) {}
-public:
     EventConnection() = default;
     ~EventConnection() = default;
     EventConnection(const EventConnection&) = delete;
@@ -38,7 +38,6 @@ public:
 
     EventConnection& operator=(const EventConnection&) = delete;
 
-    void disconnect() { valid = false; }
     bool isConnected() const { return valid; }
     operator bool() const { return valid; }
 };

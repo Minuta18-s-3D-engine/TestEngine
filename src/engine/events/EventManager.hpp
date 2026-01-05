@@ -21,6 +21,7 @@ private:
     // -1 so ids will start from 0
     int nextConnectionId = -1;
 public:
+    EventManager() = default;
     EventManager(const EventManager&) = delete;
     EventManager& operator=(const EventManager&) = delete;
 
