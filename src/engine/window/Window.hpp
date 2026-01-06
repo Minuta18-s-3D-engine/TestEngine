@@ -1,44 +1,24 @@
 #ifndef ENGINE_GRAPHICS_WINDOW_H_
 #define ENGINE_GRAPHICS_WINDOW_H_
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 #include <string>
-#include <iostream>
-#include <vector>
-#include <functional>
-
-#include "../utils/EngineTypes.h"
 
 class Window {
-    typedef std::function<void(GLFWwindow*, int, int)> FramebufferCallback;
-
-    static GLFWwindow* window;
-
-    static void checkGlad();
+    std::string caption;
+    uint32_t width, height;
+    int cursorInputMode;
 public:
-    static std::vector<FramebufferCallback> framebufferSizeCallbacks;
-    static int width, height;
-    static std::string caption;
-    static int cursorInputMode;
+    Window(uint32_t _width, uint32_t _height, std::string _caption);
 
-    static void initialize(uint width, uint height, std::string caption);
-    static void terminate();
-    
-    static void setCursorInputMode(int mode);
-    static int getCursorInputMode();
-    static bool isShouldClose();
-    static void setShouldClose(bool should_close);
+    void close();
 
-    static void clearColor(glm::vec3 color);
-    static void clearColor(glm::vec4 color);
-    static void clear();
-    static void setTitle(std::string newTitle);
-    static void swapBuffers();
-    static void setViewport(int x, int y, int width, int height);
+    std::string getCaption();
+    void setCaption(std::string _caption);
+    uint32_t getHeight();
+    uint32_t getWidth();
+    void setViewport(uint32_t _width, uint32_t _height);
 
-    static void addframebufferCallback(FramebufferCallback callback);
+    void swapBuffers();
 };
 
 #endif // ENGINE_GRAPHICS_WINDOW_H_
