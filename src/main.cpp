@@ -110,7 +110,8 @@ void loadTexture(
 int main() {
     try {
         UserInput::initialize();
-        Window::initialize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, "TestEng");
+        EventManager eventManager;
+        Window win(eventManager);
 
         AssetManager assetManager;
 
@@ -211,7 +212,7 @@ int main() {
         float lastFPSDisplay = -10.0f;
         int framesCount = 0;
         bool isInGame = true;
-        while (!Window::isShouldClose()) {
+        while (win.isShouldClose()) {
             UserInput::pollEvents();
 
             if (isInGame) {
@@ -227,7 +228,7 @@ int main() {
 
             framesCount += 1;
             if (currentFrame - lastFPSDisplay >= 1.0) {
-                Window::setTitle("TestEng (fps = " + std::to_string(framesCount) + ")");
+                win.setCaption("TestEng (fps = " + std::to_string(framesCount) + ")");
                 framesCount = 0;
                 lastFPSDisplay = currentFrame;
             }
@@ -269,20 +270,17 @@ int main() {
                 renderingSystem.setDrawMode(2);
 
             if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) {
-                if (Window::getCursorInputMode() == GLFW_CURSOR_NORMAL) {
-                    Window::setCursorInputMode(GLFW_CURSOR_DISABLED);
+                if (win.getCursorInputMode() == GLFW_CURSOR_NORMAL) {
+                    win.setCursorInputMode(GLFW_CURSOR_DISABLED);
                 } else {
-                    Window::setCursorInputMode(GLFW_CURSOR_NORMAL);
+                    win.setCursorInputMode(GLFW_CURSOR_NORMAL);
                 }
                 isInGame = !isInGame;
             }
 
-            Window::clearColor(glm::vec3(0.0f, 0.0f, 0.0f));
-            Window::clear();
-
             renderingSystem.update();
 
-            Window::swapBuffers();
+            win.swapBuffers();
         }
     } catch (const std::runtime_error& err) {
         // Just skipping to exit
@@ -291,7 +289,6 @@ int main() {
     }
 
     UserInput::terminate();
-    Window::terminate();
 
     return 0;
 }
