@@ -17,6 +17,16 @@ Window::Window(EventManager& _eventManager)
     : width(DEFAULT_WIDTH), height(DEFAULT_HEIGHT), caption(DEFAULT_CAPTION), 
     eventManager(_eventManager) {}
 
+void Window::framebufferSizeCallback(
+    GLFWwindow* _window, int _width, int _height
+) {
+    glViewport(0, 0, _width, _height);
+    width = _width;
+    height = _height;
+
+    eventManager.triggerEvent(WindowResizeEvent(width, height));
+}
+
 void Window::setupWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
@@ -31,6 +41,13 @@ void Window::setupWindow() {
         throw std::runtime_error("Failed to create GLFW Window");
     }
     glfwMakeContextCurrent(window);
+    
+    if (!gladLoadGLLoader((GLADloadproc)  glfwGetProcAddress)) {
+        throw std::runtime_error("Failed to initialize GLAD");
+    }
+    glViewport(0, 0, width, height);
+    // glfwSetFramebufferSizeCallback(window, framebufferSizeCallback); // ???
+    
     glfwSwapInterval(0);
 
     glEnable(GL_DEPTH_TEST);

@@ -1,5 +1,5 @@
-#ifndef ENGINE_GRAPHICS_WINDOW_H_
-#define ENGINE_GRAPHICS_WINDOW_H_
+#ifndef ENGINE_WINDOW_WINDOW_H_
+#define ENGINE_WINDOW_WINDOW_H_
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "../events/EventManager.hpp"
+#include "WindowEvents.hpp"
 
 class Window {
     std::string caption;
@@ -21,6 +22,7 @@ class Window {
     EventManager& eventManager;
 
     void setupWindow();
+    void framebufferSizeCallback(GLFWwindow* _window, int _width, int _height);
 public:
     Window(
         uint32_t _width, 
@@ -45,4 +47,4 @@ public:
     void swapBuffers();
 };
 
-#endif // ENGINE_GRAPHICS_WINDOW_H_
+#endif // ENGINE_WINDOW_WINDOW_H_
