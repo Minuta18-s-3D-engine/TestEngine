@@ -1,7 +1,8 @@
 #include "ClusteredRenderer.hpp"
 
-ClusteredRenderer::ClusteredRenderer(AssetManager& _assetManager) : 
-    assetManager(_assetManager) {
+ClusteredRenderer::ClusteredRenderer(
+    Window& _window, AssetManager& _assetManager
+) : assetManager(_assetManager), window(_window) {
     this->createSSBOs();
     this->buildClustersShader = 
         &(_assetManager.require<ComputeShader>("shaders/buildClusters"));
@@ -176,7 +177,7 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
 
     glm::mat4 proj = glm::perspective(
         cam->getZoom(), 
-        (float) Window::width / (float) Window::height, 
+        (float) window.getWidth() / (float) window.getHeight(), 
         cam->zNear, cam->zFar
     );
     glm::mat4 invProj = glm::inverse(proj);
@@ -185,7 +186,7 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     buildClustersShader->setUniform3ui("gridSize", 
         GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
     buildClustersShader->setUniform2ui("screenDimensions", 
-        Window::width, Window::height);
+        window.getWidth(), window.getHeight());
     
     glDispatchCompute(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

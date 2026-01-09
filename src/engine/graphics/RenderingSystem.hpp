@@ -14,7 +14,9 @@
 #include "../graphics/GBuffer.hpp"
 #include "../graphics/Camera.hpp"
 #include "../window/Window.hpp"
+#include "../window/WindowEvents.hpp"
 #include "../models/ModelManager.hpp"
+#include "../events/EventManager.hpp"
 
 #include <memory>
 #include <vector>
@@ -24,6 +26,8 @@ class RenderingSystem : public System {
     AssetManager& assetManager;
     GameObjectManager& gameObjectManager;
     ModelManager& modelManager;
+    Window& window;
+    EventManager& eventManager;
 
     ClusteredRenderer* renderer;
     GBuffer* gBuffer;
@@ -35,11 +39,14 @@ class RenderingSystem : public System {
 
     uint quadVAO = 0, quadVBO;
     void renderQuad();
+    void onWindowResize(WindowResizeEvent& event);
 public:
     RenderingSystem(
         AssetManager& _assetManager, 
         GameObjectManager& _gameObjectManager,
-        ModelManager& _modelManager
+        ModelManager& _modelManager,
+        EventManager& _eventManager,
+        Window& _window
     );
     ~RenderingSystem();
 
