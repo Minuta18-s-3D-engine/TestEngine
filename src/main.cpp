@@ -109,9 +109,10 @@ void loadTexture(
 
 int main() {
     try {
-        UserInput::initialize();
         EventManager eventManager;
         Window win(eventManager);
+        UserInput::initialize();
+        UserInput::win = &win;
 
         AssetManager assetManager;
 

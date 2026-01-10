@@ -12,7 +12,7 @@ RenderingSystem::RenderingSystem(
     gBuffer = new GBuffer(window.getWidth(), window.getWidth());
 
     eventManager.subscribe<WindowResizeEvent>(
-        &RenderingSystem::onWindowResize);
+        this, &RenderingSystem::onWindowResize);
 }
 
 RenderingSystem::~RenderingSystem() {

@@ -22,7 +22,7 @@ class Window {
     EventManager& eventManager;
 
     void setupWindow();
-    void framebufferSizeCallback(GLFWwindow* _window, int _width, int _height);
+    static void framebufferSizeCallback(GLFWwindow* _window, int _width, int _height);
 public:
     Window(
         uint32_t _width, 
@@ -31,7 +31,7 @@ public:
         EventManager& _eventManager
     );
     Window(EventManager& _eventManager);
-    ~Window() = default;
+    ~Window();
 
     bool isShouldClose() const;
     void setShouldClose(bool should);

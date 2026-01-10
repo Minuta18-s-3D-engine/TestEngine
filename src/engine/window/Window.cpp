@@ -17,14 +17,19 @@ Window::Window(EventManager& _eventManager)
     : width(DEFAULT_WIDTH), height(DEFAULT_HEIGHT), caption(DEFAULT_CAPTION), 
     eventManager(_eventManager) {}
 
+Window::~Window() {
+    glfwSetWindowUserPointer(window, nullptr);
+}
+
 void Window::framebufferSizeCallback(
     GLFWwindow* _window, int _width, int _height
 ) {
     glViewport(0, 0, _width, _height);
-    width = _width;
-    height = _height;
+    Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+    self->width = _width;
+    self->height = _height;
 
-    eventManager.triggerEvent(WindowResizeEvent(width, height));
+    self->eventManager.triggerEvent(WindowResizeEvent(_width, _height));
 }
 
 void Window::setupWindow() {
@@ -46,6 +51,8 @@ void Window::setupWindow() {
         throw std::runtime_error("Failed to initialize GLAD");
     }
     glViewport(0, 0, width, height);
+
+    glfwSetWindowUserPointer(window, this);
 
     glfwSetFramebufferSizeCallback(window, &Window::framebufferSizeCallback);
     

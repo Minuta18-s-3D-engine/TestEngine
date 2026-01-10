@@ -9,6 +9,7 @@ double UserInput::y_mouse_pos = 0;
 double UserInput::last_x_mouse_pos = 0;
 double UserInput::last_y_mouse_pos = 0;
 bool UserInput::isCursorPinned = false;
+Window* UserInput::win = nullptr;
 
 void key_callback(GLFWwindow* window, int button, int, int action, int) {
     if (action == GLFW_PRESS) {
@@ -31,7 +32,7 @@ void cursor_position_callback(GLFWwindow* window, double x, double y) {
     UserInput::y_mouse_pos = y;
 
     if (UserInput::getIsCursorPinned()) {
-        glfwSetCursorPos(window, Window::width / 2, Window::height / 2);
+        glfwSetCursorPos(window, UserInput::win->getWidth() / 2, UserInput::win->getHeight() / 2);
     }
 }
 
@@ -72,13 +73,13 @@ bool UserInput::isMouseJustPressed(int key_code) {
 
 double UserInput::getMouseYMov() {
     if (UserInput::isCursorPinned) 
-        return UserInput::y_mouse_pos - (Window::height / 2);
+        return UserInput::y_mouse_pos - (UserInput::win->getHeight() / 2);
     return UserInput::y_mouse_pos - UserInput::last_y_mouse_pos;
 }
 
 double UserInput::getMouseXMov() {
     if (UserInput::isCursorPinned) 
-        return UserInput::x_mouse_pos - (Window::width / 2);
+        return UserInput::x_mouse_pos - (UserInput::win->getWidth() / 2);
     return UserInput::x_mouse_pos - UserInput::last_x_mouse_pos;
 }
 
