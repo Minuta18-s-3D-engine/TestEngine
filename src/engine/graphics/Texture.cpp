@@ -56,8 +56,9 @@ std::shared_ptr<Texture> Texture::create(const ImageData* img) {
     uint width = img->getWidth();
     uint height = img->getHeight();
     void* data = img->getData();
-    return std::make_shared<Texture>(
+    std::shared_ptr<Texture> result = std::make_shared<Texture>(
         width, height, img->getFormat(), static_cast<uint8_t*>(data) 
     );
+    return result;
 }
 

@@ -1,4 +1,5 @@
 #include "Window.hpp"
+#include "UserInput.hpp"
 
 const uint32_t DEFAULT_WIDTH = 1920;
 const uint32_t DEFAULT_HEIGHT = 1080;
@@ -11,11 +12,15 @@ Window::Window(
     uint32_t _width, uint32_t _height, const std::string& _caption, 
     EventManager& _eventManager
 ) : width(_width), height(_height), caption(_caption), 
-    eventManager(_eventManager) {}
+    eventManager(_eventManager) {
+    setupWindow();
+}
 
 Window::Window(EventManager& _eventManager)
     : width(DEFAULT_WIDTH), height(DEFAULT_HEIGHT), caption(DEFAULT_CAPTION), 
-    eventManager(_eventManager) {}
+    eventManager(_eventManager) {
+    setupWindow();
+}
 
 Window::~Window() {
     glfwSetWindowUserPointer(window, nullptr);
@@ -55,7 +60,9 @@ void Window::setupWindow() {
     glfwSetWindowUserPointer(window, this);
 
     glfwSetFramebufferSizeCallback(window, &Window::framebufferSizeCallback);
-    
+    glfwSetKeyCallback(Window::window, key_callback);
+    glfwSetMouseButtonCallback(Window::window, mouse_button_callback);
+    glfwSetCursorPosCallback(Window::window, cursor_position_callback);
     glfwSwapInterval(0);
 
     glEnable(GL_DEPTH_TEST);
