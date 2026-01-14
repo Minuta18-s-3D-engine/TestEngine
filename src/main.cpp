@@ -10,6 +10,7 @@
 #include <memory>
 #include <filesystem>
 #include <sstream>
+#include <chrono>
 
 #include "engine/graphics/Shader.hpp"
 #include "engine/graphics/ComputeShader.hpp"

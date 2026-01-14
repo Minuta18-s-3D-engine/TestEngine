@@ -58,7 +58,7 @@ bool UserInput::isKeyPressed(int key_code) {
 
 bool UserInput::isKeyJustPressed(int key_code) {
     return UserInput::pressed[key_code] && 
-        (UserInput::frames[key_code] == UserInput::current_frame);
+        (UserInput::frames[key_code] == пUserInput::current_frame);
 }
 
 bool UserInput::isMousePressed(int key_code) {

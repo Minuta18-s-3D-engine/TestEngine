@@ -5,7 +5,7 @@ RenderingSystem::RenderingSystem(
     GameObjectManager& _gameObjectManager, 
     ModelManager& _modelManager,
     EventManager& _eventManager,
-    Window& _window
+    Window& _window 
 ): assetManager(_assetManager), gameObjectManager(_gameObjectManager),
     modelManager(_modelManager), window(_window), eventManager(_eventManager) {
     renderer = new ClusteredRenderer(window, _assetManager);
