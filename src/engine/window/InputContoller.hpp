@@ -18,6 +18,8 @@ class InputController {
     glm::vec2 lastMousePosition;
 
     bool isCursorPinned;
+
+    bool isKeyCodeValid(int keyCode) const;
 public:
     InputController();
 
