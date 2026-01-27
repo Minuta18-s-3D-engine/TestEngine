@@ -1,10 +1,12 @@
 #ifndef ENGINE_WINDOW_INPUTCONTROLLER_H_
 #define ENGINE_WINDOW_INPUTCONTROLLER_H_
 
+#include "glm/glm.hpp"
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
+
 #include <cstring>
 #include <stdint.h>
-
-#include "glm/glm.hpp"
 
 class InputController {
     const static int KEYBOARD_BUTTONS = 1024;
@@ -13,6 +15,7 @@ class InputController {
 
     bool pressed[KEY_BUFFER_SIZE];
     uint32_t frames[KEY_BUFFER_SIZE];
+    uint32_t currentFrame;
 
     glm::vec2 mousePosition;
     glm::vec2 lastMousePosition;
@@ -20,6 +23,7 @@ class InputController {
     bool isCursorPinned;
 
     bool isKeyCodeValid(int keyCode) const;
+    bool isMouseCodeValid(int keyCode) const;
 public:
     InputController();
 
@@ -32,7 +36,7 @@ public:
     bool isMouseJustPressed(int keyCode) const;
 
     bool isCursorPinned() const;
-    void pinCursor(bool shouldPin) const;
+    void pinCursor(bool shouldPin);
 };
 
 #endif // ENGINE_WINDOW_INPUTCONTROLLER_H_
