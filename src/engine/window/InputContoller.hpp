@@ -8,7 +8,11 @@
 #include <cstring>
 #include <stdint.h>
 
+class Window;
+
 class InputController {
+    friend class Window;
+    
     const static int KEYBOARD_BUTTONS = 1024;
     const static int MOUSE_BUTTONS = 32;
     const static int KEY_BUFFER_SIZE = KEYBOARD_BUTTONS + MOUSE_BUTTONS; 
@@ -20,7 +24,7 @@ class InputController {
     glm::vec2 mousePosition;
     glm::vec2 lastMousePosition;
 
-    bool isCursorPinned;
+    bool cursorPinned;
 
     bool isKeyCodeValid(int keyCode) const;
     bool isMouseCodeValid(int keyCode) const;

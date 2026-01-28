@@ -1,5 +1,4 @@
 #include "Window.hpp"
-#include "UserInput.hpp"
 
 const uint32_t DEFAULT_WIDTH = 1920;
 const uint32_t DEFAULT_HEIGHT = 1080;
@@ -37,6 +36,29 @@ void Window::framebufferSizeCallback(
     self->eventManager.triggerEvent(WindowResizeEvent(_width, _height));
 }
 
+void Window::keyPressCallback(
+    GLFWwindow* _window, int _button, int _scancode, int _action, int _mode
+) {
+    Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+    InputController& inputController = self->getInputController();
+}
+
+void Window::mouseButtonCallback(
+    GLFWwindow* _window, int _button, int _action, int
+) {
+    Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+    InputController& inputController = self->getInputController();
+    
+}
+
+void Window::cursorPositionCallback(
+    GLFWwindow* _window, double _x, double _y
+) {
+    Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+    InputController& inputController = self->getInputController();
+    
+}
+
 void Window::setupWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
@@ -60,9 +82,9 @@ void Window::setupWindow() {
     glfwSetWindowUserPointer(window, this);
 
     glfwSetFramebufferSizeCallback(window, &Window::framebufferSizeCallback);
-    glfwSetKeyCallback(Window::window, key_callback);
-    glfwSetMouseButtonCallback(Window::window, mouse_button_callback);
-    glfwSetCursorPosCallback(Window::window, cursor_position_callback);
+    glfwSetKeyCallback(window, &Window::keyPressCallback);
+    glfwSetMouseButtonCallback(window, &Window::mouseButtonCallback);
+    glfwSetCursorPosCallback(window, &Window::cursorPositionCallback);
     glfwSwapInterval(0);
 
     glEnable(GL_DEPTH_TEST);
@@ -116,6 +138,10 @@ int Window::getCursorInputMode() const {
 void Window::setCursorInputMode(int mode) {
     cursorInputMode = mode;
     glfwSetInputMode(window, GLFW_CURSOR, mode);
+}
+
+InputController& Window::getInputController() {
+    return inputController;
 }
 
 void Window::swapBuffers() {

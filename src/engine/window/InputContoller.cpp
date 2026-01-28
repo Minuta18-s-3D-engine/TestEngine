@@ -47,10 +47,10 @@ bool InputController::isMouseJustPressed(int mouseCode) const {
 }
 
 bool InputController::isCursorPinned() const {
-    return isCursorPinned;
+    return cursorPinned;
 }
 
 void InputController::pinCursor(bool shouldPin) {
-    isCursorPinned = shouldPin;
+    cursorPinned = shouldPin;
 }
 

@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "../events/EventManager.hpp"
+#include "InputContoller.hpp"
 #include "WindowEvents.hpp"
 
 class Window {
@@ -20,9 +21,17 @@ class Window {
     GLFWwindow* window;
 
     EventManager& eventManager;
+    InputController inputController;
 
     void setupWindow();
-    static void framebufferSizeCallback(GLFWwindow* _window, int _width, int _height);
+    static void framebufferSizeCallback(GLFWwindow* _window, 
+        int _width, int _height);
+    static void keyPressCallback(GLFWwindow* _window, 
+        int _button, int _scancode, int _action, int _mode);
+    static void mouseButtonCallback(GLFWwindow* _window, 
+        int _button, int _action, int);
+    static void cursorPositionCallback(GLFWwindow* _window, 
+        double _x, double _y);
 public:
     Window(
         uint32_t _width, 
@@ -43,6 +52,7 @@ public:
     void setViewport(uint32_t _width, uint32_t _height);
     int getCursorInputMode() const;
     void setCursorInputMode(int mode);
+    InputController& getInputController();
 
     void swapBuffers();
 };
