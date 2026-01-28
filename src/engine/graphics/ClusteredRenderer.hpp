@@ -50,6 +50,7 @@ class ClusteredRenderer {
 
     ComputeShader *buildClustersShader, *lightCullingShader;
     AssetManager& assetManager;
+    Window& window;
     
     std::vector<CompLight> gpuLightCache;
 
@@ -68,7 +69,7 @@ class ClusteredRenderer {
     void createSSBOs();
 public:
     uint compLightIndiciesSSBO;
-    ClusteredRenderer(AssetManager& _assetManager);
+    ClusteredRenderer(Window& _window, AssetManager& _assetManager);
     ~ClusteredRenderer() = default;
 
     void updateLightData(const std::vector<std::shared_ptr<Light>>& lights);

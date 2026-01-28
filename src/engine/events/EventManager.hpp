@@ -28,6 +28,9 @@ public:
     template<DerivedEvent T>
     EventConnection subscribe(Subscriber<T> eventHandler);
 
+    template<DerivedEvent T, typename Class>
+    EventConnection subscribe(Class* instance, void (Class::*method)(T&));
+
     void unsubscribe(EventConnection& conn);
 
     template<DerivedEvent T>
@@ -52,6 +55,15 @@ EventConnection EventManager::subscribe(Subscriber<T> eventHandler) {
     return EventConnection(nextConnectionId, typeid(T));
 }
 
+template<DerivedEvent T, typename Class>
+EventConnection EventManager::subscribe(
+    Class* instance, void (Class::*method)(T&)
+) {
+    return subscribe<T>([instance, method] (T& e) {
+        (instance->*method)(e);
+    });
+}
+
 template<DerivedEvent T>
 void EventManager::triggerEvent(const T& event) {
     eventQueue.push_back(std::make_unique<T>(event));
@@ -60,10 +72,6 @@ void EventManager::triggerEvent(const T& event) {
 template<DerivedEvent T>
 void EventManager::clearSubscribers() {
     subscribers.erase(typeid(T));
-}
-
-void EventManager::clearAllSubscribers() {
-    subscribers.clear();
 }
 
 #endif // ENGINE_EVENTS_EVENTMANAGER_H_

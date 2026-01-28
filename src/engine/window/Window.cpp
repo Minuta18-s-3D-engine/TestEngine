@@ -1,70 +1,104 @@
 #include "Window.hpp"
-#include "UserInput.hpp"
 
-GLFWwindow* Window::window = nullptr;
-int Window::width = 0;
-int Window::height = 0;
-std::string Window::caption = "TestEng";
-int Window::cursorInputMode = GLFW_CURSOR_DISABLED;
-std::vector<Window::FramebufferCallback> Window::framebufferSizeCallbacks;
+const uint32_t DEFAULT_WIDTH = 1920;
+const uint32_t DEFAULT_HEIGHT = 1080;
+const std::string DEFAULT_CAPTION = "TestEng";
 
-void framebufferSizeCallback(GLFWwindow* win, int width, int height) {
-    glViewport(0, 0, width, height);
-    Window::width = width;
-    Window::height = height;
+const int OPENGL_VERSION_MAJOR = 4;
+const int OPENGL_VERSION_MINOR = 3;
 
-    for (auto& callback : Window::framebufferSizeCallbacks) {
-        callback(win, width, height);
-    }
+Window::Window(
+    uint32_t _width, uint32_t _height, const std::string& _caption, 
+    EventManager& _eventManager
+) : width(_width), height(_height), caption(_caption), 
+    eventManager(_eventManager), inputController(nullptr) {
+    setupWindow();
+    inputController.window = window;
 }
 
-void Window::checkGlad() {
-    if (!gladLoadGLLoader((GLADloadproc)  glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
-        throw std::runtime_error("Failed to initialize GLAD");
-    }
+Window::Window(EventManager& _eventManager)
+    : width(DEFAULT_WIDTH), height(DEFAULT_HEIGHT), caption(DEFAULT_CAPTION), 
+    eventManager(_eventManager), inputController(nullptr) {
+    setupWindow();
+    inputController.window = window;
 }
 
-void Window::initialize(
-    uint width, uint height, 
-    std::string caption
+Window::~Window() {
+    glfwSetWindowUserPointer(window, nullptr);
+}
+
+void Window::framebufferSizeCallback(
+    GLFWwindow* _window, int _width, int _height
 ) {
-    Window::width = width;
-    Window::height = height;
+    glViewport(0, 0, _width, _height);
+    Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+    self->width = _width;
+    self->height = _height;
 
+    self->eventManager.triggerEvent(WindowResizeEvent(_width, _height));
+}
+
+void Window::keyPressCallback(
+    GLFWwindow* _window, int _button, int _scancode, int _action, int _mode
+) {
+    Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+    InputController& inputController = self->getInputController();
+
+    inputController.keyPressCallback(_button, _scancode, _action, _mode);
+}
+
+void Window::mouseButtonCallback(
+    GLFWwindow* _window, int _button, int _action, int _mode
+) {
+    Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+    InputController& inputController = self->getInputController();
+    
+    inputController.mouseButtonCallback(_button, _action, _mode);
+}
+
+void Window::cursorPositionCallback(
+    GLFWwindow* _window, double _x, double _y
+) {
+    Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
+    InputController& inputController = self->getInputController();
+    
+    inputController.cursorPositionCallback(_x, _y);
+}
+
+void Window::setupWindow() {
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    Window::window = glfwCreateWindow(
+    window = glfwCreateWindow(
         width, height, caption.c_str(), nullptr, nullptr
     );
 
-    if (Window::window == nullptr) {
-        std::cerr << "Failed to create GLFW Window" << std::endl;
+    if (window == nullptr) {
         throw std::runtime_error("Failed to create GLFW Window");
     }
-    glfwMakeContextCurrent(Window::window);
-    
-    Window::checkGlad();
-
-    glViewport(0, 0, Window::width, Window::height);
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-
-    glfwSetKeyCallback(Window::window, key_callback);
-    glfwSetMouseButtonCallback(Window::window, mouse_button_callback);
-    glfwSetCursorPosCallback(Window::window, cursor_position_callback);
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0);
     
-    glEnable(GL_DEPTH_TEST);
+    if (!gladLoadGLLoader((GLADloadproc)  glfwGetProcAddress)) {
+        throw std::runtime_error("Failed to initialize GLAD");
+    }
+    glViewport(0, 0, width, height);
 
+    glfwSetWindowUserPointer(window, this);
+
+    glfwSetFramebufferSizeCallback(window, &Window::framebufferSizeCallback);
+    glfwSetKeyCallback(window, &Window::keyPressCallback);
+    glfwSetMouseButtonCallback(window, &Window::mouseButtonCallback);
+    glfwSetCursorPosCallback(window, &Window::cursorPositionCallback);
+    glfwSwapInterval(0);
+
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);  
+    glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    Window::setCursorInputMode(GLFW_CURSOR_DISABLED);
+    this->setCursorInputMode(GLFW_CURSOR_DISABLED);
 
     const GLubyte* version = glGetString(GL_VERSION);
     const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -72,53 +106,50 @@ void Window::initialize(
     std::cout << "GLSL Version: " << glslVersion << std::endl;
 }
 
-void Window::terminate() {
-    glfwTerminate();
-}
-
-bool Window::isShouldClose() {
+bool Window::isShouldClose() const {
     return glfwWindowShouldClose(window);
 }
 
-void Window::setShouldClose(bool should_close) {
-    glfwSetWindowShouldClose(window, should_close);
+void Window::setShouldClose(bool should) {
+    glfwSetWindowShouldClose(window, should);
 }
 
-void Window::clearColor(glm::vec3 color) {
-    glClearColor(color.r, color.g, color.b, 1.0f);
+std::string Window::getCaption() const {
+    return caption;
 }
 
-void Window::clearColor(glm::vec4 color) {
-    glClearColor(color.r, color.g, color.b, color.a);
+void Window::setCaption(const std::string& _caption) {
+    caption = _caption;
+    glfwSetWindowTitle(window, _caption.c_str());
 }
 
-void Window::clear() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+uint32_t Window::getHeight() const {
+    return height;
 }
 
-void Window::setTitle(std::string newTitle) {
-    glfwSetWindowTitle(Window::window, newTitle.c_str());
+uint32_t Window::getWidth() const {
+    return width;
 }
 
-void Window::swapBuffers() {
-    glfwSwapBuffers(Window::window);
-}
-
-void Window::setViewport(int x, int y, int width, int height) {
+void Window::setViewport(uint32_t _width, uint32_t _height) {
+    width = _width;
+    height = _height;
     glViewport(0, 0, width, height);
-    Window::width = width;
-    Window::height = height;
+}
+
+int Window::getCursorInputMode() const {
+    return cursorInputMode;
 }
 
 void Window::setCursorInputMode(int mode) {
-    Window::cursorInputMode = mode;
-    glfwSetInputMode(Window::window, GLFW_CURSOR, mode);  
+    cursorInputMode = mode;
+    glfwSetInputMode(window, GLFW_CURSOR, mode);
 }
 
-int Window::getCursorInputMode() {
-    return Window::cursorInputMode;
+InputController& Window::getInputController() {
+    return inputController;
 }
 
-void Window::addframebufferCallback(FramebufferCallback callback) {
-    Window::framebufferSizeCallbacks.push_back(callback);
+void Window::swapBuffers() {
+    glfwSwapBuffers(window);
 }

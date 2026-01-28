@@ -35,3 +35,7 @@ void EventManager::unsubscribe(EventConnection& conn) {
 
     conn.valid = false;
 }
+
+void EventManager::clearAllSubscribers() {
+    subscribers.clear();
+}

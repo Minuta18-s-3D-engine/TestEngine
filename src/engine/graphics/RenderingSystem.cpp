@@ -3,20 +3,25 @@
 RenderingSystem::RenderingSystem(
     AssetManager& _assetManager,
     GameObjectManager& _gameObjectManager, 
-    ModelManager& _modelManager
+    ModelManager& _modelManager,
+    EventManager& _eventManager,
+    Window& _window 
 ): assetManager(_assetManager), gameObjectManager(_gameObjectManager),
-    modelManager(_modelManager) {
-    renderer = new ClusteredRenderer(_assetManager);
-    gBuffer = new GBuffer(Window::width, Window::height);
+    modelManager(_modelManager), window(_window), eventManager(_eventManager) {
+    renderer = new ClusteredRenderer(window, _assetManager);
+    gBuffer = new GBuffer(window.getWidth(), window.getHeight());
 
-    Window::addframebufferCallback([&] (GLFWwindow* win, int width, int height) {
-        gBuffer->resize(width, height);
-    });
+    eventManager.subscribe<WindowResizeEvent>(
+        this, &RenderingSystem::onWindowResize);
 }
 
 RenderingSystem::~RenderingSystem() {
     delete gBuffer;
     delete renderer;
+}
+
+void RenderingSystem::onWindowResize(WindowResizeEvent& event) {
+    gBuffer->resize(event.newWidth, event.newHeight);
 }
 
 void RenderingSystem::setDrawMode(uint newDrawMode) {
@@ -73,7 +78,7 @@ void RenderingSystem::render() {
     glm::mat4 proj = glm::mat4(1.0f);
     proj = glm::perspective(
         camera->getZoom(), 
-        (float) Window::width / (float) Window::height, 
+        (float) window.getWidth() / (float) window.getHeight(), 
         camera->zNear, camera->zFar
     );
     glm::mat4 viewMat = camera->getViewMat();
@@ -112,7 +117,7 @@ void RenderingSystem::render() {
     lightingShader.setUniform4mat("view", viewMat);
     lightingShader.setUniform3ui("gridSize", renderer->getClusterGrid());
     lightingShader.setUniform2ui("screenDimensions", 
-        Window::width, Window::height);
+        window.getWidth(), window.getHeight());
 
     renderer->bindClusterData();
 

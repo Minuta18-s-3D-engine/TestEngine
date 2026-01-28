@@ -1,44 +1,60 @@
-#ifndef ENGINE_GRAPHICS_WINDOW_H_
-#define ENGINE_GRAPHICS_WINDOW_H_
+#ifndef ENGINE_WINDOW_WINDOW_H_
+#define ENGINE_WINDOW_WINDOW_H_
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <string>
-#include <iostream>
-#include <vector>
-#include <functional>
 
-#include "../utils/EngineTypes.h"
+#include <string>
+#include <cstdint>
+#include <iostream>
+
+#include "../events/EventManager.hpp"
+#include "InputController.hpp"
+#include "WindowEvents.hpp"
 
 class Window {
-    typedef std::function<void(GLFWwindow*, int, int)> FramebufferCallback;
+    std::string caption;
+    uint32_t width, height;
+    int cursorInputMode;
 
-    static GLFWwindow* window;
+    GLFWwindow* window;
 
-    static void checkGlad();
+    EventManager& eventManager;
+    InputController inputController;
+
+    void setupWindow();
+    static void framebufferSizeCallback(GLFWwindow* _window, 
+        int _width, int _height);
+    static void keyPressCallback(GLFWwindow* _window, 
+        int _button, int _scancode, int _action, int _mode);
+    static void mouseButtonCallback(GLFWwindow* _window, 
+        int _button, int _action, int);
+    static void cursorPositionCallback(GLFWwindow* _window, 
+        double _x, double _y);
 public:
-    static std::vector<FramebufferCallback> framebufferSizeCallbacks;
-    static int width, height;
-    static std::string caption;
-    static int cursorInputMode;
+    Window(
+        uint32_t _width, 
+        uint32_t _height, 
+        const std::string& _caption, 
+        EventManager& _eventManager
+    );
+    Window(EventManager& _eventManager);
+    ~Window();
 
-    static void initialize(uint width, uint height, std::string caption);
-    static void terminate();
-    
-    static void setCursorInputMode(int mode);
-    static int getCursorInputMode();
-    static bool isShouldClose();
-    static void setShouldClose(bool should_close);
+    bool isShouldClose() const;
+    void setShouldClose(bool should);
 
-    static void clearColor(glm::vec3 color);
-    static void clearColor(glm::vec4 color);
-    static void clear();
-    static void setTitle(std::string newTitle);
-    static void swapBuffers();
-    static void setViewport(int x, int y, int width, int height);
+    std::string getCaption() const;
+    void setCaption(const std::string& _caption);
+    uint32_t getHeight() const;
+    uint32_t getWidth() const;
+    void setViewport(uint32_t _width, uint32_t _height);
+    int getCursorInputMode() const;
+    void setCursorInputMode(int mode);
+    InputController& getInputController();
 
-    static void addframebufferCallback(FramebufferCallback callback);
+    void swapBuffers();
 };
 
-#endif // ENGINE_GRAPHICS_WINDOW_H_
+#endif // ENGINE_WINDOW_WINDOW_H_
