@@ -11,14 +11,16 @@ Window::Window(
     uint32_t _width, uint32_t _height, const std::string& _caption, 
     EventManager& _eventManager
 ) : width(_width), height(_height), caption(_caption), 
-    eventManager(_eventManager) {
+    eventManager(_eventManager), inputController(nullptr) {
     setupWindow();
+    inputController.window = window;
 }
 
 Window::Window(EventManager& _eventManager)
     : width(DEFAULT_WIDTH), height(DEFAULT_HEIGHT), caption(DEFAULT_CAPTION), 
-    eventManager(_eventManager) {
+    eventManager(_eventManager), inputController(nullptr) {
     setupWindow();
+    inputController.window = window;
 }
 
 Window::~Window() {
@@ -41,14 +43,17 @@ void Window::keyPressCallback(
 ) {
     Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
     InputController& inputController = self->getInputController();
+
+    inputController.keyPressCallback(_button, _scancode, _action, _mode);
 }
 
 void Window::mouseButtonCallback(
-    GLFWwindow* _window, int _button, int _action, int
+    GLFWwindow* _window, int _button, int _action, int _mode
 ) {
     Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
     InputController& inputController = self->getInputController();
     
+    inputController.mouseButtonCallback(_button, _action, _mode);
 }
 
 void Window::cursorPositionCallback(
@@ -57,6 +62,7 @@ void Window::cursorPositionCallback(
     Window* self = static_cast<Window*>(glfwGetWindowUserPointer(_window));
     InputController& inputController = self->getInputController();
     
+    inputController.cursorPositionCallback(_x, _y);
 }
 
 void Window::setupWindow() {

@@ -15,7 +15,7 @@
 #include "engine/graphics/Shader.hpp"
 #include "engine/graphics/ComputeShader.hpp"
 #include "engine/window/Window.hpp"
-#include "engine/window/UserInput.hpp"
+#include "engine/window/InputController.hpp"
 #include "engine/assets/coders/images/PngCoder.hpp"
 #include "engine/assets/utils/Files.hpp"
 #include "engine/assets/AssetManager.hpp"
@@ -108,8 +108,7 @@ void loadTexture(
 int main() {
     EventManager eventManager;
     Window win(eventManager);
-    UserInput::initialize();
-    UserInput::win = &win;
+    InputController& inputController = win.getInputController();
 
     AssetManager assetManager;
 
@@ -213,12 +212,13 @@ int main() {
     int framesCount = 0;
     bool isInGame = true;
     while (!win.isShouldClose()) {
-        UserInput::pollEvents();
+        inputController.updateEvents();
         eventManager.dispatchEvents();
 
         if (isInGame) {
+            glm::vec2 cursorMovement = inputController.getMouseMovement();
             player.getCamera()->processMouseMovement(
-                UserInput::getMouseXMov(), -UserInput::getMouseYMov(), 
+                cursorMovement.x, -cursorMovement.y, 
                 MOUSE_SENSITIVITY
             );
         }
@@ -238,19 +238,19 @@ int main() {
             // TODO: move this logic to player class
         glm::vec3 rightVec = glm::normalize(player.getCamera()->right);
         glm::vec3 newPos = player.getPos();
-        if (UserInput::isKeyPressed(GLFW_KEY_W)) 
+        if (inputController.isKeyPressed(GLFW_KEY_W)) 
             newPos += (frontVec * deltaTime * player.getSpeed());
-        if (UserInput::isKeyPressed(GLFW_KEY_S))
+        if (inputController.isKeyPressed(GLFW_KEY_S))
             newPos -= (frontVec * deltaTime * player.getSpeed());
-        if (UserInput::isKeyPressed(GLFW_KEY_A))
+        if (inputController.isKeyPressed(GLFW_KEY_A))
             newPos -= (rightVec * deltaTime * player.getSpeed());
-        if (UserInput::isKeyPressed(GLFW_KEY_D))
+        if (inputController.isKeyPressed(GLFW_KEY_D))
             newPos += (rightVec * deltaTime * player.getSpeed());
-        if (UserInput::isKeyPressed(GLFW_KEY_SPACE))
+        if (inputController.isKeyPressed(GLFW_KEY_SPACE))
             newPos.y += deltaTime * player.getSpeed();
-        if (UserInput::isKeyPressed(GLFW_KEY_LEFT_SHIFT))
+        if (inputController.isKeyPressed(GLFW_KEY_LEFT_SHIFT))
             newPos.y -= deltaTime * player.getSpeed();
-        if (UserInput::isKeyJustPressed(GLFW_KEY_P)) {
+        if (inputController.isKeyJustPressed(GLFW_KEY_P)) {
             std::cout << "Player position: ";
             std::cout << player.getCamera()->pos.x << " " 
                         << player.getCamera()->pos.y << " " 
@@ -263,14 +263,14 @@ int main() {
         player.setPos(newPos);
         player.update(deltaTime);
 
-        if (UserInput::isKeyPressed(GLFW_KEY_F1)) 
+        if (inputController.isKeyPressed(GLFW_KEY_F1)) 
             renderingSystem.setDrawMode(0);
-        if (UserInput::isKeyPressed(GLFW_KEY_F2)) 
+        if (inputController.isKeyPressed(GLFW_KEY_F2)) 
             renderingSystem.setDrawMode(1);
-        if (UserInput::isKeyPressed(GLFW_KEY_F3)) 
+        if (inputController.isKeyPressed(GLFW_KEY_F3)) 
             renderingSystem.setDrawMode(2);
 
-        if (UserInput::isKeyJustPressed(GLFW_KEY_ESCAPE)) {
+        if (inputController.isKeyJustPressed(GLFW_KEY_ESCAPE)) {
             if (win.getCursorInputMode() == GLFW_CURSOR_NORMAL) {
                 win.setCursorInputMode(GLFW_CURSOR_DISABLED);
             } else {
@@ -283,8 +283,6 @@ int main() {
 
         win.swapBuffers();
     }
-
-    UserInput::terminate();
 
     return 0;
 }

@@ -10,7 +10,7 @@
 #include <iostream>
 
 #include "../events/EventManager.hpp"
-#include "InputContoller.hpp"
+#include "InputController.hpp"
 #include "WindowEvents.hpp"
 
 class Window {
