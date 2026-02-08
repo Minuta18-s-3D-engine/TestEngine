@@ -3,6 +3,10 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#define UUID_SYSTEM_GENERATOR
+
+#include <uuid.h>
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -27,7 +31,6 @@
 #include "engine/models/Mesh.hpp"
 #include "engine/scene/Scene.hpp"
 #include "engine/models/Model.hpp"
-#include "engine/models/ModelManager.hpp"
 #include "engine/models/ModelComponent.hpp"
 #include "engine/gameobject/GameObjectManager.hpp"
 #include "engine/gameobject/GameObject.hpp"
@@ -40,13 +43,13 @@ namespace fs = std::filesystem;
 
 Light l1(glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-const float MOUSE_SENSITIVITY = 0.15;
+const float MOUSE_SENSITIVITY = 0.10;
 
 // temporary solution
 void createRect(
     glm::vec3 pos, glm::vec3 scale, glm::vec2 textureScale, Material mat, 
     std::string textureKey, AssetManager& manager,
-    GameObjectManager& objectManager, ModelManager& modelManager
+    GameObjectManager& objectManager
 ) {
     std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(
         scale, textureScale, textureKey, manager, mat
@@ -56,7 +59,8 @@ void createRect(
     cubeMeshArray.push_back(cubeMesh);
     std::unique_ptr<Model> cubeModel = std::make_unique<Model>(cubeMeshArray);
     
-    auto modelId = modelManager.add(cubeModel);
+    uuids::uuid modelId = uuids::uuid_system_generator{}();
+    std::string modelName = uuids::to_string(modelId);
 
     std::unique_ptr<GameObject> cubeObject = GameObject::createGameObject();
     auto transformComponent = cubeObject->getComponent<Transform>();
@@ -65,10 +69,11 @@ void createRect(
     auto behaviorComponent = cubeObject->getComponent<Behavior>();
     behaviorComponent->type = BehaviorType::STATIC;
     auto modelComponent = std::make_unique<ModelComponent>();
-    modelComponent->managerId = modelId;
+    modelComponent->managerId = modelName;
     cubeObject->addComponent<ModelComponent>(modelComponent);
 
     objectManager.addObject(cubeObject);
+    manager.set<Model>(std::move(cubeModel), modelName);
 }
 
 void createPointLight(
@@ -150,11 +155,9 @@ int main() {
     assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
 
     GameObjectManager objectManager;
-    ModelManager modelManager;
     RenderingSystem renderingSystem(
         assetManager,
         objectManager,
-        modelManager,
         eventManager,
         win
     );
@@ -167,14 +170,14 @@ int main() {
     createRect(
         glm::vec3(2.0, 2.0, 5.0), glm::vec3(1.0, 1.0, 1.0), 
         glm::vec2(1.0, 1.0), Material(), "materials/container",
-        assetManager, objectManager, modelManager
+        assetManager, objectManager
     );
 
     ModelLoader modelLoader;
     
     {
         auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
-        auto modelId = modelManager.add(sponzaModel);
+        auto modelName = "sponza_model";
 
         std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
         auto transformComponent = sponzaObject->getComponent<Transform>();
@@ -183,10 +186,11 @@ int main() {
         auto behaviorComponent = sponzaObject->getComponent<Behavior>();
         behaviorComponent->type = BehaviorType::STATIC;
         auto modelComponent = std::make_unique<ModelComponent>();
-        modelComponent->managerId = modelId;
+        modelComponent->managerId = modelName;
         sponzaObject->addComponent<ModelComponent>(modelComponent);
 
         objectManager.addObject(sponzaObject);
+        assetManager.set<Model>(std::move(sponzaModel), modelName);
     }
 
     std::ifstream lightsFile("assets/lights.txt");

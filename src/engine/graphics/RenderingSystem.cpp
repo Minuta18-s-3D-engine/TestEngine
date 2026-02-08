@@ -3,11 +3,10 @@
 RenderingSystem::RenderingSystem(
     AssetManager& _assetManager,
     GameObjectManager& _gameObjectManager, 
-    ModelManager& _modelManager,
     EventManager& _eventManager,
     Window& _window 
 ): assetManager(_assetManager), gameObjectManager(_gameObjectManager),
-    modelManager(_modelManager), window(_window), eventManager(_eventManager) {
+    window(_window), eventManager(_eventManager) {
     renderer = new ClusteredRenderer(window, _assetManager);
     gBuffer = new GBuffer(window.getWidth(), window.getHeight());
 
@@ -94,7 +93,10 @@ void RenderingSystem::render() {
             worldModel, transformComponent->position);
 
         geomShader.setUniform4mat("model", model);
-        auto objModel = modelManager.get(modelComponent->managerId);
+        auto objModel = assetManager.get<Model>(modelComponent->managerId);
+        if (!objModel) {
+            continue;
+        }
         objModel->draw(geomShader); 
     }
 

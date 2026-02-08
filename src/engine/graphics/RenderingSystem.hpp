@@ -8,6 +8,7 @@
 #include "../gameobject/components/Behavior.hpp"
 #include "../models/ModelComponent.hpp"
 #include "components/PointLight.hpp"
+#include "../models/Model.hpp"
 
 #include "../assets/AssetManager.hpp"
 #include "../graphics/ClusteredRenderer.hpp"
@@ -15,7 +16,6 @@
 #include "../graphics/Camera.hpp"
 #include "../window/Window.hpp"
 #include "../window/WindowEvents.hpp"
-#include "../models/ModelManager.hpp"
 #include "../events/EventManager.hpp"
 
 #include <memory>
@@ -25,7 +25,6 @@
 class RenderingSystem : public System {
     AssetManager& assetManager;
     GameObjectManager& gameObjectManager;
-    ModelManager& modelManager;
     Window& window;
     EventManager& eventManager;
 
@@ -44,7 +43,6 @@ public:
     RenderingSystem(
         AssetManager& _assetManager, 
         GameObjectManager& _gameObjectManager,
-        ModelManager& _modelManager,
         EventManager& _eventManager,
         Window& _window
     );

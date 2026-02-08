@@ -1,8 +1,6 @@
 #ifndef ENGINE_GAMEOBJECT_GAMEOBJECT_H_
 #define ENGINE_GAMEOBJECT_GAMEOBJECT_H_
 
-// some undocumented shit
-// its required for stduuid to access uuids::uuid_system_generator
 #define UUID_SYSTEM_GENERATOR
 
 #include <uuid.h>
