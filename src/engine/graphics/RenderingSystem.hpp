@@ -1,6 +1,10 @@
 #ifndef ENGINE_GRAPHICS_RENDERINGSYSTEM_H_
 #define ENGINE_GRAPHICS_RENDERINGSYSTEM_H_
 
+#include <memory>
+#include <vector>
+#include <chrono>
+
 #include "../gameobject/System.hpp"
 #include "../gameobject/GameObject.hpp"
 #include "../gameobject/GameObjectManager.hpp"
@@ -17,10 +21,6 @@
 #include "../window/Window.hpp"
 #include "../window/WindowEvents.hpp"
 #include "../events/EventManager.hpp"
-
-#include <memory>
-#include <vector>
-#include <chrono>
 
 class RenderingSystem : public System {
     AssetManager& assetManager;
