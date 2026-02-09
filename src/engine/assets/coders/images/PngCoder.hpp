@@ -12,7 +12,6 @@
 
 /* Thanks to 
  * https://github.com/MihailRis/VoxelEngine-Cpp/blob/main/src/coders/png.cpp
- * for a good example (I copied it :) ) of libpng
  */
 
 class PngCoder {
