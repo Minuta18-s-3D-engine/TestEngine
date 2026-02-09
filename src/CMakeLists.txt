@@ -14,6 +14,15 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(stduuid)
 
+FetchContent_Declare(
+    json
+    URL https://github.com/nlohmann/json/releases/download/v3.12.0/include.zip
+    URL_HASH SHA256=b8cb0ef2dd7f57f18933997c9934bb1fa962594f701cd5a8d3c2c80541559372
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+
+FetchContent_MakeAvailable(json)
+
 set(ASSIMP_SOURCE_DIR ${CMAKE_SOURCE_DIR}/lib/assimp)
 set(ASSIMP_BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/assimp-build)
 
@@ -60,4 +69,4 @@ if (UNIX AND NOT APPLE)
 endif()
 
 target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm 
-    ${PNG_LIBRARY} assimp::assimp bvh stduuid ${JPEG_LIBRARIES})
+    ${PNG_LIBRARY} assimp::assimp bvh stduuid ${JPEG_LIBRARIES} json)
