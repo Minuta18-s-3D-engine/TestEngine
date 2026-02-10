@@ -1,7 +1,10 @@
 #include "ProjectLoader.hpp"
 
-nlohmann::json ProjectLoader::readJsonFile(const std::ifstream& fileStream) {
+nlohmann::json ProjectLoader::readJsonFile(
+    const std::filesystem::path& filePath
+) {
     try {
+        std::ifstream fileStream(filePath);
         nlohmann::json result = nlohmann::json::parse(fileStream);
         return result;
     } catch (const nlohmann::json::parse_error& e) {
@@ -16,12 +19,11 @@ std::unique_ptr<Project> ProjectLoader::loadProject(
     if (!std::filesystem::exists(configPath)) {
         throw exc::file_not_found(std::format(
             "Project config file {} not found.",
-            configPath
+            configPath.string()
         ));
     }
 
-    std::ifstream configFile(configPath);
-    nlohmann::json config = readJsonFile(configFile);
+    nlohmann::json config = readJsonFile(configPath);
 
     if (!config.contains("name")) {
         throw exc::validation_error("Mandatory field \"name\" not found.");
@@ -34,7 +36,8 @@ std::unique_ptr<Project> ProjectLoader::loadProject(
 
     std::unique_ptr<Project> project = std::make_unique<Project>(
         config["name"],
-        config["projectVersion"]
+        config["projectVersion"],
+        folderPath
     );
 
     return project;

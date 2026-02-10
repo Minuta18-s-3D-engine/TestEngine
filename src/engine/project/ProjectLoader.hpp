@@ -1,7 +1,7 @@
 #ifndef ENGINE_PROJECT_PROJECTLOADER_HPP_
 #define ENGINE_PROJECT_PROJECTLOADER_HPP_
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <filesystem>
 #include <string>
@@ -15,7 +15,7 @@
 class ProjectLoader {
     std::string projectConfigFilename = "project.json";
 
-    nlohmann::json readJsonFile(const std::ifstream& fileStream);
+    nlohmann::json readJsonFile(const std::filesystem::path& filePath);
 public:
     std::unique_ptr<Project> loadProject(
         const std::filesystem::path& folderPath

@@ -23,6 +23,9 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(json)
 
+add_library(nlohmann_json INTERFACE)
+target_include_directories(nlohmann_json INTERFACE ${json_SOURCE_DIR}/include)
+
 set(ASSIMP_SOURCE_DIR ${CMAKE_SOURCE_DIR}/lib/assimp)
 set(ASSIMP_BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/assimp-build)
 
@@ -69,4 +72,4 @@ if (UNIX AND NOT APPLE)
 endif()
 
 target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm 
-    ${PNG_LIBRARY} assimp::assimp bvh stduuid ${JPEG_LIBRARIES} json)
+    ${PNG_LIBRARY} assimp::assimp bvh stduuid ${JPEG_LIBRARIES} nlohmann_json)
