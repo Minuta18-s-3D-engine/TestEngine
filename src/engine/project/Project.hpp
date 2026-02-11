@@ -8,6 +8,7 @@
 #include "PathResolver.hpp"
 #include "../assets/AssetManager.hpp"
 #include "cmakeConfig.h"
+#include "VirtualPath.hpp"
 
 class Project {
     std::string name;

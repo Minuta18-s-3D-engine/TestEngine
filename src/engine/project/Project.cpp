@@ -12,6 +12,10 @@ Project::Project(
             << "Warning: project was created using wrong engine version."
             << std::endl;
     }
+
+    VirtualPath::setResolverFunc([this](const std::string& p) {
+        return this->pathResolver->resolve(p);
+    });
 }
 
 bool Project::checkEngineVersion() {

@@ -3,7 +3,8 @@
 // learnopengl.com saves the day once again
 // https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/model.h
 
-std::unique_ptr<Model> ModelLoader::loadModel(const std::string& filename) {
+std::unique_ptr<Model> ModelLoader::loadModel(const VirtualPath& _filename) {
+    std::string filename = _filename.resolve();
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
         filename, 

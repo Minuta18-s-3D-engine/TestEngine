@@ -139,12 +139,12 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    std::unique_ptr<Project> projectPtr;
     try {
         std::filesystem::path projectFolder(args["--project"]);
         ProjectLoader projectLoader;
-        std::unique_ptr<Project> projectPtr = projectLoader.loadProject(
+        projectPtr = projectLoader.loadProject(
             projectFolder);
-        Project& project = *projectPtr;
     } catch (const exc::file_not_found& e) {
         std::cerr << e.what() << std::endl;
         return -1;
@@ -152,12 +152,12 @@ int main(int argc, char* argv[]) {
         std::cerr << e.what() << std::endl;
         return -1;
     }
+    Project& project = *projectPtr;
+    AssetManager& assetManager = project.getAssetManager();
 
     EventManager eventManager;
     Window win(eventManager);
     InputController& inputController = win.getInputController();
-
-    AssetManager assetManager;
 
     std::string path = "./assets/textures";
     for (const auto & entry : fs::directory_iterator(path)) {
@@ -218,7 +218,7 @@ int main(int argc, char* argv[]) {
     ModelLoader modelLoader;
     
     {
-        auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
+        auto sponzaModel = modelLoader.loadModel("fs://assets/models/sponza_low_res.glb");
         auto modelName = "sponza_model";
 
         std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
@@ -275,7 +275,7 @@ int main(int argc, char* argv[]) {
 
         framesCount += 1;
         if (currentFrame - lastFPSDisplay >= 1.0) {
-            win.setCaption("TestEng (fps = " + std::to_string(framesCount) + ")");
+            win.setCaption(project.getName() + " (fps = " + std::to_string(framesCount) + ")");
             framesCount = 0;
             lastFPSDisplay = currentFrame;
         }
