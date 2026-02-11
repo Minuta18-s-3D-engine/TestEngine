@@ -7,17 +7,21 @@
 
 #include "PathResolver.hpp"
 #include "../assets/AssetManager.hpp"
+#include "cmakeConfig.h"
 
 class Project {
     std::string name;
     std::string projectVersion;
+    std::string engineVersion;
 
     std::unique_ptr<PathResolver> pathResolver;
     std::unique_ptr<AssetManager> assetManager;
+
+    bool checkEngineVersion();
 public:
     Project(
         std::string name, std::string projectVersion, 
-        const std::filesystem::path& rootPath
+        std::string engineVersion, const std::filesystem::path& rootPath
     );
 
     Project(const Project&) = delete;
@@ -28,8 +32,9 @@ public:
     AssetManager& getAssetManager();
     PathResolver& getPathResolver();
 
-    std::string getName() const;
-    std::string getProjectVersion() const;
+    const std::string& getName() const;
+    const std::string& getProjectVersion() const;
+    const std::string& getEngineVersion() const;
 };
 
 #endif // ENGINE_PROJECT_PROJECT_HPP_

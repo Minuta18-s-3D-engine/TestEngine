@@ -3,6 +3,11 @@ project(TestEngSrc)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmakeConfig.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmakeConfig.h"
+)
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -66,6 +71,7 @@ add_subdirectory(lib/bvh)
 
 target_include_directories(glad PUBLIC ../lib/glad/include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 if (UNIX AND NOT APPLE)
     target_link_libraries(TestEngSrc uuid)

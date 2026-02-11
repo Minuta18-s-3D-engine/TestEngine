@@ -11,7 +11,7 @@ class PathResolver {
 public:
     PathResolver(const std::filesystem::path& _root);
 
-    std::filesystem::path resolve(const std::string& virtualPath) const;
+    std::filesystem::path resolve(const std::string& virtualPath) const; 
 };
 
 #endif // ENGINE_PROJECT_PATHRESOLVER_HPP_

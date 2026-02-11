@@ -34,9 +34,15 @@ std::unique_ptr<Project> ProjectLoader::loadProject(
             "Mandatory field \"projectVersion\" not found.");
     }
 
+    if (!config.contains("engineVersion")) {
+        throw exc::validation_error(
+            "Mandatory field \"engineVersion\" not found.");
+    }
+
     std::unique_ptr<Project> project = std::make_unique<Project>(
         config["name"],
         config["projectVersion"],
+        config["engineVersion"],
         folderPath
     );
 
