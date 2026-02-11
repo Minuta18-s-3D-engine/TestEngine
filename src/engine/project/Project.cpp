@@ -7,7 +7,7 @@ Project::Project(
     pathResolver = std::make_unique<PathResolver>(rootPath);
     assetManager = std::make_unique<AssetManager>();
 
-    if (checkEngineVersion()) {
+    if (!checkEngineVersion()) {
         std::cerr 
             << "Warning: project was created using wrong engine version."
             << std::endl;

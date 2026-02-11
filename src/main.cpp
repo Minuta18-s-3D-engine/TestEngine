@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <sstream>
 #include <chrono>
+#include <unordered_map>
 
 #include "engine/graphics/Shader.hpp"
 #include "engine/graphics/ComputeShader.hpp"
@@ -38,6 +39,8 @@
 #include "engine/graphics/RenderingSystem.hpp"
 #include "engine/models/ModelLoader.hpp"
 #include "engine/assets/utils/MeshGen.hpp"
+#include "engine/project/Project.hpp"
+#include "engine/project/ProjectLoader.hpp"
 
 namespace fs = std::filesystem;
 
@@ -110,7 +113,46 @@ void loadTexture(
     );
 }
 
-int main() {
+std::unordered_map<std::string, std::string> parseArguments(
+    int argc, char* argv[]
+) { 
+    std::unordered_map<std::string, std::string> result;
+    if (argc <= 1) return result;
+    std::string currentArg = argv[0];
+    for (int i = 1; i < argc; ++i) {
+        bool option1 = (currentArg.compare(0, 2, "--") == 0);
+        bool option2 = !(std::string(argv[i]).compare(0, 2, "--") == 0);
+        if (option1 && option2) {
+            result[currentArg] = argv[i];
+        }
+        currentArg = std::string(argv[i]);
+    }
+    return result;
+}
+
+int main(int argc, char* argv[]) {
+    std::unordered_map<std::string, std::string> args = 
+        parseArguments(argc, argv);
+
+    if (!args.contains("--project")) {
+        std::cerr << "No project set." << std::endl;
+        return -1;
+    }
+
+    try {
+        std::filesystem::path projectFolder(args["--project"]);
+        ProjectLoader projectLoader;
+        std::unique_ptr<Project> projectPtr = projectLoader.loadProject(
+            projectFolder);
+        Project& project = *projectPtr;
+    } catch (const exc::file_not_found& e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    } catch (const exc::validation_error& e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    }
+
     EventManager eventManager;
     Window win(eventManager);
     InputController& inputController = win.getInputController();
