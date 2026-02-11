@@ -2,9 +2,10 @@
 
 Project::Project(
     std::string name, std::string projectVersion, std::string engineVersion,
-    const std::filesystem::path& rootPath
+    const std::filesystem::path& rootPath,
+    const std::filesystem::path& coreRootPath
 ) : name(name), projectVersion(projectVersion), engineVersion(engineVersion) {
-    pathResolver = std::make_unique<PathResolver>(rootPath);
+    pathResolver = std::make_unique<PathResolver>(rootPath, coreRootPath);
     assetManager = std::make_unique<AssetManager>();
 
     if (!checkEngineVersion()) {

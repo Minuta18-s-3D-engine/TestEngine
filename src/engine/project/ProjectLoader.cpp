@@ -13,7 +13,8 @@ nlohmann::json ProjectLoader::readJsonFile(
 }
 
 std::unique_ptr<Project> ProjectLoader::loadProject(
-    const std::filesystem::path& folderPath
+    const std::filesystem::path& folderPath,
+    const std::filesystem::path& coreFolderPath
 ) {
     std::filesystem::path configPath = folderPath / projectConfigFilename;
     if (!std::filesystem::exists(configPath)) {
@@ -43,7 +44,8 @@ std::unique_ptr<Project> ProjectLoader::loadProject(
         config["name"],
         config["projectVersion"],
         config["engineVersion"],
-        folderPath
+        folderPath,
+        coreFolderPath
     );
 
     return project;

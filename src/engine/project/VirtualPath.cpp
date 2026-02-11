@@ -3,6 +3,8 @@
 VirtualPath::ResolverFunc VirtualPath::resolver = 
     [](const std::string& p){ return p; };
 
+VirtualPath::VirtualPath() : path("") {}
+
 VirtualPath::VirtualPath(const std::string& _path) : path(_path) {}
 
 VirtualPath::VirtualPath(const char* _path) : path(_path) {}

@@ -11,6 +11,7 @@ class VirtualPath {
 
     std::string path;
 public:
+    VirtualPath();
     VirtualPath(const std::string& _path);
     VirtualPath(const char* _path);
     VirtualPath(const std::filesystem::path& _path);

@@ -4,11 +4,12 @@
 class PathResolverTest : public ::testing::Test {
 protected:
     std::filesystem::path testRoot = "/home/user/project";
+    std::filesystem::path testCoreRoot = "/home/user/TestEng/core";
     
     std::unique_ptr<PathResolver> resolver;
 
     void SetUp() override {
-        resolver = std::make_unique<PathResolver>(testRoot);
+        resolver = std::make_unique<PathResolver>(testRoot, testCoreRoot);
     }
 };
 

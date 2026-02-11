@@ -22,7 +22,8 @@ class Project {
 public:
     Project(
         std::string name, std::string projectVersion, 
-        std::string engineVersion, const std::filesystem::path& rootPath
+        std::string engineVersion, const std::filesystem::path& rootPath,
+        const std::filesystem::path& coreRootPath
     );
 
     Project(const Project&) = delete;

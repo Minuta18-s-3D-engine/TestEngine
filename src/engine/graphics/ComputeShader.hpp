@@ -3,12 +3,13 @@
 
 #include "Shader.hpp"
 
+#include "../project/VirtualPath.hpp"
+
 class ComputeShader : public Shader {
 protected:
     void compileComputeShader(const std::string& filename);
 public:
-    ComputeShader() = default;
-    ComputeShader(const std::string& name);
+    ComputeShader(const VirtualPath& name);
     virtual ~ComputeShader();
 };
 

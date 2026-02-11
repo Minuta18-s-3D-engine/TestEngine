@@ -1,9 +1,7 @@
 #include "ComputeShader.hpp"
 
-ComputeShader::ComputeShader(const std::string& name) {
-    this->compileComputeShader(
-        "./assets/shaders/" + name + ".comp.glsl"
-    );
+ComputeShader::ComputeShader(const VirtualPath& name) {
+    this->compileComputeShader(name.resolve());
 }
 
 ComputeShader::~ComputeShader() {
@@ -24,10 +22,11 @@ void ComputeShader::compileComputeShader(const std::string& filename) {
     glGetShaderiv(computeId, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(computeId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader " << name << " compilation failed: ";
+        std::cerr << "Shader " << filename << " compilation failed: ";
         std::cerr << filename << ":" << std::endl;
         std::cerr << infoLog << std::endl;
-        throw std::runtime_error("Shader " + name + " compilation failed");
+        glDeleteShader(computeId);
+        throw std::runtime_error("Shader " + filename + " compilation failed");
     }
 
     glId = glCreateProgram();
@@ -37,9 +36,11 @@ void ComputeShader::compileComputeShader(const std::string& filename) {
 
     if (!success) {
         glGetProgramInfoLog(glId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader " << name << " linking failed: ";
+        std::cerr << "Shader " << filename << " linking failed: ";
         std::cerr << infoLog << std::endl;
-        throw std::runtime_error("Shader " + name + " linking failed");
+        glDeleteShader(computeId);
+        glDeleteProgram(glId);
+        throw std::runtime_error("Shader " + filename + " linking failed");
     }
 
     glDeleteShader(computeId);

@@ -18,7 +18,8 @@ class ProjectLoader {
     nlohmann::json readJsonFile(const std::filesystem::path& filePath);
 public:
     std::unique_ptr<Project> loadProject(
-        const std::filesystem::path& folderPath
+        const std::filesystem::path& folderPath,
+        const std::filesystem::path& coreFolderPath
     );
 };
 

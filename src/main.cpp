@@ -98,11 +98,11 @@ void createPointLight(
 }
 
 void loadTexture(
-    std::string path, std::string key, std::string material_key, 
+    const VirtualPath& path, std::string key, std::string material_key, 
     const TextureType& type, AssetManager& manager
 ) {
     size_t len = 0;
-    auto texture_content = read_bytes(path, len);
+    auto texture_content = read_bytes(path.resolve(), len);
     auto texture = PngCoder::load_texture(
         texture_content.get(), len, key);
     manager.set<Texture>(texture, key);
@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
         std::filesystem::path projectFolder(args["--project"]);
         ProjectLoader projectLoader;
         projectPtr = projectLoader.loadProject(
-            projectFolder);
+            projectFolder, "./core");
     } catch (const exc::file_not_found& e) {
         std::cerr << e.what() << std::endl;
         return -1;
@@ -159,8 +159,8 @@ int main(int argc, char* argv[]) {
     Window win(eventManager);
     InputController& inputController = win.getInputController();
 
-    std::string path = "./assets/textures";
-    for (const auto & entry : fs::directory_iterator(path)) {
+    VirtualPath path = "fs://assets/textures";
+    for (const auto & entry : fs::directory_iterator(path.resolve())) {
         fs::path p = entry.path();
         std::string stem = p.stem().string();
         std::string ending = "Specular";
@@ -174,9 +174,8 @@ int main(int argc, char* argv[]) {
             ));
         }
 
-        std::cout << "textures/" + stem << std::endl;
         loadTexture(
-            "assets/textures/" + p.filename().string(), 
+            "fs://assets/textures/" + p.filename().string(), 
             "textures/" + stem, 
             "materials/" + stem, 
             isSpecular ? TextureType::SPECULAR : TextureType::DIFFUSE, 
@@ -184,14 +183,20 @@ int main(int argc, char* argv[]) {
         );
     }
 
-    Shader geomShader("geomShader");
-    Shader lightingShader("lightingShader");
+    Shader geomShader(
+        "core://assets/shaders/geomShader.vertex.glsl",
+        "core://assets/shaders/geomShader.fragment.glsl"
+    );
+    Shader lightingShader(
+        "core://assets/shaders/lightingShader.vertex.glsl",
+        "core://assets/shaders/lightingShader.fragment.glsl"
+    );
 
     assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/geomShader");
     assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
 
-    ComputeShader buildClustersShader("buildClusters"), 
-        lightCullingShader("lightCulling");
+    ComputeShader buildClustersShader("core://assets/shaders/buildClusters.comp.glsl"), 
+        lightCullingShader("core://assets/shaders/lightCulling.comp.glsl");
 
     assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
     assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
@@ -235,7 +240,7 @@ int main(int argc, char* argv[]) {
         assetManager.set<Model>(std::move(sponzaModel), modelName);
     }
 
-    std::ifstream lightsFile("assets/lights.txt");
+    std::ifstream lightsFile(VirtualPath("fs://lights.txt").resolve());
     std::string line;
     while (getline(lightsFile, line)) {
         std::stringstream parseLine(line);
@@ -322,7 +327,7 @@ int main(int argc, char* argv[]) {
             } else {
                 win.setCursorInputMode(GLFW_CURSOR_NORMAL);
             }
-            isInGame = !isInGame;
+            // isInGame = !isInGame;
         }
 
         renderingSystem.update();
