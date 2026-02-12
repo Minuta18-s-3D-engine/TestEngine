@@ -45,17 +45,19 @@ bool Project::hasActiveScene() {
 
 void Project::unloadScene() {
     isHasActiveScene = false;
+    activeScene = ""; // not necessary, however useful for debugging
 }
 
 void Project::addScene(std::unique_ptr<Scene> scene) {
-    if (!scenes.contains(scene->getName())) 
+    if (scenes.contains(scene->getName())) 
         throw exc::already_exists("Scene already exists: " + scene->getName());
     scenes[scene->getName()] = std::move(scene);
 }
 
 void Project::createEmptyScene(const std::string& sceneName) {
     auto gameObjectManager = std::make_unique<GameObjectManager>();
-    auto scene = std::make_unique<Scene>(gameObjectManager, sceneName);
+    auto scene = std::make_unique<Scene>(
+        std::move(gameObjectManager), sceneName);
     scenes[sceneName] = std::move(scene);
 }
 

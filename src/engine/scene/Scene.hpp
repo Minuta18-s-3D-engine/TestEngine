@@ -12,8 +12,8 @@ class Scene {
     std::unique_ptr<GameObjectManager> objectManager;
 public:
     Scene(
-        const std::string& _name, 
-        std::unique_ptr<GameObjectManager> manager
+        std::unique_ptr<GameObjectManager> manager,
+        const std::string& _name
     );
     ~Scene() = default;
 

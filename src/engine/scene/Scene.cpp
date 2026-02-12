@@ -1,7 +1,7 @@
 #include "Scene.hpp"
 
 Scene::Scene(
-    const std::string& _name, std::unique_ptr<GameObjectManager> manager
+    std::unique_ptr<GameObjectManager> manager, const std::string& _name
 ) : objectManager(std::move(manager)), name(_name) {}
 
 GameObjectManager& Scene::getGameObjectManager() {

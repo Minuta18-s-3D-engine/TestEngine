@@ -154,6 +154,11 @@ int main(int argc, char* argv[]) {
     Project& project = *projectPtr;
     AssetManager& assetManager = project.getAssetManager();
 
+    std::string mainSceneName = "MainScene";
+    project.createEmptyScene(mainSceneName);
+    Scene& scene = project.getScene(mainSceneName);
+    GameObjectManager& objectManager = scene.getGameObjectManager();
+
     EventManager eventManager;
     Window win(eventManager);
     InputController& inputController = win.getInputController();
@@ -200,7 +205,6 @@ int main(int argc, char* argv[]) {
     assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
     assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
 
-    GameObjectManager objectManager;
     RenderingSystem renderingSystem(
         assetManager,
         objectManager,
@@ -326,7 +330,7 @@ int main(int argc, char* argv[]) {
             } else {
                 win.setCursorInputMode(GLFW_CURSOR_NORMAL);
             }
-            // isInGame = !isInGame;
+            isInGame = !isInGame;
         }
 
         renderingSystem.update();
