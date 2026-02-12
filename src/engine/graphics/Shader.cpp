@@ -5,10 +5,13 @@
 
 Shader::Shader() {}
 
-Shader::Shader(const std::string& name) : name(name) {
+Shader::Shader(
+    const VirtualPath& _vertexFilename,
+    const VirtualPath& _fragmentFilename
+) : vertexFilename(_vertexFilename), fragmentFilename(_fragmentFilename) {
     this->compileShaders(
-        "./assets/shaders/" + name + ".vertex.glsl",
-        "./assets/shaders/" + name + ".fragment.glsl"
+        vertexFilename.resolve(),
+        fragmentFilename.resolve()
     );
 }
 
@@ -36,11 +39,11 @@ std::string Shader::readShaderFile(const std::string& filename) {
 }
 
 void Shader::compileShaders(
-    const std::string& vertexFilename, 
-    const std::string& fragmentFilename
+    const std::string& _vertexFilename, 
+    const std::string& _fragmentFilename
 ) {
-    std::string cShaderCode = readShaderFile(vertexFilename);
-    std::string cFragmentCode = readShaderFile(fragmentFilename);
+    std::string cShaderCode = readShaderFile(_vertexFilename);
+    std::string cFragmentCode = readShaderFile(_fragmentFilename);
     const char* vShaderCode = cShaderCode.c_str();
     const char* vFragmentCode = cFragmentCode.c_str();
 
@@ -54,10 +57,14 @@ void Shader::compileShaders(
     glGetShaderiv(vertexId, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(vertexId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader " << name << " compilation failed: ";
-        std::cerr << vertexFilename << ":" << std::endl;
+        std::cerr << "Shader " << vertexFilename.resolve();
+        std::cerr << " compilation failed: ";
+        std::cerr << _vertexFilename << ":" << std::endl;
         std::cerr << infoLog << std::endl;
-        throw std::runtime_error("Shader " + name + " compilation failed");
+        glDeleteShader(vertexId);
+        throw std::runtime_error(
+            "Shader " + vertexFilename.resolve() + " compilation failed"
+        );
     }
 
     fragmentId = glCreateShader(GL_FRAGMENT_SHADER);
@@ -66,10 +73,14 @@ void Shader::compileShaders(
     glGetShaderiv(fragmentId, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(fragmentId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader " << name << " compilation failed: ";
-        std::cerr << fragmentFilename << ":" << std::endl;
+        std::cerr << "Shader " << fragmentFilename.resolve();
+        std::cerr << " compilation failed: ";
+        std::cerr << _fragmentFilename << ":" << std::endl;
         std::cerr << infoLog << std::endl;
-        throw std::runtime_error("Shader " + name + " compilation failed");
+        glDeleteShader(vertexId);
+        glDeleteShader(fragmentId);
+        throw std::runtime_error(
+            "Shader " + fragmentFilename.resolve() + " compilation failed");
     }
 
     glId = glCreateProgram();
@@ -80,9 +91,15 @@ void Shader::compileShaders(
 
     if (!success) {
         glGetProgramInfoLog(glId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader " << name << " linking failed: ";
+        std::cerr << "Shader " << vertexFilename.resolve() << " and ";
+        std::cerr << fragmentFilename.resolve() << " linking failed: ";
         std::cerr << infoLog << std::endl;
-        throw std::runtime_error("Shader " + name + " linking failed");
+        glDeleteShader(vertexId);
+        glDeleteShader(fragmentId);
+        glUseProgram(glId);
+        throw std::runtime_error(
+            "Shader " + vertexFilename.resolve() + " linking failed"
+        );
     }
 
     glDeleteShader(vertexId);
@@ -173,8 +190,3 @@ void Shader::setUniform1b(const std::string& name, bool value) {
 Shader::~Shader() {
     glDeleteProgram(glId);
 }
-
-std::string Shader::get_name() {
-    return name;
-}
-

@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <sstream>
 #include <chrono>
+#include <unordered_map>
 
 #include "engine/graphics/Shader.hpp"
 #include "engine/graphics/ComputeShader.hpp"
@@ -29,7 +30,6 @@
 #include "engine/materials/Light.hpp"
 #include "engine/materials/TextureMaterial.hpp"
 #include "engine/models/Mesh.hpp"
-#include "engine/scene/Scene.hpp"
 #include "engine/models/Model.hpp"
 #include "engine/models/ModelComponent.hpp"
 #include "engine/gameobject/GameObjectManager.hpp"
@@ -38,6 +38,8 @@
 #include "engine/graphics/RenderingSystem.hpp"
 #include "engine/models/ModelLoader.hpp"
 #include "engine/assets/utils/MeshGen.hpp"
+#include "engine/project/Project.hpp"
+#include "engine/project/ProjectLoader.hpp"
 
 namespace fs = std::filesystem;
 
@@ -95,11 +97,11 @@ void createPointLight(
 }
 
 void loadTexture(
-    std::string path, std::string key, std::string material_key, 
+    const VirtualPath& path, std::string key, std::string material_key, 
     const TextureType& type, AssetManager& manager
 ) {
     size_t len = 0;
-    auto texture_content = read_bytes(path, len);
+    auto texture_content = read_bytes(path.resolve(), len);
     auto texture = PngCoder::load_texture(
         texture_content.get(), len, key);
     manager.set<Texture>(texture, key);
@@ -110,15 +112,59 @@ void loadTexture(
     );
 }
 
-int main() {
+std::unordered_map<std::string, std::string> parseArguments(
+    int argc, char* argv[]
+) { 
+    std::unordered_map<std::string, std::string> result;
+    if (argc <= 1) return result;
+    std::string currentArg = argv[0];
+    for (int i = 1; i < argc; ++i) {
+        bool option1 = (currentArg.compare(0, 2, "--") == 0);
+        bool option2 = !(std::string(argv[i]).compare(0, 2, "--") == 0);
+        if (option1 && option2) {
+            result[currentArg] = argv[i];
+        }
+        currentArg = std::string(argv[i]);
+    }
+    return result;
+}
+
+int main(int argc, char* argv[]) {
+    std::unordered_map<std::string, std::string> args = 
+        parseArguments(argc, argv);
+
+    if (!args.contains("--project")) {
+        std::cerr << "No project set." << std::endl;
+        return -1;
+    }
+
+    std::unique_ptr<Project> projectPtr;
+    try {
+        std::filesystem::path projectFolder(args["--project"]);
+        ProjectLoader projectLoader;
+        projectPtr = projectLoader.loadProject(
+            projectFolder, "./core");
+    } catch (const exc::file_not_found& e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    } catch (const exc::validation_error& e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
+    }
+    Project& project = *projectPtr;
+    AssetManager& assetManager = project.getAssetManager();
+
+    std::string mainSceneName = "MainScene";
+    project.createEmptyScene(mainSceneName);
+    Scene& scene = project.getScene(mainSceneName);
+    GameObjectManager& objectManager = scene.getGameObjectManager();
+
     EventManager eventManager;
     Window win(eventManager);
     InputController& inputController = win.getInputController();
 
-    AssetManager assetManager;
-
-    std::string path = "./assets/textures";
-    for (const auto & entry : fs::directory_iterator(path)) {
+    VirtualPath path = "fs://assets/textures";
+    for (const auto & entry : fs::directory_iterator(path.resolve())) {
         fs::path p = entry.path();
         std::string stem = p.stem().string();
         std::string ending = "Specular";
@@ -132,9 +178,8 @@ int main() {
             ));
         }
 
-        std::cout << "textures/" + stem << std::endl;
         loadTexture(
-            "assets/textures/" + p.filename().string(), 
+            "fs://assets/textures/" + p.filename().string(), 
             "textures/" + stem, 
             "materials/" + stem, 
             isSpecular ? TextureType::SPECULAR : TextureType::DIFFUSE, 
@@ -142,19 +187,24 @@ int main() {
         );
     }
 
-    Shader geomShader("geomShader");
-    Shader lightingShader("lightingShader");
+    Shader geomShader(
+        "core://assets/shaders/geomShader.vertex.glsl",
+        "core://assets/shaders/geomShader.fragment.glsl"
+    );
+    Shader lightingShader(
+        "core://assets/shaders/lightingShader.vertex.glsl",
+        "core://assets/shaders/lightingShader.fragment.glsl"
+    );
 
     assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/geomShader");
     assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
 
-    ComputeShader buildClustersShader("buildClusters"), 
-        lightCullingShader("lightCulling");
+    ComputeShader buildClustersShader("core://assets/shaders/buildClusters.comp.glsl"), 
+        lightCullingShader("core://assets/shaders/lightCulling.comp.glsl");
 
     assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
     assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
 
-    GameObjectManager objectManager;
     RenderingSystem renderingSystem(
         assetManager,
         objectManager,
@@ -176,7 +226,7 @@ int main() {
     ModelLoader modelLoader;
     
     {
-        auto sponzaModel = modelLoader.loadModel("assets/models/sponza_low_res.glb");
+        auto sponzaModel = modelLoader.loadModel("fs://assets/models/sponza_low_res.glb");
         auto modelName = "sponza_model";
 
         std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
@@ -193,7 +243,7 @@ int main() {
         assetManager.set<Model>(std::move(sponzaModel), modelName);
     }
 
-    std::ifstream lightsFile("assets/lights.txt");
+    std::ifstream lightsFile(VirtualPath("fs://lights.txt").resolve());
     std::string line;
     while (getline(lightsFile, line)) {
         std::stringstream parseLine(line);
@@ -233,7 +283,7 @@ int main() {
 
         framesCount += 1;
         if (currentFrame - lastFPSDisplay >= 1.0) {
-            win.setCaption("TestEng (fps = " + std::to_string(framesCount) + ")");
+            win.setCaption(project.getName() + " (fps = " + std::to_string(framesCount) + ")");
             framesCount = 0;
             lastFPSDisplay = currentFrame;
         }

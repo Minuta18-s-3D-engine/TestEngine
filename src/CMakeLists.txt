@@ -3,6 +3,11 @@ project(TestEngSrc)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmakeConfig.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmakeConfig.h"
+)
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -22,6 +27,9 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(json)
+
+add_library(nlohmann_json INTERFACE)
+target_include_directories(nlohmann_json INTERFACE ${json_SOURCE_DIR}/include)
 
 set(ASSIMP_SOURCE_DIR ${CMAKE_SOURCE_DIR}/lib/assimp)
 set(ASSIMP_BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/assimp-build)
@@ -63,10 +71,11 @@ add_subdirectory(lib/bvh)
 
 target_include_directories(glad PUBLIC ../lib/glad/include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 if (UNIX AND NOT APPLE)
     target_link_libraries(TestEngSrc uuid)
 endif()
 
 target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm 
-    ${PNG_LIBRARY} assimp::assimp bvh stduuid ${JPEG_LIBRARIES} json)
+    ${PNG_LIBRARY} assimp::assimp bvh stduuid ${JPEG_LIBRARIES} nlohmann_json)

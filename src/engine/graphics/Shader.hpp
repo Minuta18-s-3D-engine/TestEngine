@@ -1,7 +1,10 @@
 #ifndef ENGINE_GRAPHICS_SHADER_H_
 #define ENGINE_GRAPHICS_SHADER_H_
 
-#include "../utils/EngineTypes.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include <glm/gtc/type_ptr.hpp>
+
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -10,13 +13,14 @@
 #include <memory>
 #include <glad/glad.h>
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include <glm/gtc/type_ptr.hpp>
+#include "../utils/EngineTypes.h"
+#include "../project/VirtualPath.hpp"
 
 class Shader {
 protected:
-    std::string name;
+    VirtualPath vertexFilename;
+    VirtualPath fragmentFilename;
+    
     const uint ERROR_BUFFER_SIZE = 512;
     std::unordered_map<std::string, uint> uniformLocations;
 
@@ -30,7 +34,10 @@ protected:
 public:
     uint glId;
     Shader();
-    Shader(const std::string& name);
+    Shader(
+        const VirtualPath& vertexFilename,
+        const VirtualPath& fragmentFilename
+    );
     virtual ~Shader();
 
     void use();
@@ -49,7 +56,6 @@ public:
     void setUniform3f(const std::string& name, float v1, float v2, float v3);
     void setUniform3f(const std::string& name, const glm::vec3& value);
     void setUniform1b(const std::string& name, bool value);
-    std::string get_name();
 };
 
 

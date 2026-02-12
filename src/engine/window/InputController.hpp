@@ -23,9 +23,10 @@ class InputController {
     uint32_t frames[KEY_BUFFER_SIZE];
     uint32_t currentFrame;
 
-    glm::vec2 mousePosition;
-    glm::vec2 lastMousePosition;
+    glm::vec2 mousePosition = {0.0, 0.0};
+    glm::vec2 lastMousePosition = {0.0, 0.0};
 
+    bool cursorPositionSet = false;
     bool cursorPinned = false;
 
     bool isKeyCodeValid(int keyCode) const;

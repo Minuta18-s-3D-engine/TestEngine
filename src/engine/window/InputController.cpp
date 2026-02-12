@@ -31,6 +31,7 @@ void InputController::mouseButtonCallback(int _button, int _action, int _mode) {
 void InputController::cursorPositionCallback(double _x, double _y) {
     mousePosition.x = _x;
     mousePosition.y = _y;
+    cursorPositionSet = true;
 
     if (isCursorPinned()) {
         glfwSetCursorPos(window, lastMousePosition.x, lastMousePosition.y);
@@ -38,10 +39,12 @@ void InputController::cursorPositionCallback(double _x, double _y) {
 }
 
 glm::vec2 InputController::getMousePosition() const {
+    if (!cursorPositionSet) return {0.0, 0.0};
     return mousePosition;
 }
 
 glm::vec2 InputController::getMouseMovement() const {
+    if (!cursorPositionSet) return {0.0, 0.0};
     return mousePosition - lastMousePosition;
 }
 

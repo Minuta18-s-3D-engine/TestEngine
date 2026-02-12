@@ -16,6 +16,7 @@
 #include "../assets/coders/images/JpgCoder.hpp"
 #include "../assets/utils/Files.hpp"
 #include "../assets/utils/ImageData.hpp"
+#include "../project/VirtualPath.hpp"
 
 class ModelLoader {
     std::unique_ptr<Model> createdModel;
@@ -46,7 +47,7 @@ class ModelLoader {
         std::string name
     );
 public:
-    std::unique_ptr<Model> loadModel(const std::string& filename);
+    std::unique_ptr<Model> loadModel(const VirtualPath& filename);
 };
 
 #endif // ENGINE_MODELS_MODELLOADER_H_
