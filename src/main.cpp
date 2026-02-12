@@ -30,7 +30,6 @@
 #include "engine/materials/Light.hpp"
 #include "engine/materials/TextureMaterial.hpp"
 #include "engine/models/Mesh.hpp"
-#include "engine/scene/Scene.hpp"
 #include "engine/models/Model.hpp"
 #include "engine/models/ModelComponent.hpp"
 #include "engine/gameobject/GameObjectManager.hpp"

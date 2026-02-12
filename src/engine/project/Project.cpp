@@ -27,6 +27,48 @@ std::filesystem::path Project::resolve(const std::string& virtualPath) const {
     return pathResolver->resolve(virtualPath);
 }
 
+Scene& Project::getActiveScene() {
+    if (!hasActiveScene()) throw std::out_of_range("Scene is unset");
+    return *(scenes[activeScene]);
+}
+
+void Project::setActiveScene(const std::string& sceneName) {
+    if (!scenes.contains(sceneName)) 
+        throw std::out_of_range("No such scene: " + sceneName);
+    isHasActiveScene = true;
+    activeScene = sceneName;
+}
+
+bool Project::hasActiveScene() {
+    return isHasActiveScene;
+}
+
+void Project::unloadScene() {
+    isHasActiveScene = false;
+}
+
+void Project::addScene(std::unique_ptr<Scene> scene) {
+    if (!scenes.contains(scene->getName())) 
+        throw exc::already_exists("Scene already exists: " + scene->getName());
+    scenes[scene->getName()] = std::move(scene);
+}
+
+void Project::createEmptyScene(const std::string& sceneName) {
+    auto gameObjectManager = std::make_unique<GameObjectManager>();
+    auto scene = std::make_unique<Scene>(gameObjectManager, sceneName);
+    scenes[sceneName] = std::move(scene);
+}
+
+Scene& Project::getScene(const std::string& sceneName) {
+    if (!scenes.contains(sceneName)) 
+        throw std::out_of_range("No such scene: " + sceneName);
+    return *(scenes[sceneName]);
+}
+
+bool Project::hasScene(const std::string& sceneName) {
+    return (scenes.contains(sceneName));
+}
+
 AssetManager& Project::getAssetManager() { return *assetManager; };
 PathResolver& Project::getPathResolver() { return *pathResolver; }
 

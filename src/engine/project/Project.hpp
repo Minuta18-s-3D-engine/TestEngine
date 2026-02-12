@@ -5,12 +5,15 @@
 #include <memory>
 #include <filesystem>
 #include <vector>
+#include <unordered_map>
+#include <stdexcept>
 
 #include "PathResolver.hpp"
 #include "../assets/AssetManager.hpp"
 #include "cmakeConfig.h"
 #include "VirtualPath.hpp"
 #include "../scene/Scene.hpp"
+#include "../utils/exc/GeneralExceptions.hpp"
 
 class Project {
     std::string name;
@@ -20,8 +23,9 @@ class Project {
     std::unique_ptr<PathResolver> pathResolver;
     std::unique_ptr<AssetManager> assetManager;
 
-    std::vector<std::unique_ptr<Scene>> scenes;
-    std::size_t activeSceneIndex = -1;
+    std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
+    std::string activeScene;
+    bool isHasActiveScene = false;
 
     bool checkEngineVersion();
 public:
@@ -37,10 +41,14 @@ public:
     std::filesystem::path resolve(const std::string& virtualPath) const;
 
     Scene& getActiveScene();
-    void setActiveScene(std::size_t sceneIndex);
+    void setActiveScene(const std::string& sceneName);
+    bool hasActiveScene();
+    void unloadScene();
+
     void addScene(std::unique_ptr<Scene> scene);
-    Scene& getScene(std::size_t sceneIndex);
-    std::size_t createEmptyScene();
+    void createEmptyScene(const std::string& sceneName);
+    Scene& getScene(const std::string& sceneName);
+    bool hasScene(const std::string& sceneName);
 
     AssetManager& getAssetManager();
     PathResolver& getPathResolver();
