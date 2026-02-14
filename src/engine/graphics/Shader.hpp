@@ -52,6 +52,10 @@ public:
     void setUniform(const std::string& name, const glm::vec3& value);
     void setUniform(const std::string& name, const glm::ivec3& value);
     void setUniform(const std::string& name, const glm::uvec3& value);
+    void setUniform(const std::string& name, const glm::vec4& value);
+    void setUniform(const std::string& name, const glm::ivec4& value);
+    void setUniform(const std::string& name, const glm::uvec4& value);
+    void setUniform(const std::string& name, const glm::mat2& value);
     void setUniform(const std::string& name, const glm::mat3& value);
     void setUniform(const std::string& name, const glm::mat4& value);
 };
