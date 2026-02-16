@@ -53,9 +53,13 @@ TypedPropertyStorage& TypedPropertyStorage::operator=(
 }
 
 void TypedPropertyStorage::reallocData(size_t n) {
+    if (n == dataSize) return;
+
     uint8_t* newData = new uint8_t[n];
-    std::memcpy(newData, data, std::min(n, dataSize));
-    freeData();
+    if (data) {
+        std::memcpy(newData, data, std::min(n, dataSize));
+        freeData();
+    }
     dataSize = n;
     data = newData;
 }
@@ -75,5 +79,25 @@ bool TypedPropertyStorage::isPropertySet(const std::string& name) {
         throw std::invalid_argument("No such property: " + name);
     }
     return properties[name].isDefaultDataSet;
+}
+
+constexpr size_t TypedPropertyStorage::getStd140Alignment(PropertyType type) {
+    switch (type) {
+        case PropertyType::Float: case PropertyType::Int: 
+        case PropertyType::Uint:  case PropertyType::Bool: return 4;
+        case PropertyType::Vec2:  case PropertyType::IVec2: 
+        case PropertyType::UVec2: return 8;
+        case PropertyType::Vec3:  case PropertyType::IVec3: 
+        case PropertyType::UVec3: case PropertyType::Vec4:  
+        case PropertyType::IVec4: case PropertyType::UVec4:
+        case PropertyType::Mat2:  case PropertyType::Mat3:  
+        case PropertyType::Mat4: 
+            return 16;
+        default: return 4;
+    }
+}
+
+constexpr size_t TypedPropertyStorage::getAlignment(PropertyType type) {
+    return getStd140Alignment(type);
 }
 

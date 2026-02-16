@@ -53,6 +53,9 @@ public:
         return PropertyType::Unknown;
     }
 
+    static constexpr size_t getStd140Alignment(PropertyType type);
+    static constexpr size_t getAlignment(PropertyType type);
+
     struct Property {
         PropertyType type;
         bool isDefaultDataSet;
@@ -62,6 +65,11 @@ public:
 private:
     std::unordered_map<std::string, Property> properties;
 
+    // Data now stores not just packed default data, but UBO. UBO requires to 
+    // use std140 alignment rules. Alignment offset is calculated using this 
+    // formula:
+    //     alignedOffset = (dataSize + alignment - 1) & ~(alignment - 1); 
+    // Another important rule is that UBO size must be multiple of 16.
     uint8_t* data = nullptr;
     size_t dataSize = 0;
 
@@ -74,17 +82,25 @@ private:
         const T& value, 
         bool valueSet = true
     ) {
+        PropertyType type = getPropertyType<T>();
+        size_t alignment = getAlignment(type);
+
+        size_t alignedOffset = (dataSize + alignment - 1) & ~(alignment - 1);
         size_t valueSize = sizeof(T);
-        size_t defaultDataStart = dataSize;
-        reallocData(dataSize + valueSize);
-        properties[name] = { 
-            getPropertyType(value),
-            valueSet,
-            defaultDataStart,
-            valueSize
-        };
+
+        reallocData(alignedOffset + valueSize);
+        properties[name] = { type, valueSet, alignedOffset, valueSize };
+
         if (valueSet) {
-            std::memcpy(data + defaultDataStart, &value, valueSize);
+            std::memcpy(data + alignedOffset, &value, valueSize);
+        }
+
+        dataSize = alignedOffset + valueSize;
+
+        size_t padding = (dataSize + 15) & ~15;
+        if (padding > dataSize) {
+            reallocData(padding);
+            dataSize = padding;
         }
     }
 
