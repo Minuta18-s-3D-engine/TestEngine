@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <cstring>
+#include <stdexcept>
 
 #define PROPERTY_TYPE_LIST \
     X(Int,   int32_t)      \
@@ -58,20 +60,94 @@ public:
 private:
     std::unordered_map<std::string, Property> properties;
 
-    uint8_t* data;
+    uint8_t* data = nullptr;
+    size_t dataSize = 0;
 
-    void allocData();
-    void reallocData(int n);
+    void reallocData(size_t n);
     void freeData();
+
+    template <typename T>
+    void createProperty(
+        const std::string& name, 
+        const T& value, 
+        bool valueSet = true
+    ) {
+        size_t valueSize = sizeof(T);
+        size_t defaultDataStart = dataSize;
+        reallocData(dataSize + valueSize);
+        properties[name] = { 
+            getPropertyType(value),
+            valueSet,
+            defaultDataStart,
+            valueSize
+        };
+        if (valueSet) {
+            std::memcpy(data + defaultDataStart, &value, valueSize);
+        }
+    }
+
+    template <typename T>
+    void createProperty(const std::string& name) {
+        createProperty<T>(name, nullptr, false);
+    }
 public:
     TypedPropertyStorage();
     ~TypedPropertyStorage();
+    TypedPropertyStorage(const TypedPropertyStorage& other);
+    TypedPropertyStorage(TypedPropertyStorage&& other) noexcept;
+
+    TypedPropertyStorage& operator=(const TypedPropertyStorage& other);
+    TypedPropertyStorage& operator=(TypedPropertyStorage&& other) noexcept;
 
     template <typename T>
-    void setProperty(const std::string& name, const T& value);
+    void setProperty(const std::string& name, const T& value) {
+        if (!hasProperty(name)) {
+            createProperty<T>(name, value);
+            return;
+        } 
+
+        if (!(properties[name].type == getPropertyType<T>())) {
+            throw std::invalid_argument("Dynamic type change is unsupported.");
+        }
+
+        const Property& p = properties[name];
+        std::memcpy(data + p.defaultDataStart, &value, sizeof(T));
+    }
 
     template <typename T>
-    const T& getProperty(const std::string& name);
+    void setProperty(const std::string& name) {
+        if (!hasProperty(name)) {
+            createProperty<T>(name);
+            return;
+        } 
+
+        if (!(properties[name].type == getPropertyType<T>())) {
+            throw std::invalid_argument("Dynamic type change is unsupported.");
+        }
+
+        const Property& p = properties[name];
+        p.isDefaultDataSet = false;
+    }
+
+    template <typename T>
+    const T& getProperty(const std::string& name) {
+        if (!hasProperty(name)) { 
+            throw std::invalid_argument("No such property: " + name);
+        }
+        if (!isPropertySet(name)) {
+            throw std::invalid_argument("Property is unset: " + name);
+        }
+        const Property& p = properties[name];
+        if (!(p.type == getPropertyType<T>())) {
+            throw std::invalid_argument(
+                "Property " + name + " type does not match."
+            );
+        }
+        return *reinterpret_cast<T>(data + p.defaultDataStart);
+    }
+
+    bool hasProperty(const std::string& name);
+    bool isPropertySet(const std::string& name);
 };
 
 #endif // ENGINE_MATERIALS_TYPEDMATERIALSTORAGE_H_
