@@ -10,6 +10,8 @@
 #include <cstring>
 #include <stdexcept>
 
+#include "../graphics/Texture.hpp"
+
 #define PROPERTY_TYPE_LIST \
     X(Int,   int32_t)      \
     X(Uint,  uint32_t)     \
@@ -88,7 +90,7 @@ private:
 
     template <typename T>
     void createProperty(const std::string& name) {
-        createProperty<T>(name, nullptr, false);
+        createProperty<T>(name, T(), false);
     }
 public:
     TypedPropertyStorage();
@@ -143,7 +145,7 @@ public:
                 "Property " + name + " type does not match."
             );
         }
-        return *reinterpret_cast<T>(data + p.defaultDataStart);
+        return *reinterpret_cast<const T*>(data + p.defaultDataStart);
     }
 
     bool hasProperty(const std::string& name);

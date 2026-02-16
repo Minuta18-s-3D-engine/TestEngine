@@ -54,9 +54,7 @@ TypedPropertyStorage& TypedPropertyStorage::operator=(
 
 void TypedPropertyStorage::reallocData(size_t n) {
     uint8_t* newData = new uint8_t[n];
-    for (int i = 0; i < std::min(n, dataSize); ++i) {
-        newData[i] = data[i];
-    }
+    std::memcpy(newData, data, std::min(n, dataSize));
     freeData();
     dataSize = n;
     data = newData;
