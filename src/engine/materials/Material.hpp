@@ -6,42 +6,26 @@
 #include <string>
 #include <vector>
 
-#include "MaterialProperty.hpp"
+#include "TypedPropertyStorage.hpp"
+
+class Texture;
 
 class Material {
-public:
-    struct Property {
-        bool hasDefaultProperty;
-        std::unique_ptr<IMaterialProperty> defaultValue;
-    };
-
-    using PropertyMap = std::unordered_map<
-        std::string, 
-        Property
-    >;
+    using TextureStorage = std::unordered_map<std::string, std::shared_ptr<Texture>>;
 private:
-    PropertyMap properties;
+    TypedPropertyStorage& properties;
+    TextureStorage textures;
 public:
     Material() = default;
 
-    template<typename T>
-    Material& addProperty(const std::string& name, const T& defaultValue) {
-        properties[name] = {
-            true,
-            std::make_unique<MaterialProperty<T>>(defaultValue)
-        };
+    template <typename T>
+    Material& setProperty(std::string& name, const T& value);
 
-        return *this;
-    }
+    template <typename T>
+    Material& setProperty(std::string& name);
 
-    template<typename T>
-    Material& addProperty(const std::string& name) {
-        properties[name] = {false, nullptr};
-
-        return *this;
-    }
-
-    PropertyMap& getPropertyMap();
+    template <typename T>
+    const T& getProperty(std::string& name);
 };
 
 #endif // ENGINE_MATERIALS_MATERIAL_H_
