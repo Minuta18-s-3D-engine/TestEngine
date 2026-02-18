@@ -5,6 +5,6 @@ Material::Material(
 ) : name(_name), shader(_shader) {}
 
 const std::string& Material::getName() const { return name; }
-std::shared_ptr<Shader> Material::getShader() const { return shader; }
+const std::shared_ptr<Shader> Material::getShader() const { return shader; }
 const TypedPropertyStorage& Material::getPropertyStorage() { return properties; }
 const Material::TextureStorage& Material::getTextureStorage() { return textures; }
