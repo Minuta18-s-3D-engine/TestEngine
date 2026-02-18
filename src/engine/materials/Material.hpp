@@ -37,21 +37,47 @@ public:
     template <typename T>
     Material& setProperty(
         std::string& name, typename MaterialTypeTraits<T>::ArgType value
-    );
+    ) {
+        if constexpr (std::is_same_v<T, Texture>) {
+            textures[name] = value;
+        } else {
+            properties.setProperty<T>(name, value);
+        }
+        return *this;
+    }
 
     template <typename T>
-    Material& setProperty(std::string& name);
+    Material& setProperty(std::string& name) {
+        if constexpr (std::is_same_v<T, Texture>) {
+            textures[name] = value;
+        } else {
+            properties.setProperty<T>(name, value);
+        }
+        return *this;
+    }
 
     template <typename T>
     Material& addProperty(
         std::string& name, typename MaterialTypeTraits<T>::ArgType value
-    );
+    ) {
+        return setProperty<T>(name, value);
+    }
 
     template <typename T>
-    Material& addProperty(std::string& name);
+    Material& addProperty(std::string& name) {
+        return setProperty<T>(name);
+    }
 
     template <typename T>
-    const T& getProperty(std::string& name) const;
+    const T& getProperty(std::string& name) const {
+        if constexpr (std::is_same_v<T, Texture>) {
+            if (!textures.contains(name)) {
+                throw std::invalid_argument("No such texture: " + name);
+            }
+        } else {
+            return properties.getProperty<T>(name);
+        }
+    }
 
     const std::string& getName() const;
     std::shared_ptr<Shader> getShader() const;
