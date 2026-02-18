@@ -21,9 +21,9 @@ FetchContent_MakeAvailable(stduuid)
 
 FetchContent_Declare(
     json
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     URL https://github.com/nlohmann/json/releases/download/v3.12.0/include.zip
     URL_HASH SHA256=b8cb0ef2dd7f57f18933997c9934bb1fa962594f701cd5a8d3c2c80541559372
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
 FetchContent_MakeAvailable(json)
