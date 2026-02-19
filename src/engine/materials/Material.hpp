@@ -9,16 +9,10 @@
 #include "TypedPropertyStorage.hpp"
 
 class Texture;
-class Shader;
 
 template <typename T>
 struct MaterialTypeTraits {
     using ArgType = const T&;
-};
-
-template <>
-struct MaterialTypeTraits<Texture> {
-    using ArgType = std::shared_ptr<Texture>;
 };
 
 class Material {
@@ -26,40 +20,29 @@ class Material {
         std::string, std::shared_ptr<Texture>
     >;
 
-    std::shared_ptr<Shader> shader;
     std::string name;
 private:
     TypedPropertyStorage properties;
     TextureStorage textures;
 public:
-    Material(const std::string& _name, std::shared_ptr<Shader> _shader);
+    Material(const std::string& _name);
 
     template <typename T>
     Material& setProperty(
-        const std::string& name, typename MaterialTypeTraits<T>::ArgType value
+        const std::string& name, const T& value
     ) {
-        if constexpr (std::is_same_v<T, Texture>) {
-            textures[name] = value;
-        } else {
-            properties.setProperty<T>(name, value);
-        }
+        properties.setProperty<T>(name, value);
         return *this;
     }
 
     template <typename T>
     Material& setProperty(const std::string& name) {
-        if constexpr (std::is_same_v<T, Texture>) {
-            textures[name] = nullptr;
-        } else {
-            properties.setProperty<T>(name);
-        }
+        properties.setProperty<T>(name);
         return *this;
     }
 
     template <typename T>
-    Material& addProperty(
-        const std::string& name, typename MaterialTypeTraits<T>::ArgType value
-    ) {
+    Material& addProperty(const std::string& name, const T& value) {
         return setProperty<T>(name, value);
     }
 
@@ -70,22 +53,15 @@ public:
 
     template <typename T>
     const T& getProperty(const std::string& name) const {
-        if constexpr (std::is_same_v<T, Texture>) {
-            if (!textures.contains(name)) {
-                throw std::invalid_argument("No such texture: " + name);
-            }
-
-            if (textures[name] == nullptr) {
-                throw std::invalid_argument("Property is unset: " + name);
-            }
-            return *(textures[name]);
-        } else {
-            return properties.getProperty<T>(name);
-        }
+        return properties.getProperty<T>(name);
     }
 
-    const std::string& getName() const;
-    const std::shared_ptr<Shader> getShader() const;
+    Material& setTexture(const std::string& name, std::shared_ptr<Texture> _tex);
+    Material& setTexture(const std::string& name);
+    Material& addTexture(const std::string& name, std::shared_ptr<Texture> _tex);
+    Material& addTexture(const std::string& name);
+    std::shared_ptr<Texture> getTexture(const std::string& name);
+
     const TypedPropertyStorage& getPropertyStorage();
     const TextureStorage& getTextureStorage();
 };
