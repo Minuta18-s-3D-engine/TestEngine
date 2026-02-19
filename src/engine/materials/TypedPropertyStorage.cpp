@@ -70,15 +70,15 @@ void TypedPropertyStorage::freeData() {
     }
 }
 
-bool TypedPropertyStorage::hasProperty(const std::string& name) {
+bool TypedPropertyStorage::hasProperty(const std::string& name) const {
     return properties.contains(name);
 }
 
-bool TypedPropertyStorage::isPropertySet(const std::string& name) {
+bool TypedPropertyStorage::isPropertySet(const std::string& name) const {
     if (!hasProperty(name)) {
         throw std::invalid_argument("No such property: " + name);
     }
-    return properties[name].isDefaultDataSet;
+    return properties.at(name).isDefaultDataSet;
 }
 
 constexpr size_t TypedPropertyStorage::getStd140Alignment(PropertyType type) {

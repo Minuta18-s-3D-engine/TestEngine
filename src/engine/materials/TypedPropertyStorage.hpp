@@ -164,8 +164,8 @@ public:
         return *reinterpret_cast<const T*>(data + p.defaultDataStart);
     }
 
-    bool hasProperty(const std::string& name);
-    bool isPropertySet(const std::string& name);
+    bool hasProperty(const std::string& name) const;
+    bool isPropertySet(const std::string& name) const;
 };
 
 #endif // ENGINE_MATERIALS_TYPEDMATERIALSTORAGE_H_

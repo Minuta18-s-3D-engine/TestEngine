@@ -56,11 +56,16 @@ public:
         return properties.getProperty<T>(name);
     }
 
+    bool hasProperty(const std::string& name) const;
+    bool isPropertySet(const std::string& name) const;
+
     Material& setTexture(const std::string& name, std::shared_ptr<Texture> _tex);
     Material& setTexture(const std::string& name);
     Material& addTexture(const std::string& name, std::shared_ptr<Texture> _tex);
     Material& addTexture(const std::string& name);
     std::shared_ptr<Texture> getTexture(const std::string& name);
+    bool hasTexture(const std::string& name) const;
+    bool isTextureSet(const std::string& name) const;
 
     const TypedPropertyStorage& getPropertyStorage();
     const TextureStorage& getTextureStorage();
