@@ -10,18 +10,14 @@
 
 class Texture;
 
-template <typename T>
-struct MaterialTypeTraits {
-    using ArgType = const T&;
-};
-
 class Material {
+public:
     using TextureStorage = std::unordered_map<
         std::string, std::shared_ptr<Texture>
     >;
-
-    std::string name;
 private:
+    std::string name;
+    
     TypedPropertyStorage properties;
     TextureStorage textures;
 public:
@@ -59,13 +55,19 @@ public:
     bool hasProperty(const std::string& name) const;
     bool isPropertySet(const std::string& name) const;
 
-    Material& setTexture(const std::string& name, std::shared_ptr<Texture> _tex);
+    Material& setTexture(
+        const std::string& name, std::shared_ptr<Texture> _tex
+    );
+    Material& addTexture(
+        const std::string& name, std::shared_ptr<Texture> _tex
+    );
     Material& setTexture(const std::string& name);
-    Material& addTexture(const std::string& name, std::shared_ptr<Texture> _tex);
     Material& addTexture(const std::string& name);
     std::shared_ptr<Texture> getTexture(const std::string& name);
     bool hasTexture(const std::string& name) const;
     bool isTextureSet(const std::string& name) const;
+
+    const std::string& getName() const { return name; }
 
     const TypedPropertyStorage& getPropertyStorage();
     const TextureStorage& getTextureStorage();

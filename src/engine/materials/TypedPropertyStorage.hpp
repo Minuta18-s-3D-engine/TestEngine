@@ -143,7 +143,7 @@ public:
             throw std::invalid_argument("Dynamic type change is unsupported.");
         }
 
-        const Property& p = properties[name];
+        Property& p = properties[name];
         p.isDefaultDataSet = false;
     }
 
