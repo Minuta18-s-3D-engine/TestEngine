@@ -14,6 +14,8 @@ class MaterialInstance {
     TypedPropertyStorage propertyOverrides;
     Material::TextureStorage textureOverrides;
     std::string name;
+
+    void checkTextureExists(const std::string& name) const;
 public:
     MaterialInstance(
         const std::string& _name,
@@ -49,6 +51,13 @@ public:
     }
 
     bool hasProperty(const std::string& name) const;
+
+    MaterialInstance& setTexture(
+        const std::string& name, std::shared_ptr<Texture> _tex
+    );
+    MaterialInstance& setTexture(const std::string& name);
+    std::shared_ptr<Texture> getTexture(const std::string& name);
+    bool hasTexture(const std::string& name) const;
 
     const std::string& getName() const { return name; }
     std::shared_ptr<Shader> getShader() const { return shader; }
