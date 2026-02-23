@@ -33,7 +33,7 @@ public:
     void bindData();
     void unbind();
     void setData(const void* data, size_t size);
-    void setSubData(const void* data, size_t size, size_t offset);
+    void setSubData(const void* data, size_t offset, size_t size);
 
     uint32_t getId() const { return glId; }
 };

@@ -11,91 +11,30 @@ ClusteredRenderer::ClusteredRenderer(
 }
 
 void ClusteredRenderer::createSSBOs() {
-    // I really need an createSSBO() function
+    constexpr size_t compClusterBufferSize = NUM_CLUSTERS * sizeof(CompCluster);
+    compClusterSSBO.setData(nullptr, compClusterBufferSize);
+    compClusterSSBO.bindData();
 
-    glGenBuffers(1, &compClusterSSBO);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, compClusterSSBO);
-    size_t compClusterBufferSize = NUM_CLUSTERS * sizeof(CompCluster);
-    glBufferData(
-        GL_SHADER_STORAGE_BUFFER, 
-        compClusterBufferSize, 
-        nullptr, 
-        GL_STATIC_COPY
-    );
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER, 
-        SSBOBindings::CLUSTER_BINDING, 
-        compClusterSSBO
-    );
+    constexpr size_t compLightBufferSize = MAX_LIGHTS * sizeof(CompLight);
+    compLightSSBO.setData(nullptr, compLightBufferSize);
+    compLightSSBO.bindData();
 
-    glGenBuffers(1, &compLightSSBO);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightSSBO);
-    size_t compLigthBufferSize = MAX_LIGHTS * sizeof(CompLight);
-    glBufferData(
-        GL_SHADER_STORAGE_BUFFER, 
-        compLigthBufferSize, 
-        nullptr, 
-        GL_DYNAMIC_COPY
-    );
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER, 
-        SSBOBindings::LIGHT_BINDING, 
-        compLightSSBO
-    );
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    glGenBuffers(1, &compLightIndiciesSSBO);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightIndiciesSSBO);
-    size_t compLightIndiciesBufferSize = MAX_LIGHTS_PER_CLUSTER 
+    constexpr size_t compLightIndiciesBufferSize = MAX_LIGHTS_PER_CLUSTER 
         * NUM_CLUSTERS * sizeof(uint);
-    glBufferData(
-        GL_SHADER_STORAGE_BUFFER,
-        compLightIndiciesBufferSize,
-        nullptr,
-        GL_DYNAMIC_COPY
-    );
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER,
-        SSBOBindings::LIGHT_INDICIES_BINDING,
-        compLightIndiciesSSBO
-    );
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    compLightIndiciesSSBO.setData(nullptr, compLightIndiciesBufferSize);
+    compLightIndiciesSSBO.bindData();
 
-    glGenBuffers(1, &bvhNodesSSBO);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhNodesSSBO);
-    // 4 would be enough for any type of tree, especially for binary trees/bvhs
+    // 4 would be enough
     constexpr uint MaxDvhDepth = 4;
-    size_t bvhNodesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
+    constexpr size_t bvhNodesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
         sizeof(LightBVHWrapper::Node);
-    glBufferData(
-        GL_SHADER_STORAGE_BUFFER,
-        bvhNodesSSBOBufferSize,
-        nullptr,
-        GL_DYNAMIC_COPY
-    );
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER,
-        SSBOBindings::BVH_NODES,
-        bvhNodesSSBO
-    );
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    bvhNodesSSBO.setData(nullptr, bvhNodesSSBOBufferSize);
+    bvhNodesSSBO.bindData();
 
-    glGenBuffers(1, &bvhIndicesSSBO);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhIndicesSSBO);
-    size_t bvhIndicesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
+    constexpr size_t bvhIndicesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
         sizeof(uint); // Indices type
-    glBufferData(
-        GL_SHADER_STORAGE_BUFFER,
-        bvhIndicesSSBOBufferSize,
-        nullptr,
-        GL_DYNAMIC_COPY
-    );
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER,
-        SSBOBindings::BVH_INDICES,
-        bvhIndicesSSBO
-    );
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    bvhIndicesSSBO.setData(nullptr, bvhIndicesSSBOBufferSize);
+    bvhIndicesSSBO.bindData();
 }
 
 void ClusteredRenderer::updateLightData(const std::vector<GameObject*>& lights) {
@@ -104,21 +43,18 @@ void ClusteredRenderer::updateLightData(const std::vector<GameObject*>& lights) 
 
     for (int i = 0; i < lights.size(); ++i) {
         CompLight currLight;
+        auto pointLightComp = lights[i]->getComponent<PointLight>();
         currLight.position = lights[i]->getComponent<Transform>()->position;
-        currLight.color = lights[i]->getComponent<PointLight>()->color;
-        currLight.linear = lights[i]->getComponent<PointLight>()->linear;
-        currLight.quadratic = lights[i]->getComponent<PointLight>()->quadratic;
-        currLight.radius = lights[i]->getComponent<PointLight>()->calcRadius();
+        currLight.color = pointLightComp->color;
+        currLight.linear = pointLightComp->linear;
+        currLight.quadratic = pointLightComp->quadratic;
+        currLight.radius = pointLightComp->calcRadius();
 
         gpuLightCache.push_back(currLight);
     }
 
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, compLightSSBO);
-    glBufferData(
-        GL_SHADER_STORAGE_BUFFER,
-        gpuLightCache.size() * sizeof(CompLight),
-        gpuLightCache.data(),
-        GL_DYNAMIC_COPY
+    compLightSSBO.setSubData(
+        gpuLightCache.data(), 0, gpuLightCache.size() * sizeof(CompLight)
     );
 
     LightBVHWrapper bvh(lights);
@@ -148,24 +84,15 @@ void ClusteredRenderer::updateLightData(const std::vector<GameObject*>& lights) 
         nodeConverted.primitive_count = node.index.prim_count();
     }
 
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhNodesSSBO);
-    glBufferData(
-        GL_SHADER_STORAGE_BUFFER,
-        bvhNodesConverted.size() * sizeof(GPUBVHNode),
-        bvhNodesConverted.data(),
-        GL_DYNAMIC_DRAW
+    bvhNodesSSBO.setSubData(
+        bvhNodesConverted.data(), 0, 
+        bvhNodesConverted.size() * sizeof(GPUBVHNode)
     );
 
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhIndicesSSBO);
-    glBufferData(
-        GL_SHADER_STORAGE_BUFFER,
-        bvhIndicesConverted.size() * sizeof(uint32_t),
-        bvhIndicesConverted.data(),
-        GL_DYNAMIC_DRAW
+    bvhIndicesSSBO.setSubData(
+        bvhIndicesConverted.data(), 0, 
+        bvhIndicesConverted.size() * sizeof(uint32_t)
     );
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void ClusteredRenderer::updateClusters(const Camera* cam) {
@@ -210,29 +137,9 @@ glm::uvec3 ClusteredRenderer::getClusterGrid() {
 }
 
 void ClusteredRenderer::bindClusterData() {
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER, 
-        SSBOBindings::CLUSTER_BINDING, 
-        compClusterSSBO
-    );
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER, 
-        SSBOBindings::LIGHT_BINDING, 
-        compLightSSBO
-    );
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER,
-        SSBOBindings::LIGHT_INDICIES_BINDING,
-        compLightIndiciesSSBO
-    );
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER, 
-        SSBOBindings::BVH_NODES, 
-        bvhNodesSSBO
-    );
-    glBindBufferBase(
-        GL_SHADER_STORAGE_BUFFER,
-        SSBOBindings::BVH_INDICES,
-        bvhIndicesSSBO
-    );
+    compClusterSSBO.bindData();
+    compLightSSBO.bindData();
+    compLightIndiciesSSBO.bindData();
+    bvhNodesSSBO.bindData();
+    bvhIndicesSSBO.bindData();
 }

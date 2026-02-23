@@ -11,6 +11,7 @@
 #include "../assets/AssetManager.hpp"
 #include "ComputeShader.hpp"
 #include "Camera.hpp"
+#include "ShaderStorageBuffer.hpp"
 #include "../window/Window.hpp"
 #include "LightBVHWrapper.hpp"
 #include "../gameobject/GameObject.hpp"
@@ -33,18 +34,16 @@ struct alignas(16) CompLight {
 };
 
 class ClusteredRenderer {
-    enum SSBOBindings {
-        CLUSTER_BINDING = 0,
-        LIGHT_BINDING = 1,
-        LIGHT_INDICIES_BINDING = 2,
-        BVH_NODES = 3,
-        BVH_INDICES = 4,
-    };
-
-    uint compClusterSSBO;
-    uint compLightSSBO;
-    uint bvhNodesSSBO;
-    uint bvhIndicesSSBO;
+    ShaderStorageBuffer compClusterSSBO{
+        SSBOBindings::CLUSTER_BINDING, GL_STATIC_DRAW};
+    ShaderStorageBuffer compLightSSBO{
+        SSBOBindings::LIGHT_BINDING, GL_DYNAMIC_DRAW};
+    ShaderStorageBuffer compLightIndiciesSSBO{
+        SSBOBindings::LIGHT_INDICIES_BINDING, GL_DYNAMIC_DRAW};
+    ShaderStorageBuffer bvhNodesSSBO{
+        SSBOBindings::BVH_NODES, GL_DYNAMIC_DRAW};
+    ShaderStorageBuffer bvhIndicesSSBO{
+        SSBOBindings::BVH_INDICES, GL_DYNAMIC_DRAW};
 
     const uint MAX_LIGHTS_PER_CLUSTER = 256;
 
@@ -68,7 +67,6 @@ class ClusteredRenderer {
 
     void createSSBOs();
 public:
-    uint compLightIndiciesSSBO;
     ClusteredRenderer(Window& _window, AssetManager& _assetManager);
     ~ClusteredRenderer() = default;
 

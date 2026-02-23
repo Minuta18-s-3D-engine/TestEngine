@@ -47,7 +47,7 @@ void ShaderStorageBuffer::setData(const void* data, size_t size) {
 }
 
 void ShaderStorageBuffer::setSubData(
-    const void* data, size_t size, size_t offset
+    const void* data, size_t offset, size_t size
 ) {
     bind();
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data);
