@@ -165,6 +165,10 @@ public:
 
     bool hasProperty(const std::string& name) const;
     bool isPropertySet(const std::string& name) const;
+
+    size_t getDataSize() const { return dataSize; }
+    size_t getDataAlignment() const { return maxAlignment; }
+    const uint8_t* getRawData() const { return data; }
 };
 
 #endif // ENGINE_MATERIALS_TYPEDMATERIALSTORAGE_H_
