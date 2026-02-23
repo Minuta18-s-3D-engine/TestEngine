@@ -14,6 +14,7 @@ enum SSBOBindings {
     BVH_NODES = 3,
     BVH_INDICES = 4,
     MATERIALS = 5,
+    MATERIAL_INDICIES = 6,
 };
 
 class ShaderStorageBuffer {
