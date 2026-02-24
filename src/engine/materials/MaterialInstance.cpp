@@ -4,7 +4,8 @@ MaterialInstance::MaterialInstance(
     const std::string& _name,
     std::shared_ptr<Shader> _shader,
     std::shared_ptr<Material> _material
-) : shader(_shader), material(_material), name(_name) {}
+) : shader(_shader), material(_material), name(_name) {
+}
 
 void MaterialInstance::checkTextureExists(const std::string& name) const {
     if (!material->hasTexture(name)) {
