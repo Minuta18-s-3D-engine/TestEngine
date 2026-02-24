@@ -7,17 +7,14 @@
 #include "../../project/VirtualPath.hpp"
 #include "TemplateArguments.hpp"
 #include "../utils/ParseExceptions.hpp"
+#include "../utils/Parser.hpp"
 
 class TemplateEngine {
 private:
-    ErrorLog validateFromString(const std::string& fileContents) const;
-
-    void renderFromString(
-        const std::string& fileContents,
-        const TemplateArguments& arguments
-    ) const;
+    VirtualPath templateDirectory;
+    Parser& parser;
 public:
-    TemplateEngine(VirtualPath templateDirectory);
+    TemplateEngine(VirtualPath templateDirectory, const Parser& parser);
 
     std::string render(
         const std::string& templateName, 

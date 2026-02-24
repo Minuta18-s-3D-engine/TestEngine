@@ -19,7 +19,9 @@ public:
     TemplateArguments(TemplateArguments&& other) noexcept;
     TemplateArguments& operator=(TemplateArguments&& other) noexcept;
 
-    void set(const std::string& key, const std::string& value) override;
+    TemplateArguments& set(
+        const std::string& key, const std::string& value
+    ) override;
     std::string get(
         const std::string& key, const std::string& defaultValue
     ) const override;

@@ -5,7 +5,9 @@
 
 class ParserArguments {
 public:
-    virtual void set(const std::string& key, const std::string& value) = 0;
+    virtual ParserArguments& set(
+        const std::string& key, const std::string& value
+    ) = 0;
     virtual std::string get(
         const std::string& key, const std::string& defaultValue
     ) const = 0;
@@ -17,7 +19,7 @@ public:
         const std::string& fileContents
     ) const = 0;
 
-    virtual void renderFromString(
+    virtual std::string renderFromString(
         const std::string& fileContents,
         const ParserArguments& arguments
     ) const = 0;

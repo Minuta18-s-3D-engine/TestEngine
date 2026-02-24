@@ -12,7 +12,7 @@ public:
         const std::string& fileContents
     ) const override;
 
-    void renderFromString(
+    std::string renderFromString(
         const std::string& fileContents,
         const ParserArguments& arguments
     ) const override;
