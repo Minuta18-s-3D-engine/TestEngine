@@ -26,8 +26,11 @@ TemplateArguments& TemplateArguments::operator=(
     return *this;
 }
 
-void TemplateArguments::set(const std::string& key, const std::string& value) {
+TemplateArguments& TemplateArguments::set(
+    const std::string& key, const std::string& value
+) {
     arguments[key] = value;
+    return *this;
 }
 
 std::string TemplateArguments::get(
