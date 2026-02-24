@@ -4,11 +4,14 @@
 #include <string>
 #include <unordered_map>
 
-#include "../project/VirtualPath.hpp"
+#include "../../project/VirtualPath.hpp"
 #include "TemplateArguments.hpp"
+#include "../utils/ParseExceptions.hpp"
 
 class TemplateEngine {
 private:
+    ErrorLog validateFromString(const std::string& fileContents) const;
+
     void renderFromString(
         const std::string& fileContents,
         const TemplateArguments& arguments
@@ -25,6 +28,9 @@ public:
         const VirtualPath& templatePath, 
         const TemplateArguments& arguments = TemplateArguments{}
     ) const;
+
+    ErrorLog validate(const std::string& templateName) const;
+    ErrorLog validate(const VirtualPath& templatePath) const;
 };
 
 #endif // ENGINE_STRINGPROCESSING_TEMPLATEENGINE_TEMPLATEENGINE_HPP

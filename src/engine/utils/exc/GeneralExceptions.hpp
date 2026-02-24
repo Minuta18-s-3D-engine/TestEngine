@@ -15,6 +15,7 @@ public:
     const char* what() const noexcept { return message.c_str(); }
 };
 
+
 }
 
 #endif // ENGINE_UTILS_EXC_GENERALEXCEPTIONS_H_

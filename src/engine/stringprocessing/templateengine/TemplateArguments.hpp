@@ -4,7 +4,9 @@
 #include <string>
 #include <unordered_map>
 
-class TemplateArguments {
+#include "../utils/Parser.hpp"
+
+class TemplateArguments : public ParserArguments {
 public:
     using ArgumentMap = std::unordered_map<std::string, std::string>;
 private:
@@ -17,10 +19,10 @@ public:
     TemplateArguments(TemplateArguments&& other) noexcept;
     TemplateArguments& operator=(TemplateArguments&& other) noexcept;
 
-    void set(const std::string& key, const std::string& value);
+    void set(const std::string& key, const std::string& value) override;
     std::string get(
         const std::string& key, const std::string& defaultValue
-    ) const;
+    ) const override;
 
     ArgumentMap getArguments() const;
 };
