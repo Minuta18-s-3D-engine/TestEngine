@@ -110,50 +110,29 @@ TemplateParser::ProcessResult TemplateParser::processTemplate(
 
         switch (token.type) {
             case TemplateTokenType::Text:
-                processTextToken(context);
-                break;
+                processTextToken(context); break;
             case TemplateTokenType::VariableTagStart:
-                processVariableTagStart(context);
-                if (context.stopNeeded) {
-                    return context.result;
-                }
-                break;
+                processVariableTagStart(context); break;
             case TemplateTokenType::VariableTagEnd:
-                processVariableTagEnd(context);
-                if (context.stopNeeded) {
-                    return context.result;
-                }
-                break;
+                processVariableTagEnd(context); break;
             case TemplateTokenType::CommentTagStart:
-                processCommentTagStart(context);
-                if (context.stopNeeded) {
-                    return context.result;
-                }
-                break;
+                processCommentTagStart(context); break;
             case TemplateTokenType::CommentTagEnd:
-                processCommentTagEnd(context);
-                if (context.stopNeeded) {
-                    return context.result;
-                }
-                break;
+                processCommentTagEnd(context); break;
             default:
                 context.result.errors.push_back({
                     .message = "Unexpected token type",
-                    .line = token.line,
-                    .column = token.column,
+                    .line = context.token.line,
+                    .column = context.token.column,
                 });
                 if (context.stopOnError) {
-                    return context.result;
+                    context.stopNeeded = true;
                 }
         }
-    }
 
-    if (context.state != ParseState::Outside) {
-        context.result.errors.push_back({
-            .message = "Unclosed tag at end of file",
-            .line = context.lastOpenTag.line,
-            .column = context.lastOpenTag.column,
-        });
+        if (context.stopNeeded) {
+            return context.result;
+        }
     }
 
     return context.result;
