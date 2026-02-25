@@ -1,0 +1,59 @@
+#include "StringFunctions.hpp"
+
+std::string StringFunctions::trim(const std::string& str) {
+    size_t first = str.find_first_not_of(" \t\n\r");
+    if (first == std::string::npos) {
+        return "";
+    }
+    size_t last = str.find_last_not_of(" \t\n\r");
+    return str.substr(first, last - first + 1);
+}
+
+std::string StringFunctions::trim(const std::string_view& str) {
+    return trim(std::string(str));
+}
+
+std::vector<std::string> StringFunctions::split(
+    const std::string& str, char delimiter
+) {
+    std::vector<std::string> result;
+    size_t start = 0;
+    size_t end = str.find(delimiter);
+    while (end != std::string::npos) {
+        result.push_back(str.substr(start, end - start));
+        start = end + 1;
+        end = str.find(delimiter, start);
+    }
+    result.push_back(str.substr(start));
+    return result;
+}
+
+std::vector<std::string> StringFunctions::split(
+    const std::string_view& str, char delimiter
+) {
+    return split(std::string(str), delimiter);
+}
+
+std::string StringFunctions::toLower(const std::string& str) {
+    std::string result = str;
+    for (char& c : result) {
+        c = std::tolower(c);
+    }
+    return result;
+}
+
+std::string StringFunctions::toLower(const std::string_view& str) {
+    return toLower(std::string(str));
+}
+
+std::string StringFunctions::toUpper(const std::string& str) {
+    std::string result = str;
+    for (char& c : result) {
+        c = std::toupper(c);
+    }
+    return result;
+}
+
+std::string StringFunctions::toUpper(const std::string_view& str) {
+    return toUpper(std::string(str));
+}

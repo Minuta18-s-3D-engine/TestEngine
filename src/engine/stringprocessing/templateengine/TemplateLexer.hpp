@@ -15,6 +15,20 @@ enum class TemplateTokenType {
     Error,
 };
 
+std::string getTagNameByType(TemplateTokenType type) {
+    switch (type) {
+        case TemplateTokenType::Text: return "Text";
+        case TemplateTokenType::VariableTagStart: return "Variable";
+        case TemplateTokenType::VariableTagEnd: return "Variable";
+        case TemplateTokenType::CommentTagStart: return "Comment";
+        case TemplateTokenType::CommentTagEnd: return "Comment";
+        case TemplateTokenType::TagContent: return "Content";
+        case TemplateTokenType::EndOfFile: return "EndOfFile";
+        case TemplateTokenType::Error: return "Error";
+        default: return "Unknown";
+    }
+}
+
 struct TemplateToken {
     TemplateTokenType type;
     std::string_view value;
