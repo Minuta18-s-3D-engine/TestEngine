@@ -13,27 +13,27 @@
 #include "../graphics/Texture.hpp"
 
 #define PROPERTY_TYPE_LIST \
-    X(Int,   int32_t)      \
-    X(Uint,  uint32_t)     \
-    X(Float, float)        \
-    X(Bool,  bool)         \
-    X(Vec2,  glm::vec2)    \
-    X(IVec2, glm::ivec2)   \
-    X(UVec2, glm::uvec2)   \
-    X(Vec3,  glm::vec3)    \
-    X(IVec3, glm::ivec3)   \
-    X(UVec3, glm::uvec3)   \
-    X(Vec4,  glm::vec4)    \
-    X(IVec4, glm::ivec4)   \
-    X(UVec4, glm::uvec4)   \
-    X(Mat2,  glm::mat2)    \
-    X(Mat3,  glm::mat3)    \
-    X(Mat4,  glm::mat4)    \
+    X(Int,   int32_t,    "int")     \
+    X(Uint,  uint32_t,   "uint")    \
+    X(Float, float,      "float")   \
+    X(Bool,  bool,       "bool")    \
+    X(Vec2,  glm::vec2,  "vec2")    \
+    X(IVec2, glm::ivec2, "ivec2")   \
+    X(UVec2, glm::uvec2, "uvec2")   \
+    X(Vec3,  glm::vec3,  "vec3")    \
+    X(IVec3, glm::ivec3, "ivec3")   \
+    X(UVec3, glm::uvec3, "uvec3")   \
+    X(Vec4,  glm::vec4,  "vec4")    \
+    X(IVec4, glm::ivec4, "ivec4")   \
+    X(UVec4, glm::uvec4, "uvec4")   \
+    X(Mat2,  glm::mat2,  "mat2")    \
+    X(Mat3,  glm::mat3,  "mat3")    \
+    X(Mat4,  glm::mat4,  "mat4")    \
 
 class TypedPropertyStorage {
 public:
     enum class PropertyType {
-        #define X(name, type) name,
+        #define X(name, type, glslType) name,
             PROPERTY_TYPE_LIST
         #undef X
         Unknown
@@ -43,7 +43,7 @@ public:
     static constexpr PropertyType getPropertyType() {
         using DecayedT = std::decay_t<T>;
 
-        #define X(name, type) \
+        #define X(name, type, glslType) \
             if constexpr (std::is_same_v<DecayedT, type>) \ 
                 return PropertyType::name;
 
@@ -51,6 +51,14 @@ public:
         #undef X
 
         return PropertyType::Unknown;
+    }
+
+    static constexpr std::string getGLSLType(PropertyType t) {
+        #define X(name, type, glslType) \
+            if (t == PropertyType::name) return glslType ;
+
+            PROPERTY_TYPE_LIST
+        #undef X
     }
 
     static constexpr size_t getStd430Alignment(PropertyType type);
@@ -169,6 +177,8 @@ public:
     size_t getDataSize() const { return dataSize; }
     size_t getDataAlignment() const { return maxAlignment; }
     const uint8_t* getRawData() const { return data; }
+    std::unordered_map<std::string, Property> getProperties() const { 
+        return properties; };
 };
 
 #endif // ENGINE_MATERIALS_TYPEDMATERIALSTORAGE_H_

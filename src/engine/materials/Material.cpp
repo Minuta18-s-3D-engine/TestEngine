@@ -55,5 +55,10 @@ bool Material::isTextureSet(const std::string& name) const {
     return !(textures.at(name) == nullptr);
 }
 
-const TypedPropertyStorage& Material::getPropertyStorage() { return properties; }
-const Material::TextureStorage& Material::getTextureStorage() { return textures; }
+const TypedPropertyStorage& Material::getPropertyStorage() const { 
+    return properties; 
+}
+
+const Material::TextureStorage& Material::getTextureStorage() const { 
+    return textures; 
+}

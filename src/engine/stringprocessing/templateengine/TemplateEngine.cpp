@@ -45,6 +45,13 @@ std::string TemplateEngine::render(
 }
 
 std::string TemplateEngine::render(
+    const char* templateName, 
+    const TemplateArguments& arguments
+) const {
+    return render(getPathByName(templateName), arguments);    
+}
+
+std::string TemplateEngine::render(
     const VirtualPath& templatePath, 
     const TemplateArguments& arguments
 ) const {
@@ -54,6 +61,10 @@ std::string TemplateEngine::render(
 }
 
 ErrorLog TemplateEngine::validate(const std::string& templateName) const {
+    return validate(getPathByName(templateName));
+}
+
+ErrorLog TemplateEngine::validate(const char* templateName) const {
     return validate(getPathByName(templateName));
 }
 

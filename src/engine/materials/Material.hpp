@@ -69,8 +69,8 @@ public:
 
     const std::string& getName() const { return name; }
 
-    const TypedPropertyStorage& getPropertyStorage();
-    const TextureStorage& getTextureStorage();
+    const TypedPropertyStorage& getPropertyStorage() const;
+    const TextureStorage& getTextureStorage() const;
 };
 
 #endif // ENGINE_MATERIALS_MATERIAL_H_

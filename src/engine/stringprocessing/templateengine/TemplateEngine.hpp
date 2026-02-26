@@ -28,11 +28,17 @@ public:
     ) const;
 
     std::string render(
+        const char* templateName, 
+        const TemplateArguments& arguments = TemplateArguments{}
+    ) const;
+
+    std::string render(
         const VirtualPath& templatePath, 
         const TemplateArguments& arguments = TemplateArguments{}
     ) const;
 
     ErrorLog validate(const std::string& templateName) const;
+    ErrorLog validate(const char* templateName) const;
     ErrorLog validate(const VirtualPath& templatePath) const;
 };
 
