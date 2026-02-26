@@ -3,18 +3,24 @@
 
 #include <string>
 #include <unordered_map>
+#include <fstream>
 
 #include "../../project/VirtualPath.hpp"
 #include "TemplateArguments.hpp"
 #include "../utils/ParseExceptions.hpp"
 #include "../utils/Parser.hpp"
+#include "../utils/exc/GeneralExceptions.hpp"
 
 class TemplateEngine {
 private:
     VirtualPath templateDirectory;
-    Parser& parser;
+    const Parser& parser;
+
+    std::string readFile(const VirtualPath& path) const;
 public:
-    TemplateEngine(VirtualPath templateDirectory, const Parser& parser);
+    TemplateEngine(VirtualPath _templateDirectory, const Parser& _parser);
+
+    VirtualPath getPathByName(const std::string& templateName) const;
 
     std::string render(
         const std::string& templateName, 

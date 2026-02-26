@@ -57,3 +57,26 @@ std::string StringFunctions::toUpper(const std::string& str) {
 std::string StringFunctions::toUpper(const std::string_view& str) {
     return toUpper(std::string(str));
 }
+
+std::string StringFunctions::toCamelCase(const std::string& str) {
+    std::string result;
+    bool capitalizeNext = false;
+    for (char c : str) {
+        if (std::isspace(c) || c == '_' || c == '-') {
+            capitalizeNext = true;
+            continue;
+        }
+         
+        if (capitalizeNext) {
+            result += std::toupper(c);
+            capitalizeNext = false;
+        } else {
+            result += std::tolower(c);
+        }
+    }
+    return result;
+}
+
+std::string StringFunctions::toCamelCase(const std::string_view& str) {
+    return toCamelCase(std::string(str));
+}

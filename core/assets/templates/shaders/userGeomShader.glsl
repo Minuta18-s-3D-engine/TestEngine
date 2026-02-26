@@ -27,17 +27,13 @@ void vertex() {
     // gl_Position = u_Projection * u_View * u_Model * vec4(a_Position, 1.0);
 }
 
-// @preprocessor.section("fragment")
+//@preprocessor.section("fragment")
 
 {{ material_definition }}
 
 // Built-in variables available in the shader:
 // Inputs:
 // v_Data              - (struct) Interpolated data from vertex shader
-// Texture samplers:
-// s_Diffuse           - (sampler2D) Diffuse texture
-// s_Specular          - (sampler2D) Specular texture
-// s_Normal            - (sampler2D) Normal map texture
 // Outputs (G-Buffer):
 // out_Position        - (vec3) World-space position
 // out_Normal          - (vec3) World-space normal

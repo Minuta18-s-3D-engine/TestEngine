@@ -18,6 +18,9 @@ namespace StringFunctions {
     
     std::string toUpper(const std::string& str);
     std::string toUpper(const std::string_view& str);
+
+    std::string toCamelCase(const std::string& str);
+    std::string toCamelCase(const std::string_view& str);
 }
 
 #endif // ENGINE_STRINGPROCESSING_UTILS_STRINGFUNCTIONS_HPP
