@@ -1,4 +1,4 @@
-//@preprocessor.section("vertex")
+//@section("vertex")
 
 {{ material_definition }}
 
@@ -27,7 +27,7 @@ void vertex() {
     // gl_Position = u_Projection * u_View * u_Model * vec4(a_Position, 1.0);
 }
 
-//@preprocessor.section("fragment")
+//@section("fragment")
 
 {{ material_definition }}
 
@@ -43,12 +43,12 @@ void vertex() {
 
 void fragment() {
     // Your code here
-    
+
     // Example: Setting Albedo from diffuse texture:
     // out_Albedo = texture(s_Diffuse, v_Data.uv);
 }
 
-//@preprocessor.section("lighting_pass")
+//@section("lighting_pass")
 
 {{ material_definition }}
 
