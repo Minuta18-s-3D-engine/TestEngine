@@ -9,7 +9,7 @@
 #include "TemplateArguments.hpp"
 #include "../utils/ParseExceptions.hpp"
 #include "../utils/Parser.hpp"
-#include "../utils/exc/GeneralExceptions.hpp"
+#include "../../utils/exc/GeneralExceptions.hpp"
 
 class TemplateEngine {
 private:
