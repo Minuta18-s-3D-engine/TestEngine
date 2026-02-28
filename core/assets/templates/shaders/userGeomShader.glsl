@@ -74,6 +74,24 @@ void fragment() {
 // BVH data:
 // b_BVHNodes          - (SSBO[BVHNode]) SSBO of bvh nodes.
 // b_BVHIndices        - (SSBO[uint]) SSBO of bvh leaf indices.
+//
+// Built-in structures available in the shader:
+// Cluster:
+// .minPoint            - (vec4) AABB minimum
+// .maxPoint            - (vec4) AABB maximum
+// .count               - (uint) Number of lights in a cluster
+// .lightStart          - (uint) Offset in b_LightIndices buffer
+// PointLight:
+// .position            - (vec3) Light position
+// .color               - (vec3) Light color
+// .linear, quadratic   - (uint) Coefficients fade
+// .radius              - (uint) Radius of area affected by light, calculated 
+//                       using linear and quadratic
+// BVHNode:
+// .minPoint            - (vec4) AABB minimum
+// .maxPoint            - (vec4) AABB maximum
+// .first_child_or_primitive - (uint) Index of first child or primitive
+// .primitive_count     - (uint) primitive count
 
 vec3 worldPos = texture(s_GPosition, v_TexCoords).rgb;
 vec3 worldNormal = texture(s_GNormal, v_TexCoords).rgb;
