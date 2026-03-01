@@ -12,9 +12,17 @@
 // a_Tangent           - (vec3) Tangent for normal mapping.
 // a_Bitangent         - (vec3) Bitangent for normal mapping.
 // Uniforms:
+// u_Time              - (float) Time in seconds.
+// u_DeltaTime         - (float) Frame time.
+// u_Frame             - (uint) Index of current frame.
+// u_Resolution        - (ivec2) Screen resolution.
+// u_TexelSize         - (vec2) 1 / u_Resolution.
+// u_CameraPosition    - (vec3) Camera position vector.
+// u_CameraDirection   - (vec3) Camera direction vector.
 // u_Model             - (mat4) Model-to-World matrix.
 // u_View              - (mat4) World-to-View matrix.
 // u_Projection        - (mat4) View-to-Clip matrix.
+// u_InvModel, u_InvView, u_InvProjection (mat4) inverse matrices.
 // Outputs:
 // v_Data.worldPos     - (vec3) World-space position.
 // v_Data.uv           - (vec2) UV coordinates.
@@ -36,6 +44,18 @@ void vertex() {
 //                       material.
 // Inputs:
 // v_Data              - (struct) Interpolated data from vertex shader.
+// Uniforms:
+// u_Time              - (float) Time in seconds.
+// u_DeltaTime         - (float) Frame time.
+// u_Frame             - (uint) Index of current frame.
+// u_Resolution        - (ivec2) Screen resolution.
+// u_TexelSize         - (vec2) 1 / u_Resolution.
+// u_CameraPosition    - (vec3) Camera position vector.
+// u_CameraDirection   - (vec3) Camera direction vector.
+// u_Model             - (mat4) Model-to-World matrix.
+// u_View              - (mat4) World-to-View matrix.
+// u_Projection        - (mat4) View-to-Clip matrix.
+// u_InvModel, u_InvView, u_InvProjection (mat4) inverse matrices.
 // Outputs (G-Buffer):
 // out_Position        - (vec3) World-space position.
 // out_Normal          - (vec3) World-space normal.
@@ -48,7 +68,9 @@ void fragment() {
     // out_Albedo = texture(s_Diffuse, v_Data.uv);
 }
 
-//@section("lighting_pass")
+//@section("lightingPass")
+
+//@include("core://shaders/lightingPassStdLib.glsl")
 
 {{ material_definition }}
 
@@ -62,9 +84,17 @@ void fragment() {
 // s_GAlbedoSpec       - (sampler2D) G-Buffer texture, which contains pixel's
 //                       albedo (.xyz) and specular (.w) value.
 // v_TexCoords         - (vec2) Fullscreen quad UVs.
-// Camera and screen params:
-// u_ViewPos           - (vec3) Camera position in world space.
-// u_ScreenResolution  - (uvec2) Screen resolution.
+// Uniforms:
+// u_Time              - (float) Time in seconds.
+// u_DeltaTime         - (float) Frame time.
+// u_Frame             - (uint) Index of current frame.
+// u_Resolution        - (ivec2) Screen resolution.
+// u_TexelSize         - (vec2) 1 / u_Resolution.
+// u_CameraPosition    - (vec3) Camera position vector.
+// u_CameraDirection   - (vec3) Camera direction vector.
+// u_View              - (mat4) World-to-View matrix.
+// u_Projection        - (mat4) View-to-Clip matrix.
+// u_InvView, u_InvProjection (mat4) inverse matrices.
 // u_ZNear, u_ZFar     - (float) Camera clipping planes.
 // Clustered shading data:
 // u_GridSize          - (uvec3) Cluster grid dimensions.
