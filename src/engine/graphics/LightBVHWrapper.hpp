@@ -14,10 +14,10 @@
 #include <vector>
 #include <memory>
 
-#include "../gameobject/GameObject.hpp"
-#include "../gameobject/GameObjectManager.hpp"
-#include "../gameobject/components/Transform.hpp"
-#include "../gameobject/components/Behavior.hpp"
+#include "../gameObject/GameObject.hpp"
+#include "../gameObject/GameObjectManager.hpp"
+#include "../gameObject/components/Transform.hpp"
+#include "../gameObject/components/Behavior.hpp"
 #include "components/PointLight.hpp"
 
 struct alignas(16) GPUBVHNode {

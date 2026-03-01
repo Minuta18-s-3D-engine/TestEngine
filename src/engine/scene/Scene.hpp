@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-#include "../gameobject/GameObjectManager.hpp"
+#include "../gameObject/GameObjectManager.hpp"
 
 class Scene {
     std::string name;

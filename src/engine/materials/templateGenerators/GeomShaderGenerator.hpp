@@ -4,7 +4,7 @@
 #include <string>
 
 #include "../Material.hpp"
-#include "../../stringprocessing/templateengine/TemplateEngine.hpp"
+#include "../../stringProcessing/templateEngine/TemplateEngine.hpp"
 
 class GeomShaderGenerator {
     const TemplateEngine& templateEngine;

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "../../gameobject/Component.hpp"
+#include "../../gameObject/Component.hpp"
 
 class PointLight : public Component {
 public:

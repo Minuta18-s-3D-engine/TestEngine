@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "../gameobject/Component.hpp"
+#include "../gameObject/Component.hpp"
 
 class ModelComponent : public Component {
 public:
