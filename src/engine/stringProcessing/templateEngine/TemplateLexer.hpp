@@ -59,7 +59,7 @@ private:
     char peek() const;
     void advance();
 public:
-    TemplateLexer(std::string_view source) : source(source) {}
+    TemplateLexer(std::string_view _source) : source(_source) {}
 
     TemplateToken nextToken();
 };
