@@ -1,0 +1,12 @@
+#ifndef ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSORPARSER_H_
+#define ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSORPARSER_H_
+
+#include "PreprocessorLexer.hpp"
+
+class PreprocessorParser {
+    PreprocessorLexer lexer;
+public:
+    
+};
+
+#endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSORPARSER_H_

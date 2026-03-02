@@ -1,4 +1,4 @@
-//@section("vertex")
+//@section("GVertex")
 
 {{ material_definition }}
 
@@ -35,7 +35,7 @@ void vertex() {
     // gl_Position = u_Projection * u_View * u_Model * vec4(a_Position, 1.0);
 }
 
-//@section("fragment")
+//@section("GFragment")
 
 {{ material_definition }}
 
@@ -68,7 +68,7 @@ void fragment() {
     // out_Albedo = texture(s_Diffuse, v_Data.uv);
 }
 
-//@section("lightingPass")
+//@section("LFragment")
 
 //@include("core://shaders/lightingPassStdLib.glsl")
 
