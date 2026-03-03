@@ -2,13 +2,15 @@
 #define ENGINE_UTILS_ENUMMAPPER_H_
 
 #include <unordered_map>
+#include <string>
+#include <initializer_list>
 
 template <typename T>
 class EnumMapper {
     std::unordered_map<std::string, T> stringToEnum;
     std::unordered_map<T, std::string> enumToString;
 public:
-    EnumParser(
+    EnumMapper(
         std::initializer_list<std::pair<T, std::string>> mapping
     ) {
         for (const auto& [value, name] : mapping) {
