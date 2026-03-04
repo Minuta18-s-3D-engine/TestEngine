@@ -9,8 +9,13 @@ public:
     enum class TokenType {
         Code,
         DirectiveMarker,
-        Directive,
-        Argument,
+        Identifier,
+        OpenBracket,
+        ClosedBracket,
+        Dot,
+        Float,
+        Integer,
+        String,
         EndOfFile
     };
 
@@ -23,9 +28,6 @@ public:
     };
 private:
     const std::string directiveMarker = "//@";
-    const std::string spaces = " \t";
-    const std::string breakCharacters = "\n\r\0";
-    const std::string separators = "\"(),";
 
     std::string_view source;
     size_t cursorPosition = 0;
@@ -37,7 +39,11 @@ private:
     void advance();
 
     bool in(char c, const std::string& str);
-    bool isAllowedInName(char c);
+
+    bool isSpace(char c);
+    bool isAlpha(char c);
+    bool isDigit(char c);
+    bool isAlphaDigit(char c);
 public:
     PreprocessorLexer(std::string_view _source) : source(_source) {}
 
