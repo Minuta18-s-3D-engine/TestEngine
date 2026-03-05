@@ -43,7 +43,7 @@ public:
     const std::string directiveMarker = "//@";
 
     const std::vector<Rule> directiveRules = {
-        { TokenType::Number,     std::regex(R"(^(\d+\.\d+|\d+))") },
+        { TokenType::Number,     std::regex(R"(^(\d+\.\d+|\d+)(?![a-zA-Z_0-9]))") },
         { TokenType::String,     std::regex(R"(^"([^"\\]|\\.)*")") },
         { TokenType::Identifier, std::regex(R"(^([a-zA-Z_]\w*))") },
         { TokenType::Dot,        std::regex(R"(^\.)") },
