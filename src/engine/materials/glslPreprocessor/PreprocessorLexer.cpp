@@ -18,7 +18,20 @@ void PreprocessorLexer::advance() {
 }
 
 void PreprocessorLexer::advance(int n) {
-    for (int i = 0; i < n; ++i) advance();
+    if (n <= 0) return;
+
+    std::string_view slice = source.substr(cursorPosition, n);
+    size_t newlinesInSlice = std::count(slice.begin(), slice.end(), '\n');
+
+    if (newlinesInSlice > 0) {
+        line += newlinesInSlice;
+        size_t lastNewlinePos = slice.find_last_of('\n');
+        column = (n - lastNewlinePos); 
+    } else {
+        column += n;
+    }
+
+    cursorPosition += n;
 }
 
 bool PreprocessorLexer::in(char c, const std::string& str) {
