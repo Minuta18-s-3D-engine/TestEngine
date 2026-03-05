@@ -23,7 +23,7 @@ public:
 
     struct Token {
         TokenType type;
-        std::string_view value;
+        std::string value;
         size_t line;
         size_t column;
         size_t position;
@@ -57,13 +57,6 @@ private:
     size_t column = 0;
 
     State currentState = State::Code;
-    const Token EOFToken {
-        .type = PreprocessorLexer::TokenType::EndOfFile,
-        .value = "",
-        .line = line,
-        .column = column, 
-        .position = cursorPosition
-    };
     const int unknownTokenSize = 1;
 
     char peek() const;

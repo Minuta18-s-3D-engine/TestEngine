@@ -66,7 +66,7 @@ PreprocessorLexer::Token PreprocessorLexer::handleCodeState() {
         if (markerPos == std::string_view::npos) codeLen = lastPart.size();
         resultingToken = {
             .type = PreprocessorLexer::TokenType::Code,
-            .value = lastPart.substr(0, codeLen),
+            .value = std::string(lastPart.substr(0, codeLen)),
             .line = line,
             .column = column, 
             .position = cursorPosition
@@ -97,7 +97,7 @@ PreprocessorLexer::Token PreprocessorLexer::handleDirectiveState() {
 
     Token resultingToken {
         .type = PreprocessorLexer::TokenType::Unknown,
-        .value = source.substr(cursorPosition, unknownTokenSize),
+        .value = std::string(source.substr(cursorPosition, unknownTokenSize)),
         .line = line,
         .column = column, 
         .position = cursorPosition
@@ -107,6 +107,14 @@ PreprocessorLexer::Token PreprocessorLexer::handleDirectiveState() {
 }
 
 PreprocessorLexer::Token PreprocessorLexer::nextToken() {
+    const Token EOFToken {
+        .type = PreprocessorLexer::TokenType::EndOfFile,
+        .value = "",
+        .line = line,
+        .column = column, 
+        .position = cursorPosition
+    };
+
     if (cursorPosition >= source.size()) {
         return EOFToken;
     } 
