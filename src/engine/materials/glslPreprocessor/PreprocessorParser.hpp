@@ -4,19 +4,51 @@
 #include <vector>
 #include <string>
 
+#include "../../stringProcessing/utils/StringInfo.hpp"
 #include "PreprocessorLexer.hpp"
-#include "DirectiveHandler.hpp"
-#include "PreprocessorParserContext.hpp"
+#include "ShaderSectionType.hpp"
 
 class PreprocessorParser {
+    enum class DirectiveType {
+        Section,
+        Include,
+    };
+
+    enum class ArgType {
+        String, 
+        Number, 
+        Identifier,
+        Bool,
+    };
+
+    struct DirectiveArg {
+        ArgType type;
+        std::string_view value;
+        StringPos position;
+    };
+
+    struct Directive {
+        DirectiveType type;
+        std::string_view name;
+        std::vector<DirectiveArg> args;
+        StringPos position;
+    };
+
+    struct SectionBlock {
+        ShaderSectionType type;
+        std::string_view code;
+        std::vector<Directive> directives;
+    };
+
+    struct ParseResult {
+        std::string code;
+        std::vector<SectionBlock> sections;
+    };
+private:
     PreprocessorLexer lexer;
-    PreprocessorParserContext parseContext;
-    
-    std::unordered_map<std::string, DirectiveHandler> handlers;
 public:
     PreprocessorParser(const std::string& source);
 
-    std::string applyDirectives();
 };
 
 #endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSORPARSER_H_
