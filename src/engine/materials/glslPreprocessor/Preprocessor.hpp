@@ -9,6 +9,8 @@ class Preprocessor {
     PreprocessorLexer lexer;
 public:
     Preprocessor();
+
+    
 };
 
 #endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSOR_H_
