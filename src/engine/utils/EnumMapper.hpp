@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include <initializer_list>
+#include <exception>
 
 template <typename T>
 class EnumMapper {
@@ -19,8 +20,19 @@ public:
         }
     }
 
-    T toEnum(const std::string& _string) { return stringToEnum[_string]; }
-    std::string toString(T _t) { return enumToString[_t]; }
+    T toEnum(const std::string& _string) { 
+        if (!stringToEnum.contains(_string)) {
+            throw std::out_of_range("unknown enum value."); 
+        }
+        return stringToEnum[_string]; 
+    }
+
+    std::string toString(T _t) { 
+        if (!enumToString.contains(_t)) {
+            throw std::out_of_range("unknown enum value.");
+        }
+        return enumToString[_t]; 
+    }
 };
 
 #endif // ENGINE_UTILS_ENUMMAPPER_H_

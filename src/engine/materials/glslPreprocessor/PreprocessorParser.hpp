@@ -43,28 +43,35 @@ public:
     };
 
     struct ParseResult {
+        std::string source;
         std::string code;
         std::vector<SectionBlock> sections;
     };
 private:
     PreprocessorLexer lexer;
+    std::string_view source; 
 
     void makeException(
-        const PreprocessorLexer::Token token, 
+        const PreprocessorLexer::Token& token, 
         const std::string& message
-    );
+    ) const;
     void exceptToken(
         const PreprocessorLexer::Token& token,
         PreprocessorLexer::TokenType exceptedType,
         const std::string& what
+    ) const;
+    std::vector<DirectiveArg> parseDirectiveArgs(
+        PreprocessorLexer& lexer,
+        const std::string& source,
+        const PreprocessorLexer::Token& directiveToken
     );
-    const DirectiveArg requireArg(
+    DirectiveArg requireArg(
         const Directive& d, 
         size_t index, 
         ArgType exceptedType
     ) const;
 public:
-    PreprocessorParser(const std::string& source);
+    PreprocessorParser(const std::string& _source);
 
     ParseResult parse();
 };

@@ -6,7 +6,6 @@
 #include "PreprocessorLexer.hpp"
 
 class Preprocessor {
-    PreprocessorLexer lexer;
 public:
     Preprocessor();
 
