@@ -7,8 +7,10 @@
 #include "../../stringProcessing/utils/StringInfo.hpp"
 #include "PreprocessorLexer.hpp"
 #include "ShaderSectionType.hpp"
+#include "../../project/VirtualPath.hpp"
 
 class PreprocessorParser {
+public:
     enum class DirectiveType {
         Section,
         Include,
@@ -46,9 +48,25 @@ class PreprocessorParser {
     };
 private:
     PreprocessorLexer lexer;
+
+    void makeException(
+        const PreprocessorLexer::Token token, 
+        const std::string& message
+    );
+    void exceptToken(
+        const PreprocessorLexer::Token& token,
+        PreprocessorLexer::TokenType exceptedType,
+        const std::string& what
+    );
+    const DirectiveArg requireArg(
+        const Directive& d, 
+        size_t index, 
+        ArgType exceptedType
+    ) const;
 public:
     PreprocessorParser(const std::string& source);
 
+    ParseResult parse();
 };
 
 #endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSORPARSER_H_

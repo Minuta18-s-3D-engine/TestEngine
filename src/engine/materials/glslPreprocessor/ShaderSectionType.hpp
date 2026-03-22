@@ -12,7 +12,7 @@ enum class ShaderSectionType {
     GFragment,
     LFragment
 };
-const EnumMapper<ShaderSectionType> ShaderSectionTypeMap({
+const EnumMapper<ShaderSectionType> shaderSectionTypeMap({
     { ShaderSectionType::GVertex, "GVertex" },
     { ShaderSectionType::GFragment, "GFragment" },
     { ShaderSectionType::LFragment, "LFragment" }
