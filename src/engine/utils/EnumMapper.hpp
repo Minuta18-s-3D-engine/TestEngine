@@ -20,14 +20,14 @@ public:
         }
     }
 
-    T toEnum(const std::string& _string) { 
+    T toEnum(const std::string& _string) const { 
         if (!stringToEnum.contains(_string)) {
             throw std::out_of_range("unknown enum value."); 
         }
         return stringToEnum[_string]; 
     }
 
-    std::string toString(T _t) { 
+    std::string toString(T _t) const { 
         if (!enumToString.contains(_t)) {
             throw std::out_of_range("unknown enum value.");
         }

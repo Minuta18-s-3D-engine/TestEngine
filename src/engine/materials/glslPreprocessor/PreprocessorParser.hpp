@@ -3,11 +3,14 @@
 
 #include <vector>
 #include <string>
+#include <format>
 
 #include "../../stringProcessing/utils/StringInfo.hpp"
 #include "PreprocessorLexer.hpp"
 #include "ShaderSectionType.hpp"
 #include "../../project/VirtualPath.hpp"
+#include "../../utils/exc/ParseExceptions.hpp"
+#include "../../utils/EnumMapper.hpp"
 
 class PreprocessorParser {
 public:
@@ -22,6 +25,12 @@ public:
         Identifier,
         Bool,
     };
+    const EnumMapper<ArgType> argTypeMapper = {
+        { ArgType::String, "string" },
+        { ArgType::Number, "number" },
+        { ArgType::Identifier, "identifier" },
+        { ArgType::Bool, "bool" }
+    }; 
 
     struct DirectiveArg {
         ArgType type;
@@ -48,28 +57,31 @@ public:
         std::vector<SectionBlock> sections;
     };
 private:
-    PreprocessorLexer lexer;
-    std::string_view source; 
+    std::string source; 
 
     void makeException(
         const PreprocessorLexer::Token& token, 
         const std::string& message
     ) const;
+
     void exceptToken(
         const PreprocessorLexer::Token& token,
         PreprocessorLexer::TokenType exceptedType,
         const std::string& what
     ) const;
+
+    DirectiveArg requireArg(
+        const Directive& d, 
+        size_t index, 
+        ArgType exceptedType,
+        size_t exceptedArgumentsCount
+    ) const;
+
     std::vector<DirectiveArg> parseDirectiveArgs(
         PreprocessorLexer& lexer,
         const std::string& source,
         const PreprocessorLexer::Token& directiveToken
     );
-    DirectiveArg requireArg(
-        const Directive& d, 
-        size_t index, 
-        ArgType exceptedType
-    ) const;
 public:
     PreprocessorParser(const std::string& _source);
 
