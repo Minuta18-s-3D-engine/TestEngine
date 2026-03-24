@@ -47,6 +47,32 @@ PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
     return arg;
 }
 
+std::vector<PreprocessorParser::DirectiveArg> 
+PreprocessorParser::parseDirectiveArgs(
+    PreprocessorLexer& lexer,
+    const std::string& source,
+    const PreprocessorLexer::Token& directiveToken
+) {
+    std::vector<DirectiveArg> args;
+
+    auto token = lexer.nextToken();
+    exceptToken(
+        token, 
+        PreprocessorLexer::TokenType::LBracket, 
+        "'(' after directive name"
+    );
+
+    token = lexer.nextToken();
+
+    while (
+        token.type != PreprocessorLexer::TokenType::RBracket &&
+        token.type != PreprocessorLexer::TokenType::EndOfFile &&
+        token.type != PreprocessorLexer::TokenType::Code
+    ) {
+        // ...
+    }
+}
+
 PreprocessorParser::ParseResult PreprocessorParser::parse() {
     PreprocessorParser::ParseResult result;
     result.source = source;
