@@ -11,6 +11,7 @@
 #include "../../project/VirtualPath.hpp"
 #include "../../utils/exc/ParseExceptions.hpp"
 #include "../../utils/EnumMapper.hpp"
+#include "../../stringProcessing/utils/StringFunctions.hpp"
 
 class PreprocessorParser {
 public:

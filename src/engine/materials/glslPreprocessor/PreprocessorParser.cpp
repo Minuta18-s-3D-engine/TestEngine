@@ -69,8 +69,53 @@ PreprocessorParser::parseDirectiveArgs(
         token.type != PreprocessorLexer::TokenType::EndOfFile &&
         token.type != PreprocessorLexer::TokenType::Code
     ) {
-        // ...
+        DirectiveArg arg;
+        arg.position = {token.line, token.column, token.position};
+        arg.value = token.value;
+
+        switch (token.type) {
+            case PreprocessorLexer::TokenType::Number:
+                arg.type = ArgType::Number;
+                break;
+            case PreprocessorLexer::TokenType::String:
+                arg.value = StringFunctions::unquote(arg.value);
+                arg.type = ArgType::String;
+                break;
+            case PreprocessorLexer::TokenType::Identifier:
+                if (token.value == "true" || token.value == "false") {
+                    arg.type = ArgType::Bool;
+                } else {
+                    arg.type = ArgType::Identifier;
+                }
+                break;
+            default:
+                makeException(token, "Invalid argument type in directive");
+        }
+
+        args.push_back(arg);
+
+        token = lexer.nextToken();
+        if (token.type == PreprocessorLexer::TokenType::Comma) {
+            token = lexer.nextToken();
+            if (token.type == PreprocessorLexer::TokenType::RBracket) {
+                makeException(token, "Trailing comma in directive arguments");
+            }
+        } else if (token.type != PreprocessorLexer::TokenType::RBracket) {
+            makeException(token, "Expected ',' or ')' between arguments");
+        }
     }
+
+    if (
+        token.type == PreprocessorLexer::TokenType::EndOfFile ||
+        token.type == PreprocessorLexer::TokenType::Code
+    ) {
+        makeException(
+            directiveToken, 
+            "Unclosed directive arguments (expected ')')"
+        );
+    }
+    
+    return args;
 }
 
 PreprocessorParser::ParseResult PreprocessorParser::parse() {
