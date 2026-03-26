@@ -24,6 +24,27 @@ void PreprocessorParser::exceptToken(
     }
 }
 
+void PreprocessorParser::notExceptToken(
+    const PreprocessorLexer::Token& token,
+    PreprocessorLexer::TokenType notExceptedType,
+    const std::string& what
+) const {
+    if (token.type == notExceptedType) {
+        makeException(token, "Not expected " + what);
+    }
+}
+
+std::string PreprocessorParser::constructDirectiveName(
+    const Directive& d
+) const {
+    std::string directiveName = std::string(d.name[0]);
+    for (int i = 1; i < d.name.size(); ++i) {
+        directiveName += "." + std::string(d.name[i]);
+    }
+
+    return directiveName;
+}
+
 PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
     const Directive& d, 
     size_t index, 
@@ -31,91 +52,127 @@ PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
     size_t exceptedArgumentsCount
 ) const {
     if (index >= d.args.size()) {
-        std::string what = "Directive '" + std::string(d.name) = "' expects " +
-            std::to_string(exceptedArgumentsCount) + " found " + 
-            std::to_string(d.args.size());
-        throw exc::parse_error(what);
+        std::string what = "Directive '" + constructDirectiveName(d) + 
+            "' expects " + std::to_string(exceptedArgumentsCount) + 
+            " found " + std::to_string(d.args.size());
+        makeException(d.tokens[0], what);
     }
 
     const auto& arg = d.args[index];
     if (arg.type != exceptedType) {
-        std::string what = "Excepted type " + 
+        std::string what = "Argument " + std::to_string(index + 1) + 
+            ": Excepted type " + 
             argTypeMapper.toString(exceptedType) + ", found type " +
             argTypeMapper.toString(arg.type);
-        throw exc::parse_error(what);
+        makeException(d.tokens[0], what);
     }
     return arg;
 }
 
-std::vector<PreprocessorParser::DirectiveArg> 
-PreprocessorParser::parseDirectiveArgs(
+PreprocessorParser::Directive PreprocessorParser::parseDirective(
     PreprocessorLexer& lexer,
     const std::string& source,
     const PreprocessorLexer::Token& directiveToken
 ) {
-    std::vector<DirectiveArg> args;
+    Directive result;
+    result.position = {
+        .line = directiveToken.line,
+        .col = directiveToken.column,
+        .pos = directiveToken.position
+    };
 
+    result.tokens.push_back(directiveToken);
     auto token = lexer.nextToken();
+    while (
+        token.type != PreprocessorLexer::TokenType::Code &&
+        token.type != PreprocessorLexer::TokenType::EndOfFile
+    ) {
+        result.tokens.push_back(token);
+        token = lexer.nextToken();
+    }
+
     exceptToken(
-        token, 
-        PreprocessorLexer::TokenType::LBracket, 
-        "'(' after directive name"
+        result.tokens[0], 
+        PreprocessorLexer::TokenType::Identifier, 
+        "directive name"
     );
 
-    token = lexer.nextToken();
+    bool prevDot = false;
+    size_t bracketIndex = -1;
+    for (size_t i = 1; i < result.tokens.size(); ++i) {
+        if (result.tokens[i].type == PreprocessorLexer::TokenType::LBracket) {
+            bracketIndex = i;
+            if (prevDot) {
+                makeException(result.tokens[i - 1], "Invalid syntax");
+            }
+            break;
+        }
+        if (prevDot) {
+            exceptToken(
+                result.tokens[i], PreprocessorLexer::TokenType::Dot,
+                "dot separator"
+            );
+            prevDot = true;
+        } else {
+            exceptToken(
+                result.tokens[i], PreprocessorLexer::TokenType::Identifier,
+                "name"
+            );
+            result.name.push_back(std::string_view(result.tokens[i].value));
+            prevDot = false;
+        }
+    }
 
-    while (
-        token.type != PreprocessorLexer::TokenType::RBracket &&
-        token.type != PreprocessorLexer::TokenType::EndOfFile &&
-        token.type != PreprocessorLexer::TokenType::Code
-    ) {
-        DirectiveArg arg;
-        arg.position = {token.line, token.column, token.position};
-        arg.value = token.value;
+    if (bracketIndex == -1) {
+        return result;
+    }
 
-        switch (token.type) {
-            case PreprocessorLexer::TokenType::Number:
+    bool exceptArg = true;
+    for (size_t i = bracketIndex + 1; i < result.tokens.size(); ++i) {
+        const auto& t = result.tokens[i];
+
+        if (t.type == PreprocessorLexer::TokenType::RBracket) {
+            break;
+        }
+
+        if (exceptArg) {
+            DirectiveArg arg;
+            arg.position = { 
+                .line = t.line, 
+                .col = t.column, 
+                .pos = t.position
+            };
+            arg.value = t.value;
+
+            if (t.type == PreprocessorLexer::TokenType::Number) {
                 arg.type = ArgType::Number;
-                break;
-            case PreprocessorLexer::TokenType::String:
-                arg.value = StringFunctions::unquote(arg.value);
+            } else if (t.type == PreprocessorLexer::TokenType::String) {
                 arg.type = ArgType::String;
-                break;
-            case PreprocessorLexer::TokenType::Identifier:
-                if (token.value == "true" || token.value == "false") {
+            } else if (t.type == PreprocessorLexer::TokenType::Identifier) {
+                if (t.value == "true" || t.value == "false") { 
                     arg.type = ArgType::Bool;
-                } else {
+                } else { 
                     arg.type = ArgType::Identifier;
                 }
-                break;
-            default:
-                makeException(token, "Invalid argument type in directive");
-        }
+            } else {
+                makeException(t, "Invalid argument type");
+            } 
 
-        args.push_back(arg);
-
-        token = lexer.nextToken();
-        if (token.type == PreprocessorLexer::TokenType::Comma) {
-            token = lexer.nextToken();
-            if (token.type == PreprocessorLexer::TokenType::RBracket) {
-                makeException(token, "Trailing comma in directive arguments");
+            result.args.push_back(arg);
+            exceptArg = false;
+        } else {
+            if (t.type == PreprocessorLexer::TokenType::Comma) {
+                exceptArg = true;
+            } else {
+                makeException(t, "Expected ',' or ')'");
             }
-        } else if (token.type != PreprocessorLexer::TokenType::RBracket) {
-            makeException(token, "Expected ',' or ')' between arguments");
         }
     }
 
-    if (
-        token.type == PreprocessorLexer::TokenType::EndOfFile ||
-        token.type == PreprocessorLexer::TokenType::Code
-    ) {
-        makeException(
-            directiveToken, 
-            "Unclosed directive arguments (expected ')')"
-        );
+    if (result.tokens.back().type != PreprocessorLexer::TokenType::RBracket) {
+        makeException(result.tokens.back(), "Missing closing ')'");
     }
-    
-    return args;
+    return result;
 }
 
 PreprocessorParser::ParseResult PreprocessorParser::parse() {

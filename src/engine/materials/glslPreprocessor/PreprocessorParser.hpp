@@ -10,16 +10,12 @@
 #include "ShaderSectionType.hpp"
 #include "../../project/VirtualPath.hpp"
 #include "../../utils/exc/ParseExceptions.hpp"
+#include "../../utils/exc/GeneralExceptions.hpp"
 #include "../../utils/EnumMapper.hpp"
 #include "../../stringProcessing/utils/StringFunctions.hpp"
 
 class PreprocessorParser {
 public:
-    enum class DirectiveType {
-        Section,
-        Include,
-    };
-
     enum class ArgType {
         String, 
         Number, 
@@ -40,8 +36,8 @@ public:
     };
 
     struct Directive {
-        DirectiveType type;
-        std::string_view name;
+        std::vector<std::string_view> name;
+        std::vector<PreprocessorLexer::Token> tokens;
         std::vector<DirectiveArg> args;
         StringPos position;
     };
@@ -71,6 +67,12 @@ private:
         const std::string& what
     ) const;
 
+    void notExceptToken(
+        const PreprocessorLexer::Token& token,
+        PreprocessorLexer::TokenType notExceptedType,
+        const std::string& what
+    ) const;
+
     DirectiveArg requireArg(
         const Directive& d, 
         size_t index, 
@@ -78,11 +80,13 @@ private:
         size_t exceptedArgumentsCount
     ) const;
 
-    std::vector<DirectiveArg> parseDirectiveArgs(
+    Directive parseDirective(
         PreprocessorLexer& lexer,
         const std::string& source,
         const PreprocessorLexer::Token& directiveToken
     );
+
+    std::string constructDirectiveName(const Directive& d) const;
 public:
     PreprocessorParser(const std::string& _source);
 
