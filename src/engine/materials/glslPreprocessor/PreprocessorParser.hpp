@@ -40,9 +40,9 @@ public:
         std::vector<DirectiveArg> args;
         StringPos position;
 
-        bool nameMatch(std::vector<std::string> _name) {
+        bool nameMatch(const std::vector<std::string>& _name) {
             if (name.size() != _name.size()) return false;
-            for (int i = 0; i < _name.size(); ++i) {
+            for (size_t i = 0; i < _name.size(); ++i) {
                 if (name[i] != _name[i]) return false;
             }
             return true;
@@ -70,26 +70,25 @@ private:
 
     void exceptToken(
         const PreprocessorLexer::Token& token,
-        PreprocessorLexer::TokenType exceptedType,
+        PreprocessorLexer::TokenType expectedType,
         const std::string& what
     ) const;
 
     void notExceptToken(
         const PreprocessorLexer::Token& token,
-        PreprocessorLexer::TokenType notExceptedType,
+        PreprocessorLexer::TokenType notExpectedType,
         const std::string& what
     ) const;
 
     DirectiveArg requireArg(
         const Directive& d, 
         size_t index, 
-        ArgType exceptedType,
+        ArgType expectedType,
         size_t exceptedArgumentsCount
     ) const;
 
     Directive parseDirective(
         PreprocessorLexer& lexer,
-        const std::string& source,
         const PreprocessorLexer::Token& directiveToken
     );
 

@@ -16,20 +16,20 @@ void PreprocessorParser::makeException(
 
 void PreprocessorParser::exceptToken(
     const PreprocessorLexer::Token& token,
-    PreprocessorLexer::TokenType exceptedType,
+    PreprocessorLexer::TokenType expectedType,
     const std::string& what
 ) const {
-    if (token.type != exceptedType) {
+    if (token.type != expectedType) {
         makeException(token, "Expected " + what);
     }
 }
 
 void PreprocessorParser::notExceptToken(
     const PreprocessorLexer::Token& token,
-    PreprocessorLexer::TokenType notExceptedType,
+    PreprocessorLexer::TokenType notExpectedType,
     const std::string& what
 ) const {
-    if (token.type == notExceptedType) {
+    if (token.type == notExpectedType) {
         makeException(token, "Not expected " + what);
     }
 }
@@ -37,6 +37,7 @@ void PreprocessorParser::notExceptToken(
 std::string PreprocessorParser::constructDirectiveName(
     const Directive& d
 ) const {
+    if (d.name.size() < 1) return "";
     std::string directiveName = std::string(d.name[0]);
     for (int i = 1; i < d.name.size(); ++i) {
         directiveName += "." + std::string(d.name[i]);
@@ -48,7 +49,7 @@ std::string PreprocessorParser::constructDirectiveName(
 PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
     const Directive& d, 
     size_t index, 
-    ArgType exceptedType,
+    ArgType expectedType,
     size_t exceptedArgumentsCount
 ) const {
     if (index >= d.args.size()) {
@@ -59,10 +60,10 @@ PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
     }
 
     const auto& arg = d.args[index];
-    if (arg.type != exceptedType) {
+    if (arg.type != expectedType) {
         std::string what = "Argument " + std::to_string(index + 1) + 
             ": Excepted type " + 
-            argTypeMapper.toString(exceptedType) + ", found type " +
+            argTypeMapper.toString(expectedType) + ", found type " +
             argTypeMapper.toString(arg.type);
         makeException(d.tokens[0], what);
     }
@@ -71,7 +72,6 @@ PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
 
 PreprocessorParser::Directive PreprocessorParser::parseDirective(
     PreprocessorLexer& lexer,
-    const std::string& source,
     const PreprocessorLexer::Token& directiveToken
 ) {
     Directive result;
@@ -191,7 +191,7 @@ PreprocessorParser::ParseResult PreprocessorParser::parse() {
         } else if (
             token.type == PreprocessorLexer::TokenType::DirectiveMarker
         ) {
-            Directive dir = parseDirective(lexer, result.source, token);
+            Directive dir = parseDirective(lexer, token);
 
             if (dir.nameMatch({ "section" })) {
                 if (!currentSection.directives.empty()) {
