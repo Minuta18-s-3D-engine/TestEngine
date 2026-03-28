@@ -90,7 +90,7 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
     for (size_t i = 1; i < result.tokens.size(); ++i) {
         if (result.tokens[i].type == PreprocessorLexer::TokenType::LBracket) {
             bracketIndex = i;
-            if (prevDot) {
+            if (!prevDot) {
                 makeException(result.tokens[i - 1], "Invalid syntax");
             }
             break;
@@ -100,14 +100,14 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
                 result.tokens[i], PreprocessorLexer::TokenType::Dot,
                 "dot separator"
             );
-            prevDot = true;
+            prevDot = false;
         } else {
             exceptToken(
                 result.tokens[i], PreprocessorLexer::TokenType::Identifier,
                 "name"
             );
             result.name.push_back(std::string_view(result.tokens[i].value));
-            prevDot = false;
+            prevDot = true;
         }
     }
 

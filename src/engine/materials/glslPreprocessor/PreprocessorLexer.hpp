@@ -54,7 +54,7 @@ public:
 private:
     std::string_view source;
     size_t cursorPosition = 0;
-    size_t line = 0;
+    size_t line = 1;
     size_t column = 0;
 
     State currentState = State::Code;
