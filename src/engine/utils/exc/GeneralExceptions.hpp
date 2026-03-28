@@ -15,15 +15,6 @@ public:
     const char* what() const noexcept { return message.c_str(); }
 };
 
-class file_not_found : std::exception {
-    std::string message;
-public:
-    file_not_found(const char* _message) : message(_message) {}
-    file_not_found(const std::string& _message) : message(_message) {}
-
-    const char* what() const noexcept { return message.c_str(); }
-};
-
 class file_corrupted : std::exception {
     std::string message;
 public:
@@ -40,7 +31,7 @@ public:
     invalid_argument(const std::string& _message) : message(_message) {}
 
     const char* what() const noexcept { return message.c_str(); }
-}
+};
 
 }
 

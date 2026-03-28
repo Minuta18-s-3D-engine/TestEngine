@@ -5,6 +5,7 @@
 #include <string>
 #include <initializer_list>
 #include <exception>
+#include <stdexcept>
 
 template <typename T>
 class EnumMapper {
@@ -15,8 +16,8 @@ public:
         std::initializer_list<std::pair<T, std::string>> mapping
     ) {
         for (const auto& [value, name] : mapping) {
-            enumToString[name] = value;
-            stringToEnum[value] = name;
+            enumToString[value] = name;
+            stringToEnum[name] = value;
         }
     }
 
@@ -24,15 +25,16 @@ public:
         if (!stringToEnum.contains(_string)) {
             throw std::out_of_range("unknown enum value."); 
         }
-        return stringToEnum[_string]; 
+        return stringToEnum.at(_string); 
     }
 
     std::string toString(T _t) const { 
         if (!enumToString.contains(_t)) {
             throw std::out_of_range("unknown enum value.");
         }
-        return enumToString[_t]; 
+        return enumToString.at(_t); 
     }
 };
+
 
 #endif // ENGINE_UTILS_ENUMMAPPER_H_
