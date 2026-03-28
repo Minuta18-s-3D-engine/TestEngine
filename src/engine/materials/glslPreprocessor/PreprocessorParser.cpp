@@ -177,9 +177,42 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
 
 PreprocessorParser::ParseResult PreprocessorParser::parse() {
     PreprocessorParser::ParseResult result;
-    result.source = source;
-    PreprocessorLexer lexer(std::string_view(
-        result.source.data(),
-        result.source.size()));
+    result.source = this->source;
+    PreprocessorLexer lexer(result.source);
 
+    const std::string noSectionTag = "none";
+    SectionBlock currentSection;
+    currentSection.type = noSectionTag;
+    auto token = lexer.nextToken();
+
+    while (token.type != PreprocessorLexer::TokenType::EndOfFile) {
+        if (token.type == PreprocessorLexer::TokenType::Code) {
+            result.code += std::string(token.value);
+        } else if (
+            token.type == PreprocessorLexer::TokenType::DirectiveMarker
+        ) {
+            Directive dir = parseDirective(lexer, result.source, token);
+
+            if (dir.nameMatch({ "section" })) {
+                if (!currentSection.directives.empty()) {
+                    result.sections.push_back(std::move(currentSection));
+                }
+
+                currentSection = SectionBlock();
+                currentSection.type = requireArg(
+                    dir, 0, PreprocessorParser::ArgType::String, 1
+                ).value;
+                currentSection.type = 
+                    StringFunctions::unquote(currentSection.type);
+                currentSection.directives.push_back(std::move(dir));
+            } else {
+                currentSection.directives.push_back(std::move(dir));
+            }
+        }
+    
+        token = lexer.nextToken();
+    }
+
+    result.sections.push_back(std::move(currentSection));
+    return result;
 }

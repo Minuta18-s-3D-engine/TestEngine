@@ -7,7 +7,6 @@
 
 #include "../../stringProcessing/utils/StringInfo.hpp"
 #include "PreprocessorLexer.hpp"
-#include "ShaderSectionType.hpp"
 #include "../../project/VirtualPath.hpp"
 #include "../../utils/exc/ParseExceptions.hpp"
 #include "../../utils/exc/GeneralExceptions.hpp"
@@ -40,10 +39,18 @@ public:
         std::vector<PreprocessorLexer::Token> tokens;
         std::vector<DirectiveArg> args;
         StringPos position;
+
+        bool nameMatch(std::vector<std::string> _name) {
+            if (name.size() != _name.size()) return false;
+            for (int i = 0; i < _name.size(); ++i) {
+                if (name[i] != _name[i]) return false;
+            }
+            return true;
+        }
     };
 
     struct SectionBlock {
-        ShaderSectionType type;
+        std::string type;
         std::string_view code;
         std::vector<Directive> directives;
     };
