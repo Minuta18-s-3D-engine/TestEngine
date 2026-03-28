@@ -47,6 +47,16 @@ public:
             }
             return true;
         }
+
+        std::string constructDirectiveName() const {
+            if (name.size() < 1) return "";
+            std::string directiveName = std::string(name[0]);
+            for (int i = 1; i < name.size(); ++i) {
+                directiveName += "." + std::string(name[i]);
+            }
+
+            return directiveName;
+        }
     };
 
     struct SectionBlock {
@@ -91,8 +101,6 @@ private:
         PreprocessorLexer& lexer,
         const PreprocessorLexer::Token& directiveToken
     );
-
-    std::string constructDirectiveName(const Directive& d) const;
 public:
     PreprocessorParser(const std::string& _source);
 

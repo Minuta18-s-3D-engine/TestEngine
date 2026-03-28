@@ -84,7 +84,7 @@ std::string StringFunctions::toCamelCase(const std::string_view& str) {
 std::string StringFunctions::unquote(const std::string& str) {
     if (str.size() < 2) return str;
     if (str[0] == '"' && str[str.size() - 1] == '"') 
-        return str.substr(1, str.size() - 1);
+        return str.substr(1, str.size() - 2);
     return str;
 }
 

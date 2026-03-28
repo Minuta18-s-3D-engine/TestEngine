@@ -34,18 +34,6 @@ void PreprocessorParser::notExceptToken(
     }
 }
 
-std::string PreprocessorParser::constructDirectiveName(
-    const Directive& d
-) const {
-    if (d.name.size() < 1) return "";
-    std::string directiveName = std::string(d.name[0]);
-    for (int i = 1; i < d.name.size(); ++i) {
-        directiveName += "." + std::string(d.name[i]);
-    }
-
-    return directiveName;
-}
-
 PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
     const Directive& d, 
     size_t index, 
@@ -53,7 +41,7 @@ PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
     size_t exceptedArgumentsCount
 ) const {
     if (index >= d.args.size()) {
-        std::string what = "Directive '" + constructDirectiveName(d) + 
+        std::string what = "Directive '" + d.constructDirectiveName() + 
             "' expects " + std::to_string(exceptedArgumentsCount) + 
             " found " + std::to_string(d.args.size());
         makeException(d.tokens[0], what);
@@ -92,7 +80,7 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
     }
 
     exceptToken(
-        result.tokens[0], 
+        result.tokens[1], 
         PreprocessorLexer::TokenType::Identifier, 
         "directive name"
     );
