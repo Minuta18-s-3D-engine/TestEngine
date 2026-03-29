@@ -2,7 +2,10 @@
 
 PreprocessorParser::PreprocessorParser(
     const std::string& _source
-) : source(_source) {}
+) : source(_source) {
+    addDirectiveValidator("section", { ArgType::String });
+    builtins.insert("section");
+}
 
 void PreprocessorParser::makeException(
     const PreprocessorLexer::Token& token, 
@@ -163,6 +166,46 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
     return result;
 }
 
+std::optional<PreprocessorParser::Warning> 
+PreprocessorParser::validateDirective(
+    const Directive& d
+) const {
+    const std::string key = d.constructDirectiveName();
+
+    if (!validators.contains(key)) {
+        return Warning{
+            .message = "Unknown directive '" + key + "'",
+            .position = d.position
+        };
+    }
+
+    const auto& expected = validators.at(key).argTypes;
+
+    if (d.args.size() != expected.size()) {
+        makeException(
+            d.tokens[0],
+            "Directive '" + key + "' expects " +
+            std::to_string(expected.size()) +
+            " argument(s), found " + std::to_string(d.args.size())
+        );
+    }
+
+    for (size_t i = 0; i < expected.size(); ++i) {
+        if (d.args[i].type != expected[i]) {
+            makeException(
+                d.tokens[0],
+                "Directive '" + key + "', argument " +
+                std::to_string(i + 1) + ": expected type " +
+                argTypeMapper.toString(expected[i]) +
+                ", found type " +
+                argTypeMapper.toString(d.args[i].type)
+            );
+        }
+    }
+
+    return std::nullopt;
+}
+
 PreprocessorParser::ParseResult PreprocessorParser::parse() {
     PreprocessorParser::ParseResult result;
     result.source = this->source;
@@ -180,6 +223,10 @@ PreprocessorParser::ParseResult PreprocessorParser::parse() {
             token.type == PreprocessorLexer::TokenType::DirectiveMarker
         ) {
             Directive dir = parseDirective(lexer, token);
+
+            if (auto warn = validateDirective(dir)) {
+                result.warnings.push_back(std::move(*warn));
+            }
 
             if (dir.nameMatch({ "section" })) {
                 if (!currentSection.directives.empty()) {
@@ -203,4 +250,13 @@ PreprocessorParser::ParseResult PreprocessorParser::parse() {
 
     result.sections.push_back(std::move(currentSection));
     return result;
+}
+
+void PreprocessorParser::addDirectiveValidator(
+    const std::string& name, DirectiveSpec spec
+) {
+    if (builtins.contains(name)) {
+        throw exc::invalid_argument("Can't override built-in directive");
+    }
+    validators[name] = spec;
 }

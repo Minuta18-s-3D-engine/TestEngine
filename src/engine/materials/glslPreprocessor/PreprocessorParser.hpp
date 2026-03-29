@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <format>
+#include <set>
 
 #include "../../stringProcessing/utils/StringInfo.hpp"
 #include "PreprocessorLexer.hpp"
@@ -59,6 +60,23 @@ public:
         }
     };
 
+    struct DirectiveSpec {
+        std::vector<ArgType> argTypes;
+
+        DirectiveSpec(
+            const std::vector<ArgType>& _argTypes
+        ) : argTypes(_argTypes) {}
+
+        DirectiveSpec(
+            const ArgType& _argTypes
+        ) : argTypes({_argTypes}) {}
+    };
+
+    struct Warning {
+        std::string message;
+        StringPos position;
+    };
+
     struct SectionBlock {
         std::string type;
         std::string_view code;
@@ -69,9 +87,13 @@ public:
         std::string source;
         std::string code;
         std::vector<SectionBlock> sections;
+        std::vector<Warning> warnings;
     };
 private:
     std::string source; 
+
+    std::unordered_map<std::string, DirectiveSpec> validators;
+    std::set<std::string> builtins;
 
     void makeException(
         const PreprocessorLexer::Token& token, 
@@ -101,10 +123,13 @@ private:
         PreprocessorLexer& lexer,
         const PreprocessorLexer::Token& directiveToken
     );
+
+    std::optional<Warning> validateDirective(const Directive& d) const;
 public:
     PreprocessorParser(const std::string& _source);
 
     ParseResult parse();
+    void addDirectiveValidator(const std::string& name, DirectiveSpec spec);
 };
 
 #endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSORPARSER_H_
