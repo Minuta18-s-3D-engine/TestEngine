@@ -186,7 +186,8 @@ PreprocessorParser::validateDirective(
             d.tokens[0],
             "Directive '" + key + "' expects " +
             std::to_string(expected.size()) +
-            " argument(s), found " + std::to_string(d.args.size())
+            " argument" + (expected.size() > 1 ? "s" : "") + ", found " + 
+            std::to_string(d.args.size())
         );
     }
 

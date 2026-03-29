@@ -70,6 +70,8 @@ public:
         DirectiveSpec(
             const ArgType& _argTypes
         ) : argTypes({_argTypes}) {}
+
+        DirectiveSpec() = default; 
     };
 
     struct Warning {
