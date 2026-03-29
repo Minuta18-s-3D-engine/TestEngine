@@ -81,7 +81,7 @@ public:
 
     struct SectionBlock {
         std::string type;
-        std::string_view code;
+        std::string code;
         std::vector<Directive> directives;
     };
 

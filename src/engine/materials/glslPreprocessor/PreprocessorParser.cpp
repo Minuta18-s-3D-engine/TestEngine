@@ -82,6 +82,10 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
         token = lexer.nextToken();
     }
 
+    if (result.tokens.size() < 1) {
+        makeException(directiveToken, "Syntax error");
+    }
+
     exceptToken(
         result.tokens[1], 
         PreprocessorLexer::TokenType::Identifier, 
@@ -115,7 +119,7 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
     }
 
     if (bracketIndex == -1) {
-        return result;
+        makeException(result.tokens[0], "Brackets not found");
     }
 
     bool exceptArg = true;
@@ -220,6 +224,7 @@ PreprocessorParser::ParseResult PreprocessorParser::parse() {
     while (token.type != PreprocessorLexer::TokenType::EndOfFile) {
         if (token.type == PreprocessorLexer::TokenType::Code) {
             result.code += std::string(token.value);
+            currentSection.code += std::string(token.value);
         } else if (
             token.type == PreprocessorLexer::TokenType::DirectiveMarker
         ) {
