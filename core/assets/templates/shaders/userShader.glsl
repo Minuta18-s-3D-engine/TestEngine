@@ -70,7 +70,7 @@ void fragment() {
 
 //@section("LFragment")
 
-//@include("core://shaders/lightingPassStdLib.glsl")
+//@import("core://shaders/lightingPassStdLib.glsl")
 
 {{ material_definition }}
 
