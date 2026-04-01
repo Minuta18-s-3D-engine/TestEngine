@@ -1,5 +1,13 @@
 #include "VirtualFilesystem.hpp"
 
+VirtualFilesystem::VirtualFilesystem(
+    std::unique_ptr<PathResolver> _pathResolver
+) {
+    VirtualPath::setResolverFunc([this](const std::string& p) {
+        return this->getResolver().resolve(p);
+    });
+}
+
 bool VirtualFilesystem::exists(const VirtualPath& path) {
     return std::filesystem::exists(path.resolve());
 }
@@ -74,4 +82,8 @@ void VirtualFilesystem::removeDir(const VirtualPath& path, bool recursively) {
     } else {
         std::filesystem::remove(path.resolve());
     }
+}
+
+PathResolver& VirtualFilesystem::getResolver() {
+    return *pathResolver;
 }

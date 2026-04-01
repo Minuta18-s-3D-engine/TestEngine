@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "VirtualPath.hpp"
+#include "PathResolver.hpp"
 
 class FilesystemAbstraction {
 public:
@@ -30,6 +31,8 @@ public:
         const VirtualPath& path, 
         bool recursively = false
     ) = 0;
+
+    virtual PathResolver& getResolver() = 0;
 };
 
 #endif // ENGINE_PROJECT_FILESYSTEMABSTRACTION_HPP_

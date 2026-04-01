@@ -14,14 +14,16 @@
 #include "VirtualPath.hpp"
 #include "../scene/Scene.hpp"
 #include "../utils/exc/GeneralExceptions.hpp"
+#include "FilesystemAbstraction.hpp"
+#include "VirtualFilesystem.hpp"
 
 class Project {
     std::string name;
     std::string projectVersion;
     std::string engineVersion;
 
-    std::unique_ptr<PathResolver> pathResolver;
     std::unique_ptr<AssetManager> assetManager;
+    std::unique_ptr<FilesystemAbstraction> filesystem;
 
     std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
     std::string activeScene;
@@ -51,7 +53,7 @@ public:
     bool hasScene(const std::string& sceneName);
 
     AssetManager& getAssetManager();
-    PathResolver& getPathResolver();
+    FilesystemAbstraction& getFilesystem();
 
     const std::string& getName() const;
     const std::string& getProjectVersion() const;

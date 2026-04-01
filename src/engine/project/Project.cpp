@@ -5,7 +5,8 @@ Project::Project(
     const std::filesystem::path& rootPath,
     const std::filesystem::path& coreRootPath
 ) : name(name), projectVersion(projectVersion), engineVersion(engineVersion) {
-    pathResolver = std::make_unique<PathResolver>(rootPath, coreRootPath);
+    auto pathResolver = std::make_unique<PathResolver>(rootPath, coreRootPath);
+    filesystem = std::make_unique<VirtualFilesystem>(std::move(pathResolver));
     assetManager = std::make_unique<AssetManager>();
 
     if (!checkEngineVersion()) {
@@ -13,10 +14,6 @@ Project::Project(
             << "Warning: project was created using wrong engine version."
             << std::endl;
     }
-
-    VirtualPath::setResolverFunc([this](const std::string& p) {
-        return this->pathResolver->resolve(p);
-    });
 }
 
 bool Project::checkEngineVersion() {
@@ -24,7 +21,7 @@ bool Project::checkEngineVersion() {
 }
 
 std::filesystem::path Project::resolve(const std::string& virtualPath) const {
-    return pathResolver->resolve(virtualPath);
+    return filesystem->getResolver().resolve(virtualPath);
 }
 
 Scene& Project::getActiveScene() {
@@ -72,7 +69,7 @@ bool Project::hasScene(const std::string& sceneName) {
 }
 
 AssetManager& Project::getAssetManager() { return *assetManager; };
-PathResolver& Project::getPathResolver() { return *pathResolver; }
+FilesystemAbstraction& Project::getFilesystem() { return *filesystem; }
 
 const std::string& Project::getName() const { return name; }
 const std::string& Project::getProjectVersion() const { return projectVersion; }
