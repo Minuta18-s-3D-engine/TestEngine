@@ -30,14 +30,14 @@ class ShaderSourceCache {
 public:
     ShaderSourceCache(
         FilesystemAbstraction& _abstraction, 
-        VirtualPath cachePath
+        VirtualPath _cachePath
     );
+
+    VirtualPath constructPath(std::string name, std::string section);
 
     bool exists(std::string name, std::string section);
     CachedShaderSource get(std::string name, std::string section);
     void set(CachedShaderSource shader);
-
-    VirtualPath constructPath(std::string, std::string section);
 
     void clear();
 };
