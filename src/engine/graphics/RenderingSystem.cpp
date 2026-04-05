@@ -119,7 +119,7 @@ void RenderingSystem::render() {
     lightingShader.setUniform("view", viewMat);
     lightingShader.setUniform("gridSize", renderer->getClusterGrid());
     lightingShader.setUniform("screenDimensions", 
-        glm::vec2(window.getWidth(), window.getHeight()));
+        glm::uvec2(window.getWidth(), window.getHeight()));
 
     renderer->bindClusterData();
 

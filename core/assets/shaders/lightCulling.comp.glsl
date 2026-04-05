@@ -55,7 +55,7 @@ uniform uvec3 gridSize;
 uniform int currentDispatch;
 
 bool sphereAABBIntersection(vec3, float, vec3, vec3);
-bool testSphereAABB(uint, uint);
+bool testSphereAABB(uint, Cluster);
 
 bool sphereAABBIntersection(
     vec3 center, 
