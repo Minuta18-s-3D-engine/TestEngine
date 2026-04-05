@@ -35,6 +35,8 @@ TypedPropertyStorage& TypedPropertyStorage::operator=(
         reallocData(dataSize);
         std::memcpy(data, other.data, dataSize);
     }
+
+    return *this;
 }
 
 TypedPropertyStorage& TypedPropertyStorage::operator=(

@@ -14,12 +14,12 @@ TextureMaterial::TextureMaterial(
 TextureMaterial::~TextureMaterial() {}
 
 void TextureMaterial::passToShader(Shader& shader, std::string name) {
-    shader.setUniform1b(name + ".isActive", isActive);
+    shader.setUniform(name + ".isActive", isActive);
 }
 
 void TextureMaterial::passTextureToShader(int order, Shader& shader, std::string name) {
     glActiveTexture(GL_TEXTURE0 + order);
     tex.get()->bind();
-    shader.setUniform1i(name, order);
+    shader.setUniform(name, order);
 }
 

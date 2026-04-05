@@ -4,8 +4,8 @@
 #include "glm/glm.hpp"
 #include <vector>
 #include "../utils/EngineTypes.h"
-#include "../materials/TextureMaterial.hpp"
-#include "../materials/Material.hpp"
+#include "../materials/old/TextureMaterial.hpp"
+#include "../materials/old/Material.hpp"
 #include "../graphics/Shader.hpp"
 
 struct Vertex {

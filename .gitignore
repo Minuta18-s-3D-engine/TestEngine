@@ -15,6 +15,7 @@ lib/assimp
 lib/stduuid
 lib/*
 /src/lib/bvh
+/src/lib/*
 tests/lib/bvh
 tests/engineTests*
 engineTests

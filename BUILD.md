@@ -39,6 +39,7 @@ sudo apt-get install cmake clang libglfw3 libglfw3-dev libglm-dev libpng-dev uui
 2. Download the source
 3. Rename its folder to "bvh"
 4. Put it into /src/lib
+5. Remove /src/lib/bvh/tests
 
 ### Build using clang
 

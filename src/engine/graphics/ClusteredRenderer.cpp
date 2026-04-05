@@ -11,27 +11,27 @@ ClusteredRenderer::ClusteredRenderer(
 }
 
 void ClusteredRenderer::createSSBOs() {
-    constexpr size_t compClusterBufferSize = NUM_CLUSTERS * sizeof(CompCluster);
+    const size_t compClusterBufferSize = NUM_CLUSTERS * sizeof(CompCluster);
     compClusterSSBO.setData(nullptr, compClusterBufferSize);
     compClusterSSBO.bindData();
 
-    constexpr size_t compLightBufferSize = MAX_LIGHTS * sizeof(CompLight);
+    const size_t compLightBufferSize = MAX_LIGHTS * sizeof(CompLight);
     compLightSSBO.setData(nullptr, compLightBufferSize);
     compLightSSBO.bindData();
 
-    constexpr size_t compLightIndiciesBufferSize = MAX_LIGHTS_PER_CLUSTER 
+    const size_t compLightIndiciesBufferSize = MAX_LIGHTS_PER_CLUSTER 
         * NUM_CLUSTERS * sizeof(uint);
     compLightIndiciesSSBO.setData(nullptr, compLightIndiciesBufferSize);
     compLightIndiciesSSBO.bindData();
 
     // 4 would be enough
-    constexpr uint MaxDvhDepth = 4;
-    constexpr size_t bvhNodesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
+    const uint MaxDvhDepth = 4;
+    const size_t bvhNodesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
         sizeof(LightBVHWrapper::Node);
     bvhNodesSSBO.setData(nullptr, bvhNodesSSBOBufferSize);
     bvhNodesSSBO.bindData();
 
-    constexpr size_t bvhIndicesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
+    const size_t bvhIndicesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
         sizeof(uint); // Indices type
     bvhIndicesSSBO.setData(nullptr, bvhIndicesSSBOBufferSize);
     bvhIndicesSSBO.bindData();
@@ -98,9 +98,9 @@ void ClusteredRenderer::updateLightData(const std::vector<GameObject*>& lights) 
 void ClusteredRenderer::updateClusters(const Camera* cam) {
     buildClustersShader->use();
 
-    buildClustersShader->setUniform1f("zNear", cam->zNear);
-    buildClustersShader->setUniform1f("zFar", cam->zFar);
-    buildClustersShader->setUniform1i("currentDispatch", 1);
+    buildClustersShader->setUniform("zNear", cam->zNear);
+    buildClustersShader->setUniform("zFar", cam->zFar);
+    buildClustersShader->setUniform("currentDispatch", 1);
 
     glm::mat4 proj = glm::perspective(
         cam->getZoom(), 
@@ -109,22 +109,23 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     );
     glm::mat4 invProj = glm::inverse(proj);
 
-    buildClustersShader->setUniform4mat("inverseProjection", invProj);
-    buildClustersShader->setUniform3ui("gridSize", 
-        GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
-    buildClustersShader->setUniform2ui("screenDimensions", 
-        window.getWidth(), window.getHeight());
+    buildClustersShader->setUniform("inverseProjection", invProj);
+    buildClustersShader->setUniform("gridSize", 
+        glm::uvec3(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z));
+    buildClustersShader->setUniform("screenDimensions", 
+        glm::uvec2(window.getWidth(), window.getHeight()));
     
     glDispatchCompute(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
     lightCullingShader->use();
 
-    lightCullingShader->setUniform4mat("viewMat", cam->getViewMat());
-    lightCullingShader->setUniform3ui("gridSize",
-        GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
-    lightCullingShader->setUniform1i("currentDispatch", 2);
-    lightCullingShader->setUniform1ui("numLights", this->gpuLightCache.size());
+    lightCullingShader->setUniform("viewMat", cam->getViewMat());
+    lightCullingShader->setUniform("gridSize",
+        glm::uvec3(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z));
+    lightCullingShader->setUniform("currentDispatch", 2);
+    lightCullingShader->setUniform("numLights", 
+        (uint32_t) this->gpuLightCache.size());
     // lightCullingShader->setUniform1ui("numLights", 2);
 
     uint numWorkgroups = (NUM_CLUSTERS + LOCAL_SIZE - 1) / LOCAL_SIZE;

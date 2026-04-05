@@ -82,7 +82,7 @@ void GBuffer::unbind() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GBuffer::bindBufffers() {
+void GBuffer::bindBuffers() {
     for (int i = 0; i < BufferType::NUM_BUFFERS; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, buffersId[i]);

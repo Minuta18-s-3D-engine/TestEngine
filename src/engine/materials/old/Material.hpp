@@ -2,7 +2,7 @@
 #define ENGINE_MATERIAL_MATERIALS_H_
 
 #include "glm/glm.hpp"
-#include "../graphics/Shader.hpp"
+#include "../../graphics/Shader.hpp"
 #include "BaseMaterial.hpp"
 
 class Material : public BaseMaterial {

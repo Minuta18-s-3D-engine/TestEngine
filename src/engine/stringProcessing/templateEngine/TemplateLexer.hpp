@@ -15,7 +15,7 @@ enum class TemplateTokenType {
     Error,
 };
 
-std::string getTagNameByType(TemplateTokenType type) {
+inline std::string getTagNameByType(TemplateTokenType type) {
     switch (type) {
         case TemplateTokenType::Text: return "Text";
         case TemplateTokenType::VariableTagStart: return "Variable";

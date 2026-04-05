@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "../materials/Light.hpp"
+#include "../materials/old/Light.hpp"
 #include "../assets/AssetManager.hpp"
 #include "ComputeShader.hpp"
 #include "Camera.hpp"
@@ -58,12 +58,12 @@ class ClusteredRenderer {
 
     // Size according to DaveH355 recommendations. Not sure if it's best numbers
     // https://github.com/DaveH355/clustered-shading
-    const uint GRID_SIZE_X = 12;
-    const uint GRID_SIZE_Y = 12;
-    const uint GRID_SIZE_Z = 24;
-    const uint NUM_CLUSTERS = GRID_SIZE_X * GRID_SIZE_Y * GRID_SIZE_Z;
-    const uint MAX_LIGHTS = 2048;
-    const uint LOCAL_SIZE = 128;
+    const uint32_t GRID_SIZE_X = 12;
+    const uint32_t GRID_SIZE_Y = 12;
+    const uint32_t GRID_SIZE_Z = 24;
+    const uint32_t NUM_CLUSTERS = GRID_SIZE_X * GRID_SIZE_Y * GRID_SIZE_Z;
+    const uint32_t MAX_LIGHTS = 2048;
+    const uint32_t LOCAL_SIZE = 128;
 
     void createSSBOs();
 public:

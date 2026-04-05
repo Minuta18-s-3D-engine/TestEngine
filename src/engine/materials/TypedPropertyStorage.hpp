@@ -44,7 +44,7 @@ public:
         using DecayedT = std::decay_t<T>;
 
         #define X(name, type, glslType) \
-            if constexpr (std::is_same_v<DecayedT, type>) \ 
+            if constexpr (std::is_same_v<DecayedT, type>) \
                 return PropertyType::name;
 
             PROPERTY_TYPE_LIST
@@ -59,6 +59,7 @@ public:
 
             PROPERTY_TYPE_LIST
         #undef X
+        return "unknown";
     }
 
     static constexpr size_t getStd430Alignment(PropertyType type);

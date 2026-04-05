@@ -2,9 +2,9 @@
 #define ENGINE_MATERIAL_TEXTUREMATERIAL_H_
 
 #include "glm/glm.hpp"
-#include "../graphics/Shader.hpp"
+#include "../../graphics/Shader.hpp"
 #include "BaseMaterial.hpp"
-#include "../graphics/Texture.hpp"
+#include "../../graphics/Texture.hpp"
 #include <memory>
 #include <string>
 

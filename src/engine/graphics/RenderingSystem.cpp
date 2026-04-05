@@ -84,15 +84,15 @@ void RenderingSystem::render() {
     glm::mat4 worldModel = glm::mat4(1.0f);
 
     geomShader.use();
-    geomShader.setUniform4mat("projection", proj);
-    geomShader.setUniform4mat("view", viewMat);
+    geomShader.setUniform("projection", proj);
+    geomShader.setUniform("view", viewMat);
     for (auto& object : objectsCache) {
         auto transformComponent = object->getComponent<Transform>();
         auto modelComponent = object->getComponent<ModelComponent>();
         glm::mat4 model = glm::translate(
             worldModel, transformComponent->position);
 
-        geomShader.setUniform4mat("model", model);
+        geomShader.setUniform("model", model);
         auto objModel = assetManager.get<Model>(modelComponent->managerId);
         if (!objModel) {
             continue;
@@ -106,20 +106,20 @@ void RenderingSystem::render() {
 
     lightingShader.use();
 
-    gBuffer->bindBufffers();
-    lightingShader.setUniform1i("gPosition", 0);
-    lightingShader.setUniform1i("gNormal", 1);
-    lightingShader.setUniform1i("gAlbedoSpec", 2);
+    gBuffer->bindBuffers();
+    lightingShader.setUniform("gPosition", 0);
+    lightingShader.setUniform("gNormal", 1);
+    lightingShader.setUniform("gAlbedoSpec", 2);
 
-    lightingShader.setUniform1ui("drawMode", drawMode);
-    lightingShader.setUniform3f("viewPos", camera->pos);
-    lightingShader.setUniform1f("zNear", camera->zNear);
-    lightingShader.setUniform1f("zFar", camera->zFar);
-    lightingShader.setUniform4mat("projection", proj);
-    lightingShader.setUniform4mat("view", viewMat);
-    lightingShader.setUniform3ui("gridSize", renderer->getClusterGrid());
-    lightingShader.setUniform2ui("screenDimensions", 
-        window.getWidth(), window.getHeight());
+    lightingShader.setUniform("drawMode", drawMode);
+    lightingShader.setUniform("viewPos", camera->pos);
+    lightingShader.setUniform("zNear", camera->zNear);
+    lightingShader.setUniform("zFar", camera->zFar);
+    lightingShader.setUniform("projection", proj);
+    lightingShader.setUniform("view", viewMat);
+    lightingShader.setUniform("gridSize", renderer->getClusterGrid());
+    lightingShader.setUniform("screenDimensions", 
+        glm::vec2(window.getWidth(), window.getHeight()));
 
     renderer->bindClusterData();
 

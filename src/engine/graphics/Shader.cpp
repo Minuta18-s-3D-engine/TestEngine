@@ -15,6 +15,10 @@ Shader::Shader(
     );
 }
 
+Shader::~Shader() {
+    glDeleteProgram(glId);
+}
+
 std::string Shader::readShaderFile(const std::string& filename) {
     std::string code;
     std::ifstream shaderFile;

@@ -25,20 +25,20 @@ float Light::calcRadius() {
 }
 
 void Light::passToShader(Shader& shader, std::string name) {
-    shader.setUniform3f(name + ".position", position);
-    shader.setUniform3f(name + ".color", color);
-    shader.setUniform1f(name + ".linear", linear);
-    shader.setUniform1f(name + ".quadratic", quadratic);
-    shader.setUniform1f(name + ".radius", calcRadius());
+    shader.setUniform(name + ".position", position);
+    shader.setUniform(name + ".color", color);
+    shader.setUniform(name + ".linear", linear);
+    shader.setUniform(name + ".quadratic", quadratic);
+    shader.setUniform(name + ".radius", calcRadius());
 }
 
 void Light::passToShader(Shader& shader, std::string name, uint index) {
     std::string stringIndex = std::to_string(index);
-    shader.setUniform3f(name + "[" + stringIndex + "]" + ".position", position);
-    shader.setUniform3f(name + "[" + stringIndex + "]" + ".color", color);
-    shader.setUniform1f(name + "[" + stringIndex + "]" + ".linear", linear);
-    shader.setUniform1f(name + "[" + stringIndex + "]" + ".quadratic", quadratic);
-    shader.setUniform1f(name + "[" + stringIndex + "]" + ".radius", calcRadius());
+    shader.setUniform(name + "[" + stringIndex + "]" + ".position", position);
+    shader.setUniform(name + "[" + stringIndex + "]" + ".color", color);
+    shader.setUniform(name + "[" + stringIndex + "]" + ".linear", linear);
+    shader.setUniform(name + "[" + stringIndex + "]" + ".quadratic", quadratic);
+    shader.setUniform(name + "[" + stringIndex + "]" + ".radius", calcRadius());
 }
 
 std::shared_ptr<Light> Light::calcLight(

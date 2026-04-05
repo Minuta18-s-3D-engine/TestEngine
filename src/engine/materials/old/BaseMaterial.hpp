@@ -1,7 +1,7 @@
 #ifndef ENGINE_MATERIAL_BASEMATERIAL_H_
 #define ENGINE_MATERIAL_BASEMATERIAL_H_
 
-#include "../graphics/Shader.hpp"
+#include "../../graphics/Shader.hpp"
 #include "string"
 
 class BaseMaterial {

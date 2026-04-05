@@ -18,7 +18,7 @@ public:
     const void* getRawValue() override { return value; }
     size_t getValueSize() override { return sizeof(value); }
 
-    const T& getValue() const { return T; }
+    const T& getValue() const { return value; }
     void setValue(const T& _value) { value = _value; }
 };
 

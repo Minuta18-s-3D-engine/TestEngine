@@ -27,7 +27,7 @@ public:
 
     void bind();
     void unbind();
-    void bindBufffers();
+    void bindBuffers();
 private:
     uint width, height;
     uint buffersId[BufferType::NUM_BUFFERS];

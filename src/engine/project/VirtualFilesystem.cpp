@@ -33,7 +33,7 @@ std::string VirtualFilesystem::readFile(const VirtualPath& path) {
 void VirtualFilesystem::writeFile(
     const VirtualPath& path, 
     const std::string& data, 
-    bool overwrite = true
+    bool overwrite
 ) {
     std::filesystem::path physicalPath = path.resolve();
         
