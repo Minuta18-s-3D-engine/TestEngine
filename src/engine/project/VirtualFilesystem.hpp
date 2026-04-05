@@ -12,6 +12,7 @@ class VirtualFilesystem : public FilesystemAbstraction {
     std::unique_ptr<PathResolver> pathResolver;
 public:
     VirtualFilesystem(std::unique_ptr<PathResolver> _pathResolver);
+    ~VirtualFilesystem() override;
 
     bool exists(const VirtualPath& path) override;
 

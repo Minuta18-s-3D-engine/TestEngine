@@ -2,10 +2,14 @@
 
 VirtualFilesystem::VirtualFilesystem(
     std::unique_ptr<PathResolver> _pathResolver
-) {
+) : pathResolver(std::move(_pathResolver)) {
     VirtualPath::setResolverFunc([this](const std::string& p) {
         return this->getResolver().resolve(p);
     });
+}
+
+VirtualFilesystem::~VirtualFilesystem() {
+    VirtualPath::setResolverFunc(nullptr);
 }
 
 bool VirtualFilesystem::exists(const VirtualPath& path) {

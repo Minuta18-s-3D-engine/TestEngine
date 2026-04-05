@@ -18,8 +18,6 @@ void LightBVHWrapper::initBVH(const LightBVHWrapper::LightArray& lights) {
                 transformComponent->position.z
             );
             Vec3 radius = Vec3(lightComponent->calcRadius());
-            // constexpr double lightRadius = 0.01;
-            // Vec3 radius = Vec3(lightRadius, lightRadius, lightRadius);
 
             BBox lightBBox(center - radius, center + radius);
             bboxes[i] = lightBBox;

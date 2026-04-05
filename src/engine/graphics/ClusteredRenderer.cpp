@@ -20,21 +20,23 @@ void ClusteredRenderer::createSSBOs() {
     compLightSSBO.bindData();
 
     const size_t compLightIndiciesBufferSize = MAX_LIGHTS_PER_CLUSTER 
-        * NUM_CLUSTERS * sizeof(uint);
+        * NUM_CLUSTERS * sizeof(uint32_t);
     compLightIndiciesSSBO.setData(nullptr, compLightIndiciesBufferSize);
     compLightIndiciesSSBO.bindData();
 
     // 4 would be enough
-    const uint MaxDvhDepth = 4;
+    const uint32_t MaxDvhDepth = 4;
     const size_t bvhNodesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
         sizeof(LightBVHWrapper::Node);
     bvhNodesSSBO.setData(nullptr, bvhNodesSSBOBufferSize);
     bvhNodesSSBO.bindData();
+    glObjectLabel(GL_BUFFER, bvhNodesSSBO.getId(), -1, "bvh nodes");
 
     const size_t bvhIndicesSSBOBufferSize = MAX_LIGHTS * MaxDvhDepth * 
-        sizeof(uint); // Indices type
+        sizeof(uint32_t); // Indices type
     bvhIndicesSSBO.setData(nullptr, bvhIndicesSSBOBufferSize);
     bvhIndicesSSBO.bindData();
+    glObjectLabel(GL_BUFFER, bvhIndicesSSBO.getId(), -1, "bvh indices");
 }
 
 void ClusteredRenderer::updateLightData(const std::vector<GameObject*>& lights) {
