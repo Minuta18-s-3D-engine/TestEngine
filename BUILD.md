@@ -59,3 +59,18 @@ sudo apt-get install cmake clang libglfw3 libglfw3-dev libglm-dev libpng-dev uui
 > cmake . -DBUILD_TESTS=ON
 > cmake --build .
 ```
+
+NOTE: Don't forget to run using *discrete gpu* on your laptop, if possible.
+
+AMD/Intel gpus:
+
+```
+DRI_PRIME=1 [command]
+```
+
+Nvidia gpus:
+
+```
+__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia [command]
+```
+

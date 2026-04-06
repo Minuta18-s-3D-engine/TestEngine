@@ -51,7 +51,7 @@ layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
     uint pointLightIndicies[];
 };
 
-layout(std430, binding = 3) restrict buffer bvhNodesSSBO {
+layout(std430, binding = 3) buffer bvhNodesSSBO {
     BVHNode bvhNodes[];
 };
 
