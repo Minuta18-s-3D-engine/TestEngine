@@ -28,9 +28,9 @@ public:
         const VirtualPath& path
     ) override;
 
-    bool dirExists(const VirtualPath& path) override;
-    void createDir(const VirtualPath& path) override;
-    void removeDir(const VirtualPath& path, bool recursively = false) override;
+    bool folderExists(const VirtualPath& path) override;
+    void createFolder(const VirtualPath& path) override;
+    void removeFolder(const VirtualPath& path, bool recursively = false) override;
 
     PathResolver& getResolver() override;
 };

@@ -72,15 +72,15 @@ std::filesystem::file_time_type VirtualFilesystem::getLastEditedTime(
     return std::filesystem::last_write_time(path.resolve());
 }
 
-bool VirtualFilesystem::dirExists(const VirtualPath& path) {
+bool VirtualFilesystem::folderExists(const VirtualPath& path) {
     return std::filesystem::is_directory(path.resolve());
 }
 
-void VirtualFilesystem::createDir(const VirtualPath& path) {
+void VirtualFilesystem::createFolder(const VirtualPath& path) {
     std::filesystem::create_directories(path.resolve());
 }
 
-void VirtualFilesystem::removeDir(const VirtualPath& path, bool recursively) {
+void VirtualFilesystem::removeFolder(const VirtualPath& path, bool recursively) {
     if (recursively) {
         std::filesystem::remove_all(path.resolve());
     } else {

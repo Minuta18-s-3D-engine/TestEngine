@@ -91,3 +91,16 @@ std::string StringFunctions::unquote(const std::string& str) {
 std::string StringFunctions::unquote(const std::string_view& str) {
     return unquote(std::string(str));
 } 
+
+std::string StringFunctions::sanitizeFilename(const std::string& filename) {
+    std::string prohibitedChars = "\\/:*%.,;= ?\"<>|";
+    std::string sanitized = "";
+    for (const char& c : filename) {
+        if (prohibitedChars.find(c) != std::string::npos) {
+            sanitized += '_';
+        } else {
+            sanitized += c;
+        }
+    }
+    return sanitized;
+}

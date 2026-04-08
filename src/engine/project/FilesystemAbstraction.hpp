@@ -25,9 +25,9 @@ public:
         const VirtualPath& path
     ) = 0;
 
-    virtual bool dirExists(const VirtualPath& path) = 0;
-    virtual void createDir(const VirtualPath& path) = 0;
-    virtual void removeDir(
+    virtual bool folderExists(const VirtualPath& path) = 0;
+    virtual void createFolder(const VirtualPath& path) = 0;
+    virtual void removeFolder(
         const VirtualPath& path, 
         bool recursively = false
     ) = 0;

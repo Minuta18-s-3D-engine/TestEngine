@@ -1,6 +1,8 @@
 #ifndef ENGINE_MATERIALS_PREPROCESSOR_PREPROCESSORCACHE_H_
 #define ENGINE_MATERIALS_PREPROCESSOR_PREPROCESSORCACHE_H_
 
+#include <nlohmann/json.hpp>
+
 #include <string>
 
 #include "../../project/FilesystemAbstraction.hpp"
@@ -8,15 +10,21 @@
 
 class PreprocessorCache {
 public:
-    struct ProcessedShader {
-        VirtualPath path;
-        std::string source;
-        PreprocessorParser::ParseResult parseResult;
+    struct ProcessedSection {
+        VirtualPath sourcePath;
+        std::string sectionName;
+        std::string preprocessedCode;
         std::vector<VirtualPath> dependencies;
     };
 private:
     FilesystemAbstraction& filesystem;
     VirtualPath cacheFolder;
+
+    void createCacheFolder();
+    std::string getFilename(const ProcessedSection& processedSection);
+    nlohmann::json serializeProcessedSection(
+        const ProcessedSection& processedSection
+    );
 public:
     PreprocessorCache(
         FilesystemAbstraction& _filesystem, 
@@ -29,8 +37,8 @@ public:
     PreprocessorCache(PreprocessorCache&&) = default;
     PreprocessorCache& operator=(PreprocessorCache&&) = default;
 
-    void store(const ProcessedShader& processedShader);
-    ProcessedShader load(const VirtualPath& sourcePath);
+    void store(const ProcessedSection& processedSection);
+    ProcessedSection load(const VirtualPath& sourcePath);
 
     void clearCache();
     void clearRAMCache();
