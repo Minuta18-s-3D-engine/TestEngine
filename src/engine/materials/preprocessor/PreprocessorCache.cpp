@@ -14,10 +14,10 @@ void PreprocessorCache::createCacheFolder() {
 }
 
 std::string PreprocessorCache::getFilename(
-    const ProcessedSection& processedSection
+    const VirtualPath& sourcePath, std::string section
 ) {
-    std::string sourceFilename = processedSection.sourcePath.getVirtual() + "_" + \
-        processedSection.sectionName;
+    std::string sourceFilename = sourcePath.getVirtual() + "_" + \
+        section;
     size_t filenameHash = std::hash<std::string>{}(sourceFilename);
     std::stringstream hashedFilename;
     hashedFilename << std::hex << filenameHash;
@@ -38,24 +38,47 @@ nlohmann::json PreprocessorCache::serializeProcessedSection(
     return j;
 }
 
-PreprocessorCache::ProcessedSection PreprocessorCache::load(
+PreprocessorCache::ProcessedSection 
+PreprocessorCache::deserializeProcessedSection(
+    const std::string& content
+) {
+    nlohmann::json j = nlohmann::json::parse(content);
+    ProcessedSection section;
+    section.sourcePath = VirtualPath(
+        j.at("meta").at("sourcePath").get<std::string>()
+    );
+    section.sectionName = j.at("meta").at("sectionName").get<std::string>();
+    section.preprocessedCode = j.at("glslCode").get<std::string>();
+    section.dependencies.reserve(j.at("dependencies").size());
+    for (auto& elm : j.at("dependencies")) {
+        section.dependencies.push_back(elm.get<std::string>());
+    }
+
+    return section;
+}
+
+std::optional<PreprocessorCache::ProcessedSection> PreprocessorCache::load(
     const VirtualPath& sourcePath, std::string section
 ) {
-    // WIP
-    std::string exceptedFilename = getFilename();
-    if (!filesystem.fileExists())
+    std::string exceptedFilename = getFilename(sourcePath, section);
+    if (!filesystem.fileExists(exceptedFilename)) {
+        return std::nullopt;
+    }
 
-    std::string contents = file.
+    std::string contents = filesystem.readFile(exceptedFilename);
+    return deserializeProcessedSection(contents);
 }
 
 void PreprocessorCache::store(const ProcessedSection& processedSection) {
-    std::string filename = getFilename(processedSection);
+    std::string filename = getFilename(
+        processedSection.sourcePath, processedSection.sectionName);
     nlohmann::json j = serializeProcessedSection(processedSection);
     filesystem.writeFile(cacheFolder.resolve() + "/" + filename, j.dump());
 }
 
 bool PreprocessorCache::exists(const ProcessedSection& processedSection) {
-    std::string filename = getFilename(processedSection);
+    std::string filename = getFilename(
+        processedSection.sourcePath, processedSection.sectionName);
     return filesystem.fileExists(filename);
 }
 

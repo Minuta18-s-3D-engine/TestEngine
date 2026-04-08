@@ -5,6 +5,7 @@
 
 #include <string>
 #include <sstream>
+#include <optional>
 
 #include "../../project/FilesystemAbstraction.hpp"
 #include "PreprocessorParser.hpp"
@@ -22,10 +23,16 @@ private:
     VirtualPath cacheFolder;
 
     void createCacheFolder();
-    std::string getFilename(const ProcessedSection& processedSection);
+
+    std::string getFilename(
+        const VirtualPath& sourcePath, 
+        std::string section
+    );
+
     nlohmann::json serializeProcessedSection(
         const ProcessedSection& processedSection
     );
+    ProcessedSection deserializeProcessedSection(const std::string& content);
 public:
     PreprocessorCache(
         FilesystemAbstraction& _filesystem, 
@@ -39,10 +46,10 @@ public:
     PreprocessorCache& operator=(PreprocessorCache&&) = default;
 
     void store(const ProcessedSection& processedSection);
-    ProcessedSection load(const VirtualPath& sourcePath, std::string section);
+    std::optional<ProcessedSection> load(
+        const VirtualPath& sourcePath, std::string section
+    );
     bool exists(const ProcessedSection& processedSection);
-
-    void clearCache();
 
     VirtualPath getCacheFolder();
 };
