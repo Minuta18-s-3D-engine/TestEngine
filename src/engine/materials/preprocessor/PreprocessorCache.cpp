@@ -18,8 +18,10 @@ std::string PreprocessorCache::getFilename(
 ) {
     std::string sourceFilename = processedSection.sourcePath.getVirtual() + "_" + \
         processedSection.sectionName;
-    return std::to_string(std::hash<std::string>{}(sourceFilename)) + \
-        ".cache.glsl";
+    size_t filenameHash = std::hash<std::string>{}(sourceFilename);
+    std::stringstream hashedFilename;
+    hashedFilename << std::hex << filenameHash;
+    return hashedFilename.str() + ".cache.glsl";
 }
     
 nlohmann::json PreprocessorCache::serializeProcessedSection(
@@ -36,8 +38,24 @@ nlohmann::json PreprocessorCache::serializeProcessedSection(
     return j;
 }
 
+PreprocessorCache::ProcessedSection PreprocessorCache::load(
+    const VirtualPath& sourcePath, std::string section
+) {
+    // WIP
+    std::string exceptedFilename = getFilename();
+    if (!filesystem.fileExists())
+
+    std::string contents = file.
+}
+
 void PreprocessorCache::store(const ProcessedSection& processedSection) {
     std::string filename = getFilename(processedSection);
     nlohmann::json j = serializeProcessedSection(processedSection);
-    filesystem.writeFile(cacheFolder.resolve() + filename, j.dump());
+    filesystem.writeFile(cacheFolder.resolve() + "/" + filename, j.dump());
 }
+
+bool PreprocessorCache::exists(const ProcessedSection& processedSection) {
+    std::string filename = getFilename(processedSection);
+    return filesystem.fileExists(filename);
+}
+

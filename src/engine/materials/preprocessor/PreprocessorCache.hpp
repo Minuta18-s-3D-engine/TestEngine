@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 
 #include <string>
+#include <sstream>
 
 #include "../../project/FilesystemAbstraction.hpp"
 #include "PreprocessorParser.hpp"
@@ -38,10 +39,10 @@ public:
     PreprocessorCache& operator=(PreprocessorCache&&) = default;
 
     void store(const ProcessedSection& processedSection);
-    ProcessedSection load(const VirtualPath& sourcePath);
+    ProcessedSection load(const VirtualPath& sourcePath, std::string section);
+    bool exists(const ProcessedSection& processedSection);
 
     void clearCache();
-    void clearRAMCache();
 
     VirtualPath getCacheFolder();
 };
