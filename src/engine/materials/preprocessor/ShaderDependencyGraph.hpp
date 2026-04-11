@@ -12,9 +12,29 @@ public:
     struct Node {
         VirtualPath path;
         std::string section;
+
+        Node() = default;
+        Node(const VirtualPath& _path, const std::string& _section)
+            : path(_path), section(_section) {}
+
+        bool operator==(const Node& other) const {
+            return path.getVirtual() == other.path.getVirtual() &&
+                   section == other.section;
+        }
+
+        std::string toString() const {
+            return path.getVirtual() + section;
+        }
+    };
+
+    struct NodeHash {
+        size_t operator()(const Node& node) const {
+            std::hash<std::string> hasher;
+            return hasher(node.toString());
+        }
     };
 private:
-    std::unordered_map<Node, std::vector<Node&>> dependencyTree;
+    std::unordered_map<Node, std::vector<Node>> dependencyTree;
 public:
     ShaderDependencyGraph() = default;
 
