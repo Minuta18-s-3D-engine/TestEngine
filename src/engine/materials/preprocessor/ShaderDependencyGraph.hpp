@@ -9,40 +9,39 @@
 
 class ShaderDependencyGraph {
 public:
-    struct Node {
+    struct NodeId {
         VirtualPath path;
         std::string section;
-
-        Node() = default;
-        Node(const VirtualPath& _path, const std::string& _section)
-            : path(_path), section(_section) {}
-
-        bool operator==(const Node& other) const {
-            return path.getVirtual() == other.path.getVirtual() &&
-                   section == other.section;
-        }
-
-        std::string toString() const {
-            return path.getVirtual() + section;
-        }
     };
 
-    struct NodeHash {
-        size_t operator()(const Node& node) const {
-            std::hash<std::string> hasher;
-            return hasher(node.toString());
-        }
+    struct NodeData {
+        // For future improvements
     };
 private:
-    std::unordered_map<Node, std::vector<Node>> dependencyTree;
+    std::unordered_map<NodeId, NodeData> nodesData;
+    // DAG - Directed Acyclic Graph 
+    std::unordered_map<NodeId, std::vector<NodeId>> dependencyDAG;
 public:
     ShaderDependencyGraph() = default;
 
-    void addNode(const Node& node);
-    void addDependency(const Node& node, const Node& dependency);
-    void addDependency(const Node& node, const std::vector<Node>& dependency);
+    bool nodeExists(const NodeId& node);
+    NodeData& getNodeData(const NodeId& node);
 
-    std::vector<Node> getDependencies(const Node& node);
+    void addNode(const NodeId& node);
+    void addDependency(const NodeId& node, const NodeId& dependency);
+    void addDependencies(
+        const NodeId& node, 
+        const std::vector<NodeId>& dependencies
+    );
+
+    void removeNode(const NodeId& node);
+    void removeDependency(const NodeId& node, const NodeId& dependency);
+    void removeDependencies(
+        const NodeId& node, 
+        const std::vector<NodeId>& dependencies
+    );
+
+    std::vector<NodeId> getSortedDependencies(const NodeId& node);
 };
 
 #endif // ENGINE_MATERIALS_PREPROCESSOR_SHADERDEPENDENCYGRAPH_H_
