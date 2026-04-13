@@ -12,15 +12,24 @@ public:
     struct NodeId {
         VirtualPath path;
         std::string section;
+
+        NodeId(const VirtualPath& _path, const std::string& _section);
+
+        bool operator==(const NodeId& other) const;
+    
+        struct Hasher {
+            size_t operator()(const NodeId& id) const noexcept;
+        };
     };
 
     struct NodeData {
         // For future improvements
     };
 private:
-    std::unordered_map<NodeId, NodeData> nodesData;
+    std::unordered_map<NodeId, NodeData, NodeId::Hasher> nodesData;
     // DAG - Directed Acyclic Graph 
-    std::unordered_map<NodeId, std::vector<NodeId>> dependencyDAG;
+    std::unordered_map<NodeId, std::vector<NodeId>, NodeId::Hasher> 
+        dependencyDAG;
 public:
     ShaderDependencyGraph() = default;
 
