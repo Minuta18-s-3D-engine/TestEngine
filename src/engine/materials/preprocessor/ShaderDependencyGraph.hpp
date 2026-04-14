@@ -3,9 +3,22 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
+#include <stdexcept>
+#include <algorithm>
+#include <exception>
 
 #include "../../project/VirtualPath.hpp"
+
+class loop_detected : public std::exception {
+    std::string message;
+public:
+    loop_detected(const char* _message) : message(_message) {}
+    loop_detected(const std::string& _message) : message(_message) {}
+
+    const char* what() const noexcept { return message.c_str(); }
+};
 
 class ShaderDependencyGraph {
 public:
@@ -25,18 +38,53 @@ public:
     struct NodeData {
         // For future improvements
     };
+
+    struct Node {
+        NodeData data;
+        std::unordered_set<NodeId, NodeId::Hasher> dependencies;
+    };
 private:
-    std::unordered_map<NodeId, NodeData, NodeId::Hasher> nodesData;
     // DAG - Directed Acyclic Graph 
-    std::unordered_map<NodeId, std::vector<NodeId>, NodeId::Hasher> 
-        dependencyDAG;
+    std::unordered_map<
+        NodeId, Node, NodeId::Hasher
+    > dependencyDAG;
+
+    std::string constructNodeName(const SDG::NodeId& node) const;
+
+    void makeInvalidNodeException(
+        const SDG::NodeId& node, 
+        const std::string& message
+    );
+
+    void makeInvalidDependencyException(
+        const SDG::NodeId& node,
+        const SDG::NodeId& dependency, 
+        const std::string& message
+    );
+
+    enum class DFSVisitedState {
+        NotVisited, 
+        Visiting, 
+        Visited,
+    };
+
+    using DfsNodesUsed = std::unordered_map<
+        NodeId, DFSVisitedState, NodeId::Hasher>;
+    using DfsResult = std::vector<SDG::NodeId>;
+    void dependencyDFS(
+        const NodeId& node, 
+        DfsNodesUsed& nodeUsed, 
+        DfsResult& dfsResult
+    ) const;
 public:
     ShaderDependencyGraph() = default;
 
-    bool nodeExists(const NodeId& node);
+    bool nodeExists(const NodeId& node) const;
     NodeData& getNodeData(const NodeId& node);
+    size_t size() const { return dependencyDAG.size(); };
 
     void addNode(const NodeId& node);
+    void addNode(const NodeId& node, const NodeData& nodeData);
     void addDependency(const NodeId& node, const NodeId& dependency);
     void addDependencies(
         const NodeId& node, 
@@ -50,7 +98,7 @@ public:
         const std::vector<NodeId>& dependencies
     );
 
-    std::vector<NodeId> getSortedDependencies(const NodeId& node);
+    std::vector<NodeId> getSortedDependencies(const NodeId& node) const;
 };
 
 #endif // ENGINE_MATERIALS_PREPROCESSOR_SHADERDEPENDENCYGRAPH_H_
