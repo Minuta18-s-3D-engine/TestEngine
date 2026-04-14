@@ -49,16 +49,16 @@ private:
         NodeId, Node, NodeId::Hasher
     > dependencyDAG;
 
-    std::string constructNodeName(const SDG::NodeId& node) const;
+    std::string constructNodeName(const NodeId& node) const;
 
     void makeInvalidNodeException(
-        const SDG::NodeId& node, 
+        const NodeId& node, 
         const std::string& message
     );
 
     void makeInvalidDependencyException(
-        const SDG::NodeId& node,
-        const SDG::NodeId& dependency, 
+        const NodeId& node,
+        const NodeId& dependency, 
         const std::string& message
     );
 
@@ -70,7 +70,7 @@ private:
 
     using DfsNodesUsed = std::unordered_map<
         NodeId, DFSVisitedState, NodeId::Hasher>;
-    using DfsResult = std::vector<SDG::NodeId>;
+    using DfsResult = std::vector<NodeId>;
     void dependencyDFS(
         const NodeId& node, 
         DfsNodesUsed& nodeUsed, 

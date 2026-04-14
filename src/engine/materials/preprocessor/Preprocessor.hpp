@@ -3,13 +3,16 @@
 
 #include <string>
 
-#include "PreprocessorLexer.hpp"
+#include "PreprocessorParser.hpp"
+#include "PreprocessorCache.hpp" 
+#include "ShaderDependencyGraph.hpp"   
 
 class Preprocessor {
+    PreprocessorCache cache;
+    ShaderDependencyGraph dependencyGraph;
+    PreprocessorParser parser;
 public:
-    Preprocessor();
-
-    
+    void preprocess(const VirtualPath& filePath);
 };
 
 #endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSOR_H_
