@@ -6,12 +6,16 @@
 #include "PreprocessorParser.hpp"
 #include "PreprocessorCache.hpp" 
 #include "ShaderDependencyGraph.hpp"   
+#include "../../project/FilesystemAbstraction.hpp"
 
 class Preprocessor {
     PreprocessorCache cache;
     ShaderDependencyGraph dependencyGraph;
-    PreprocessorParser parser;
+
+    FilesystemAbstraction& filesystem;
 public:
+    Preprocessor(FilesystemAbstraction& _filesystem);
+
     void preprocess(const VirtualPath& filePath);
 };
 
