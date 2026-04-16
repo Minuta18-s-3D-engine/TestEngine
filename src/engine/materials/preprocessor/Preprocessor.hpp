@@ -13,6 +13,10 @@ class Preprocessor {
     ShaderDependencyGraph dependencyGraph;
 
     FilesystemAbstraction& filesystem;
+
+    std::shared_ptr<PreprocessorParser> createParser(
+        const std::string& fileContents
+    );
 public:
     Preprocessor(FilesystemAbstraction& _filesystem);
 

@@ -68,6 +68,10 @@ public:
         ) : argTypes(_argTypes) {}
 
         DirectiveSpec(
+            const std::initializer_list<ArgType>& _argTypes
+        ) : argTypes(_argTypes) {}
+
+        DirectiveSpec(
             const ArgType& _argTypes
         ) : argTypes({_argTypes}) {}
 
@@ -79,16 +83,10 @@ public:
         StringPos position;
     };
 
-    struct SectionBlock {
-        std::string type;
-        std::string code;
-        std::vector<Directive> directives;
-    };
-
     struct ParseResult {
         std::string source;
         std::string code;
-        std::vector<SectionBlock> sections;
+        std::vector<Directive> directives;
         std::vector<Warning> warnings;
     };
 private:

@@ -14,40 +14,37 @@ void PreprocessorCache::createCacheFolder() {
 }
 
 std::string PreprocessorCache::getFilename(
-    const VirtualPath& sourcePath, std::string section
+    const VirtualPath& sourcePath
 ) {
-    std::string sourceFilename = sourcePath.getVirtual() + "_" + \
-        section;
+    std::string sourceFilename = sourcePath.getVirtual();
     size_t filenameHash = std::hash<std::string>{}(sourceFilename);
     std::stringstream hashedFilename;
     hashedFilename << std::hex << filenameHash;
     return hashedFilename.str() + ".cache.glsl";
 }
     
-nlohmann::json PreprocessorCache::serializeProcessedSection(
-    const ProcessedSection& processedSection
+nlohmann::json PreprocessorCache::serializeProcessedShader(
+    const ProcessedShader& processedShader
 ) {
     nlohmann::json j;
-    j["meta"]["sourcePath"] = processedSection.sourcePath.getVirtual();
-    j["meta"]["sectionName"] = processedSection.sectionName;
-    j["glslCode"] = processedSection.preprocessedCode;
+    j["meta"]["sourcePath"] = processedShader.sourcePath.getVirtual();
+    j["glslCode"] = processedShader.preprocessedCode;
     j["dependencies"] = nlohmann::json::array();
-    for (const auto& dep : processedSection.dependencies) {
+    for (const auto& dep : processedShader.dependencies) {
         j["dependencies"].push_back(dep.getVirtual());
     }
     return j;
 }
 
-PreprocessorCache::ProcessedSection 
-PreprocessorCache::deserializeProcessedSection(
+PreprocessorCache::ProcessedShader 
+PreprocessorCache::deserializeProcessedShader(
     const std::string& content
 ) {
     nlohmann::json j = nlohmann::json::parse(content);
-    ProcessedSection section;
+    ProcessedShader section;
     section.sourcePath = VirtualPath(
         j.at("meta").at("sourcePath").get<std::string>()
     );
-    section.sectionName = j.at("meta").at("sectionName").get<std::string>();
     section.preprocessedCode = j.at("glslCode").get<std::string>();
     section.dependencies.reserve(j.at("dependencies").size());
     for (auto& elm : j.at("dependencies")) {
@@ -57,28 +54,29 @@ PreprocessorCache::deserializeProcessedSection(
     return section;
 }
 
-std::optional<PreprocessorCache::ProcessedSection> PreprocessorCache::load(
-    const VirtualPath& sourcePath, std::string section
+std::optional<PreprocessorCache::ProcessedShader> PreprocessorCache::load(
+    const VirtualPath& sourcePath
 ) {
-    std::string exceptedFilename = getFilename(sourcePath, section);
+    std::string exceptedFilename = getFilename(sourcePath);
     if (!filesystem.fileExists(exceptedFilename)) {
         return std::nullopt;
     }
 
     std::string contents = filesystem.readFile(exceptedFilename);
-    return deserializeProcessedSection(contents);
+    return deserializeProcessedShader(contents);
 }
 
-void PreprocessorCache::store(const ProcessedSection& processedSection) {
-    std::string filename = getFilename(
-        processedSection.sourcePath, processedSection.sectionName);
-    nlohmann::json j = serializeProcessedSection(processedSection);
+void PreprocessorCache::store(const ProcessedShader& processedShader) {
+    std::string filename = getFilename(processedShader.sourcePath);
+    nlohmann::json j = serializeProcessedShader(processedShader);
     filesystem.writeFile(cacheFolder.resolve() + "/" + filename, j.dump());
 }
 
-bool PreprocessorCache::exists(const ProcessedSection& processedSection) {
-    std::string filename = getFilename(
-        processedSection.sourcePath, processedSection.sectionName);
+bool PreprocessorCache::exists(const ProcessedShader& processedShader) {
+    std::string filename = getFilename(processedShader.sourcePath);
     return filesystem.fileExists(filename);
 }
 
+VirtualPath PreprocessorCache::getCacheFolder() {
+    return cacheFolder;
+}

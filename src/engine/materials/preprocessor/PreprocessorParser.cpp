@@ -2,10 +2,7 @@
 
 PreprocessorParser::PreprocessorParser(
     const std::string& _source
-) : source(_source) {
-    addDirectiveValidator("section", { ArgType::String });
-    builtins.insert("section");
-}
+) : source(_source) {}
 
 void PreprocessorParser::makeException(
     const PreprocessorLexer::Token& token, 
@@ -216,15 +213,11 @@ PreprocessorParser::ParseResult PreprocessorParser::parse() {
     result.source = this->source;
     PreprocessorLexer lexer(result.source);
 
-    const std::string noSectionTag = "none";
-    SectionBlock currentSection;
-    currentSection.type = noSectionTag;
     auto token = lexer.nextToken();
 
     while (token.type != PreprocessorLexer::TokenType::EndOfFile) {
         if (token.type == PreprocessorLexer::TokenType::Code) {
             result.code += std::string(token.value);
-            currentSection.code += std::string(token.value);
         } else if (
             token.type == PreprocessorLexer::TokenType::DirectiveMarker
         ) {
@@ -234,27 +227,12 @@ PreprocessorParser::ParseResult PreprocessorParser::parse() {
                 result.warnings.push_back(std::move(*warn));
             }
 
-            if (dir.nameMatch({ "section" })) {
-                if (!currentSection.directives.empty()) {
-                    result.sections.push_back(std::move(currentSection));
-                }
-
-                currentSection = SectionBlock();
-                currentSection.type = requireArg(
-                    dir, 0, PreprocessorParser::ArgType::String, 1
-                ).value;
-                currentSection.type = 
-                    StringFunctions::unquote(currentSection.type);
-                currentSection.directives.push_back(std::move(dir));
-            } else {
-                currentSection.directives.push_back(std::move(dir));
-            }
+            result.directives.push_back(std::move(dir));
         }
     
         token = lexer.nextToken();
     }
 
-    result.sections.push_back(std::move(currentSection));
     return result;
 }
 

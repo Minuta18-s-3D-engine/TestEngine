@@ -24,9 +24,8 @@ class ShaderDependencyGraph {
 public:
     struct NodeId {
         VirtualPath path;
-        std::string section;
 
-        NodeId(const VirtualPath& _path, const std::string& _section);
+        NodeId(const VirtualPath& _path);
 
         bool operator==(const NodeId& other) const;
     

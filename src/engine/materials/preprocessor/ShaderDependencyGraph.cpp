@@ -8,26 +8,21 @@ inline void hash_combine(std::size_t& seed, std::size_t hash) {
 }
 
 SDG::NodeId::NodeId(
-    const VirtualPath& _path,
-    const std::string& _section
-) : path(_path), section(_section) {}
+    const VirtualPath& _path
+) : path(_path) {}
 
 bool SDG::NodeId::operator==(const NodeId& other) const {
-    return path.getVirtual() == other.path.getVirtual() &&
-        section == other.section;
+    return path.getVirtual() == other.path.getVirtual();
 }
 
 size_t SDG::NodeId::Hasher::operator()(const NodeId& id) const noexcept {
     size_t h1 = std::hash<std::string>{}(id.path.getVirtual());
-    size_t h2 = std::hash<std::string>{}(id.section);
 
-    size_t h = h1;
-    hash_combine(h, h2);
-    return h;
+    return h1;
 }
 
 std::string SDG::constructNodeName(const SDG::NodeId& node) const {
-    return node.path.getVirtual() + ":" + node.section;
+    return node.path.getVirtual();
 }
 
 void SDG::makeInvalidNodeException(

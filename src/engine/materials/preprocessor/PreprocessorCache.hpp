@@ -12,9 +12,8 @@
 
 class PreprocessorCache {
 public:
-    struct ProcessedSection {
+    struct ProcessedShader {
         VirtualPath sourcePath;
-        std::string sectionName;
         std::string preprocessedCode;
         std::vector<VirtualPath> dependencies;
     };
@@ -25,14 +24,13 @@ private:
     void createCacheFolder();
 
     std::string getFilename(
-        const VirtualPath& sourcePath, 
-        std::string section
+        const VirtualPath& sourcePath
     );
 
-    nlohmann::json serializeProcessedSection(
-        const ProcessedSection& processedSection
+    nlohmann::json serializeProcessedShader(
+        const ProcessedShader& processedShader
     );
-    ProcessedSection deserializeProcessedSection(const std::string& content);
+    ProcessedShader deserializeProcessedShader(const std::string& content);
 public:
     PreprocessorCache(
         FilesystemAbstraction& _filesystem, 
@@ -45,11 +43,11 @@ public:
     PreprocessorCache(PreprocessorCache&&) = default;
     PreprocessorCache& operator=(PreprocessorCache&&) = default;
 
-    void store(const ProcessedSection& processedSection);
-    std::optional<ProcessedSection> load(
-        const VirtualPath& sourcePath, std::string section
+    void store(const ProcessedShader& processedShader);
+    std::optional<ProcessedShader> load(
+        const VirtualPath& sourcePath
     );
-    bool exists(const ProcessedSection& processedSection);
+    bool exists(const ProcessedShader& processedShader);
 
     VirtualPath getCacheFolder();
 };
