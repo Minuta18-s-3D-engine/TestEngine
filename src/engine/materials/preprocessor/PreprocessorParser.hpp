@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 #include <format>
 #include <set>
 
@@ -121,7 +122,8 @@ private:
 
     Directive parseDirective(
         PreprocessorLexer& lexer,
-        const PreprocessorLexer::Token& directiveToken
+        const PreprocessorLexer::Token directiveToken,
+        PreprocessorLexer::Token& currentToken
     );
 
     std::optional<Warning> validateDirective(const Directive& d) const;

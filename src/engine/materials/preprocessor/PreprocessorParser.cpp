@@ -60,7 +60,8 @@ PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
 
 PreprocessorParser::Directive PreprocessorParser::parseDirective(
     PreprocessorLexer& lexer,
-    const PreprocessorLexer::Token& directiveToken
+    const PreprocessorLexer::Token directiveToken,
+    PreprocessorLexer::Token& currentToken
 ) {
     Directive result;
     result.position = {
@@ -78,6 +79,7 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
         result.tokens.push_back(token);
         token = lexer.nextToken();
     }
+    currentToken = token;
 
     if (result.tokens.size() < 1) {
         makeException(directiveToken, "Syntax error");
@@ -221,13 +223,14 @@ PreprocessorParser::ParseResult PreprocessorParser::parse() {
         } else if (
             token.type == PreprocessorLexer::TokenType::DirectiveMarker
         ) {
-            Directive dir = parseDirective(lexer, token);
+            Directive dir = parseDirective(lexer, token, token);
 
             if (auto warn = validateDirective(dir)) {
                 result.warnings.push_back(std::move(*warn));
             }
 
             result.directives.push_back(std::move(dir));
+            continue;
         }
     
         token = lexer.nextToken();

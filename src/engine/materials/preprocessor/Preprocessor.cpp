@@ -25,7 +25,7 @@ PreprocessorCache::ProcessedShader Preprocessor::parseOrLoad(
 
         const size_t argIndex = 0;
         if (directive.args.size() < argIndex + 1) continue;
-        if (directive.args.at(0).type == PreprocessorParser::ArgType::String)
+        if (directive.args.at(0).type != PreprocessorParser::ArgType::String)
             continue;
 
         dependencies.push_back(std::string(directive.args.at(argIndex).value));
@@ -52,6 +52,7 @@ void Preprocessor::buildDependencyGraph(
     PreprocessorCache::ProcessedShader parsedShader = parseOrLoad(
         filePath
     );
+    dependencyGraph.addNode(nodeId);
 
     for (auto& path : parsedShader.dependencies) {
         buildDependencyGraph(path);
@@ -74,9 +75,7 @@ std::shared_ptr<PreprocessorParser> Preprocessor::createParser(
 }
 
 std::string Preprocessor::preprocess(const VirtualPath& filePath) {
-    auto rootParse = parseOrLoad(filePath);
     ShaderDependencyGraph::NodeId rootNode(filePath);
-    dependencyGraph.addNode(rootNode);
 
     buildDependencyGraph(filePath);
 

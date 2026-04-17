@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <regex>
 
+#include "../../utils/EnumMapper.hpp"
+
 class PreprocessorLexer {
 public:
     enum class TokenType {
@@ -21,6 +23,19 @@ public:
         EndOfFile,
         Unknown,
     };
+    const EnumMapper<TokenType> argTypeMapper = {
+        { TokenType::Number, "number" },
+        { TokenType::String, "string" },
+        { TokenType::Identifier, "identifier" },
+        { TokenType::Dot, "dot" },
+        { TokenType::LBracket, "lbracket" },
+        { TokenType::RBracket, "rbracket" },
+        { TokenType::Comma, "comma" },
+        { TokenType::DirectiveMarker, "directivemarker" },
+        { TokenType::Code, "code" },
+        { TokenType::EndOfFile, "endoffile" },
+        { TokenType::Unknown, "unknown" }
+    }; 
 
     struct Token {
         TokenType type;

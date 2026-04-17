@@ -1,4 +1,4 @@
-//@import("core://shaders/lightingPassStdLib.glsl")
+//@import("core://assets/shaders/lightingPassStdLib.glsl")
 
 {{ material_definition }}
 

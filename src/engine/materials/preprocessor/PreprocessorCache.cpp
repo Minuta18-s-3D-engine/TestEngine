@@ -58,11 +58,12 @@ std::optional<PreprocessorCache::ProcessedShader> PreprocessorCache::load(
     const VirtualPath& sourcePath
 ) {
     std::string exceptedFilename = getFilename(sourcePath);
-    if (!filesystem.fileExists(exceptedFilename)) {
+    VirtualPath exceptedPath(cacheFolder.getVirtual() + "/" + exceptedFilename);
+    if (!filesystem.fileExists(exceptedPath)) {
         return std::nullopt;
     }
 
-    std::string contents = filesystem.readFile(exceptedFilename);
+    std::string contents = filesystem.readFile(exceptedPath);
     return deserializeProcessedShader(contents);
 }
 
@@ -74,7 +75,8 @@ void PreprocessorCache::store(const ProcessedShader& processedShader) {
 
 bool PreprocessorCache::exists(const VirtualPath& sourcePath) {
     std::string filename = getFilename(sourcePath);
-    return filesystem.fileExists(filename);
+    VirtualPath exceptedPath(cacheFolder.getVirtual() + "/" + filename);
+    return filesystem.fileExists(exceptedPath);
 }
 
 VirtualPath PreprocessorCache::getCacheFolder() {
