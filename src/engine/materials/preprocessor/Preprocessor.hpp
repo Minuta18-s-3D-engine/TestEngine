@@ -2,6 +2,7 @@
 #define ENGINE_MATERIALS_PREPROCESSOR_PREPROCESSOR_H_
 
 #include <string>
+#include <unordered_set>
 
 #include "PreprocessorParser.hpp"
 #include "PreprocessorCache.hpp" 
@@ -17,6 +18,8 @@ class Preprocessor {
     std::shared_ptr<PreprocessorParser> createParser(
         const std::string& fileContents
     );
+
+    void buildDependencyGraph(const VirtualPath& filePath);
 public:
     Preprocessor(FilesystemAbstraction& _filesystem);
 

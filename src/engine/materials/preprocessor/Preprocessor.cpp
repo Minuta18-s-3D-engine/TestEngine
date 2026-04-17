@@ -5,6 +5,28 @@ Preprocessor::Preprocessor(
 ) : filesystem(_filesystem), 
     cache(_filesystem, "fs://.cache/materialCode") {}
 
+void Preprocessor::buildDependencyGraph(
+    const VirtualPath& filePath
+) {
+    ShaderDependencyGraph::NodeId nodeId(filePath);
+
+    if (dependencyGraph.nodeExists(nodeId)) return;
+
+    std::string contents = filesystem.readFile(filePath);
+    auto parser = createParser(contents);
+    auto result = parser->parse();
+
+    for (auto& directive : result.directives) {
+        if (directive.nameMatch({"import"})) {
+            std::string importPathStr = std::string(directive.args[0].value);
+            VirtualPath importPath(importPathStr);
+            buildDependencyGraph(importPath);
+            ShaderDependencyGraph::NodeId depNodeId(importPath);
+            dependencyGraph.addDependency(nodeId, depNodeId);
+        }
+    }
+}
+
 std::shared_ptr<PreprocessorParser> Preprocessor::createParser(
     const std::string& fileContents
 ) {
@@ -12,7 +34,7 @@ std::shared_ptr<PreprocessorParser> Preprocessor::createParser(
 
     using ArgType = PreprocessorParser::ArgType;
     parser->addDirectiveValidator(
-        "import", { ArgType::String, ArgType::String }
+        "import", { ArgType::String }
     );
 
     return parser;
