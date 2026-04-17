@@ -72,8 +72,8 @@ void PreprocessorCache::store(const ProcessedShader& processedShader) {
     filesystem.writeFile(cacheFolder.resolve() + "/" + filename, j.dump());
 }
 
-bool PreprocessorCache::exists(const ProcessedShader& processedShader) {
-    std::string filename = getFilename(processedShader.sourcePath);
+bool PreprocessorCache::exists(const VirtualPath& sourcePath) {
+    std::string filename = getFilename(sourcePath);
     return filesystem.fileExists(filename);
 }
 

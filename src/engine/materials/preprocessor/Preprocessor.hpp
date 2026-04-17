@@ -10,10 +10,16 @@
 #include "../../project/FilesystemAbstraction.hpp"
 
 class Preprocessor {
+    const std::string IMPORT_DIRECTIVE = "import";
+    
     PreprocessorCache cache;
     ShaderDependencyGraph dependencyGraph;
 
     FilesystemAbstraction& filesystem;
+    
+    PreprocessorCache::ProcessedShader parseOrLoad(
+        const VirtualPath& filePath
+    );
 
     std::shared_ptr<PreprocessorParser> createParser(
         const std::string& fileContents
@@ -23,7 +29,7 @@ class Preprocessor {
 public:
     Preprocessor(FilesystemAbstraction& _filesystem);
 
-    void preprocess(const VirtualPath& filePath);
+    std::string preprocess(const VirtualPath& filePath);
 };
 
 #endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSOR_H_

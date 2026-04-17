@@ -47,7 +47,7 @@ public:
     std::optional<ProcessedShader> load(
         const VirtualPath& sourcePath
     );
-    bool exists(const ProcessedShader& processedShader);
+    bool exists(const VirtualPath& sourcePath);
 
     VirtualPath getCacheFolder();
 };
