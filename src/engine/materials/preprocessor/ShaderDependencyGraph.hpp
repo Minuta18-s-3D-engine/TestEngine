@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <exception>
+#include <iostream>
 
 #include "../../project/VirtualPath.hpp"
 

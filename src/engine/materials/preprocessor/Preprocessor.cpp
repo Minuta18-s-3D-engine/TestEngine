@@ -74,9 +74,12 @@ std::shared_ptr<PreprocessorParser> Preprocessor::createParser(
 }
 
 std::string Preprocessor::preprocess(const VirtualPath& filePath) {
+    auto rootParse = parseOrLoad(filePath);
+    ShaderDependencyGraph::NodeId rootNode(filePath);
+    dependencyGraph.addNode(rootNode);
+
     buildDependencyGraph(filePath);
 
-    ShaderDependencyGraph::NodeId rootNode(filePath);
     auto sorted = dependencyGraph.getSortedDependencies(rootNode);
 
     std::string resultingCode = "";

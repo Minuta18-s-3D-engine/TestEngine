@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <optional>
+#include <iostream>
 
 #include "../../project/FilesystemAbstraction.hpp"
 #include "PreprocessorParser.hpp"
