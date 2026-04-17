@@ -21,6 +21,6 @@ std::filesystem::path PathResolver::resolve(
     std::filesystem::path p(virtualPath);
     if (p.is_absolute()) return p;
 
-    return root / virtualPath;
+    return virtualPath;
 }
 

@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <memory>
+#include <iostream>
 
 #include "FilesystemAbstraction.hpp"
 #include "../utils/exc/GeneralExceptions.hpp"

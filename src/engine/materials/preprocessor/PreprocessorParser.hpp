@@ -52,7 +52,7 @@ public:
         std::string constructDirectiveName() const {
             if (name.size() < 1) return "";
             std::string directiveName = std::string(name[0]);
-            for (int i = 1; i < name.size(); ++i) {
+            for (size_t i = 1; i < name.size(); ++i) {
                 directiveName += "." + std::string(name[i]);
             }
 

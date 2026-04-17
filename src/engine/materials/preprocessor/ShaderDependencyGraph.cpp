@@ -28,7 +28,7 @@ std::string SDG::constructNodeName(const SDG::NodeId& node) const {
 void SDG::makeInvalidNodeException(
     const SDG::NodeId& node, 
     const std::string& message
-) {
+) const {
     std::string formattedMessage = "Exception in node " + 
         constructNodeName(node) + ": " + message; 
     throw std::invalid_argument(formattedMessage);
@@ -38,7 +38,7 @@ void SDG::makeInvalidDependencyException(
     const SDG::NodeId& node,
     const SDG::NodeId& dependency, 
     const std::string& message
-) {
+) const {
     makeInvalidNodeException(node, " " + constructNodeName(node) + 
         ": " + message
     );  
@@ -159,6 +159,10 @@ void SDG::dependencyDFS(
 }
 
 std::vector<SDG::NodeId> SDG::getSortedDependencies(const NodeId& node) const {
+    if (!nodeExists(node)) {
+        makeInvalidNodeException(node, "node not exists");
+    }
+
     DfsNodesUsed nodeUsed;
     DfsResult dfsResult;
     dependencyDFS(node, nodeUsed, dfsResult);

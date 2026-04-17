@@ -40,6 +40,7 @@
 #include "engine/assets/utils/MeshGen.hpp"
 #include "engine/project/Project.hpp"
 #include "engine/project/ProjectLoader.hpp"
+#include "engine/materials/preprocessor/Preprocessor.hpp"
 
 namespace fs = std::filesystem;
 
@@ -257,6 +258,16 @@ int main(int argc, char* argv[]) {
             glm::vec3(lightR, lightG, lightB),
             0.01, 0.02, objectManager
         );
+    }
+
+    {
+        const std::string preprocessArgName = "--preprocess-shader";
+        if (args.contains(preprocessArgName)) {
+            Preprocessor preprocessor(project.getFilesystem());
+            std::string result = preprocessor.preprocess(args.at(preprocessArgName));
+
+            std::cout << result << std::endl;
+        }
     }
 
     renderingSystem.updateCache();

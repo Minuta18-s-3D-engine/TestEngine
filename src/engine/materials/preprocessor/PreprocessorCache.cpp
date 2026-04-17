@@ -20,7 +20,7 @@ std::string PreprocessorCache::getFilename(
     size_t filenameHash = std::hash<std::string>{}(sourceFilename);
     std::stringstream hashedFilename;
     hashedFilename << std::hex << filenameHash;
-    return hashedFilename.str() + ".cache.glsl";
+    return hashedFilename.str() + ".cache.json";
 }
     
 nlohmann::json PreprocessorCache::serializeProcessedShader(

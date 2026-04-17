@@ -53,13 +53,13 @@ private:
     void makeInvalidNodeException(
         const NodeId& node, 
         const std::string& message
-    );
+    ) const;
 
     void makeInvalidDependencyException(
         const NodeId& node,
         const NodeId& dependency, 
         const std::string& message
-    );
+    ) const;
 
     enum class DFSVisitedState {
         NotVisited, 
