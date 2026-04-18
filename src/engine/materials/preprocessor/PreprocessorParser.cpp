@@ -97,7 +97,7 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
     );
 
     bool prevDot = false;
-    size_t bracketIndex = -1;
+    size_t bracketIndex = result.tokens.size();
     for (size_t i = 1; i < result.tokens.size(); ++i) {
         if (result.tokens[i].type == PreprocessorLexer::TokenType::LBracket) {
             bracketIndex = i;
@@ -122,7 +122,7 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
         }
     }
 
-    if (bracketIndex == -1) {
+    if (bracketIndex == result.tokens.size()) {
         makeException(result.tokens[0], "Brackets not found");
     }
 

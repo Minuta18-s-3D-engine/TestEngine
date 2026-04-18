@@ -66,11 +66,15 @@ std::optional<PreprocessorCache::ProcessedShader> PreprocessorCache::load(
     }
 
     std::string contents = filesystem.readFile(exceptedPath);
-    auto result = deserializeProcessedShader(contents);
-    if (!isUpToDate(result)) {
+    try {
+        auto result = deserializeProcessedShader(contents);
+        if (!isUpToDate(result)) {
+            return std::nullopt;
+        }
+        return result;
+    } catch (std::exception&) {
         return std::nullopt;
     }
-    return result;
 }
 
 void PreprocessorCache::store(const ProcessedShader& processedShader) {
