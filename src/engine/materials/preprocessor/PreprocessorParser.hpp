@@ -14,6 +14,7 @@
 #include "../../utils/exc/GeneralExceptions.hpp"
 #include "../../utils/EnumMapper.hpp"
 #include "../../stringProcessing/utils/StringFunctions.hpp"
+#include "ShaderDiagnostic.hpp"
 
 class PreprocessorParser {
 public:
@@ -91,6 +92,9 @@ public:
         std::vector<Warning> warnings;
     };
 private:
+    ShaderDiagnostic& diagnostic;
+    
+    VirtualPath path;
     std::string source; 
 
     std::unordered_map<std::string, DirectiveSpec> validators;
@@ -128,7 +132,11 @@ private:
 
     std::optional<Warning> validateDirective(const Directive& d) const;
 public:
-    PreprocessorParser(const std::string& _source);
+    PreprocessorParser(
+        const std::string& _source, 
+        const VirtualPath& _filePath,
+        ShaderDiagnostic& _diagnostic
+    );
 
     ParseResult parse();
     void addDirectiveValidator(const std::string& name, DirectiveSpec spec);

@@ -6,7 +6,8 @@ Preprocessor::Preprocessor(
     cache(_filesystem, "fs://.cache/materialCode") {}
 
 PreprocessorCache::ProcessedShader Preprocessor::parseOrLoad(
-    const VirtualPath& filePath
+    const VirtualPath& filePath,
+    ShaderDiagnostic& diagnostic
 ) {
     {
         auto processedShader = cache.load(filePath);
@@ -16,7 +17,7 @@ PreprocessorCache::ProcessedShader Preprocessor::parseOrLoad(
     }
 
     std::string contents = filesystem.readFile(filePath);
-    auto parser = createParser(contents);
+    auto parser = createParser(contents, filePath, diagnostic);
     auto result = parser->parse();
 
     std::vector<VirtualPath> dependencies;
@@ -48,28 +49,32 @@ PreprocessorCache::ProcessedShader Preprocessor::parseOrLoad(
 }
 
 void Preprocessor::buildDependencyGraph(
-    const VirtualPath& filePath
+    const VirtualPath& filePath,
+    ShaderDiagnostic& diagnostic
 ) {
     ShaderDependencyGraph::NodeId nodeId(filePath);
 
     if (dependencyGraph.nodeExists(nodeId)) return;
 
     PreprocessorCache::ProcessedShader parsedShader = parseOrLoad(
-        filePath
+        filePath, diagnostic
     );
     dependencyGraph.addNode(nodeId);
 
     for (auto& path : parsedShader.dependencies) {
-        buildDependencyGraph(path);
+        buildDependencyGraph(path, diagnostic);
         ShaderDependencyGraph::NodeId depNodeId(path);
         dependencyGraph.addDependency(nodeId, depNodeId);
     }
 }
 
 std::shared_ptr<PreprocessorParser> Preprocessor::createParser(
-    const std::string& fileContents
+    const std::string& fileContents,
+    const VirtualPath& path,
+    ShaderDiagnostic& diagnostic
 ) {
-    auto parser = std::make_shared<PreprocessorParser>(fileContents);
+    auto parser = std::make_shared<PreprocessorParser>(
+        fileContents, path, diagnostic);
 
     using ArgType = PreprocessorParser::ArgType;
     parser->addDirectiveValidator(
@@ -79,20 +84,37 @@ std::shared_ptr<PreprocessorParser> Preprocessor::createParser(
     return parser;
 }
 
-std::string Preprocessor::preprocess(const VirtualPath& filePath) {
-    ShaderDependencyGraph::NodeId rootNode(filePath);
+std::pair<std::string, ShaderDiagnostic> Preprocessor::preprocess(
+    const VirtualPath& filePath
+) {
+    ShaderDiagnostic diagnostic;
 
-    buildDependencyGraph(filePath);
+    try {
+        ShaderDependencyGraph::NodeId rootNode(filePath);
+        buildDependencyGraph(filePath, diagnostic);
 
-    auto sorted = dependencyGraph.getSortedDependencies(rootNode);
+        auto sorted = dependencyGraph.getSortedDependencies(rootNode);
 
-    std::stringstream resultingCode;
-    for (const auto& node : sorted) {
-        std::string content = filesystem.readFile(node.path);
-        auto parser = createParser(content);
-        auto result = parser->parse();
-        resultingCode << result.code << '\n';
+        std::stringstream resultingCode;
+        for (const auto& node : sorted) {
+            std::string content = filesystem.readFile(node.path);
+            auto parser = createParser(content, filePath, diagnostic);
+            auto result = parser->parse();
+            resultingCode << result.code << '\n';
+        }
+
+        return { resultingCode.str(), diagnostic };
+    } catch (std::invalid_argument& e) {
+        diagnostic.report(
+            ShaderDiagnostic::IssueType::Error,
+            e.what()
+        );
+        throw ShaderDiagnostic::preprocessor_error(e.what(), diagnostic);
+    } catch (loop_detected& e) {
+        diagnostic.report(
+            ShaderDiagnostic::IssueType::Error,
+            e.what()
+        );
+        throw ShaderDiagnostic::preprocessor_error(e.what(), diagnostic);
     }
-
-    return resultingCode.str();
 }

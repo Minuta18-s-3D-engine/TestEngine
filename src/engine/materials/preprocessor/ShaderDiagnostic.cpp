@@ -15,6 +15,20 @@ void ShaderDiagnostic::report(const Issue& issue) {
     }
 }
 
+void ShaderDiagnostic::report(
+    IssueType _type, VirtualPath _file, int _line, int _column, 
+    std::string _message
+) {
+    report(Issue(_type, _file, _line, _column, _message));
+}
+
+void ShaderDiagnostic::report(
+    IssueType _type, std::string _message
+) {
+    report(Issue(_type, "", 0, 0, _message));
+    reportedIssues.back().relatedToFile = false;
+}
+
 void ShaderDiagnostic::clear() {
     reportedIssues.clear();
 }
@@ -25,4 +39,11 @@ bool ShaderDiagnostic::isEmpty() const {
 
 std::vector<ShaderDiagnostic::Issue>& ShaderDiagnostic::getFullDiagnostic() {
     return reportedIssues;
+}
+
+void ShaderDiagnostic::dumpToLogs() {
+    for (auto& issue : reportedIssues) {
+        std::cerr << issueMapper.toString(issue.type) << ": in file " << 
+            issue.file.getVirtual() << ": " << issue.message << std::endl;
+    }
 }

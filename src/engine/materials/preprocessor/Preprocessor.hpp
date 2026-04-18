@@ -10,6 +10,7 @@
 #include "PreprocessorCache.hpp" 
 #include "ShaderDependencyGraph.hpp"   
 #include "../../project/FilesystemAbstraction.hpp"
+#include "ShaderDiagnostic.hpp"
 
 class Preprocessor {
     const std::string IMPORT_DIRECTIVE = "import";
@@ -20,18 +21,26 @@ class Preprocessor {
     FilesystemAbstraction& filesystem;
     
     PreprocessorCache::ProcessedShader parseOrLoad(
-        const VirtualPath& filePath
+        const VirtualPath& filePath,
+        ShaderDiagnostic& diagnostic
     );
 
     std::shared_ptr<PreprocessorParser> createParser(
-        const std::string& fileContents
+        const std::string& fileContents,
+        const VirtualPath& path,
+        ShaderDiagnostic& diagnostic
     );
 
-    void buildDependencyGraph(const VirtualPath& filePath);
+    void buildDependencyGraph(
+        const VirtualPath& filePath,
+        ShaderDiagnostic& diagnostic
+    );
 public:
     Preprocessor(FilesystemAbstraction& _filesystem);
 
-    std::string preprocess(const VirtualPath& filePath);
+    std::pair<std::string, ShaderDiagnostic> preprocess(
+        const VirtualPath& filePath
+    );
 };
 
 #endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSOR_H_

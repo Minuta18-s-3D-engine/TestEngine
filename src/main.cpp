@@ -264,9 +264,17 @@ int main(int argc, char* argv[]) {
         const std::string preprocessArgName = "--preprocess-shader";
         if (args.contains(preprocessArgName)) {
             Preprocessor preprocessor(project.getFilesystem());
-            std::string result = preprocessor.preprocess(args.at(preprocessArgName));
+            try {
+                auto result = preprocessor.preprocess(
+                    args.at(preprocessArgName));
 
-            std::cout << result << std::endl;
+                std::cout << result.first << std::endl;
+                if (!result.second.isEmpty()) {
+                    result.second.dumpToLogs();
+                }
+            } catch (ShaderDiagnostic::preprocessor_error& e) {
+                e.getDiagnostic().dumpToLogs();
+            }
         }
     }
 

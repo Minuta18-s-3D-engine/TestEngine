@@ -1,8 +1,12 @@
 #include "PreprocessorParser.hpp"
 
+using IssueType = ShaderDiagnostic::IssueType;
+
 PreprocessorParser::PreprocessorParser(
-    const std::string& _source
-) : source(_source) {}
+    const std::string& _source, 
+    const VirtualPath& _filePath,
+    ShaderDiagnostic& _diagnostic
+) : source(_source), diagnostic(_diagnostic), path(_filePath) {}
 
 void PreprocessorParser::makeException(
     const PreprocessorLexer::Token& token, 
@@ -11,7 +15,8 @@ void PreprocessorParser::makeException(
     std::string what = "Preprocessor error at line " + 
         std::to_string(token.line) + ", col " + std::to_string(token.column) + 
         ": " + message + ".";
-    throw exc::parse_error(what);
+    diagnostic.report(IssueType::Error, path, token.line, token.column, what);
+    throw ShaderDiagnostic::preprocessor_error(what, diagnostic);
 };
 
 void PreprocessorParser::exceptToken(
@@ -244,7 +249,9 @@ void PreprocessorParser::addDirectiveValidator(
     const std::string& name, DirectiveSpec spec
 ) {
     if (builtins.contains(name)) {
-        throw exc::invalid_argument("Can't override built-in directive");
+        diagnostic.report(
+            IssueType::Critical, "Can't override built-in directive"
+        );
     }
     validators[name] = spec;
 }
