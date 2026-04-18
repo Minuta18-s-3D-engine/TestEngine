@@ -4,6 +4,7 @@
 #include <fstream>
 #include <memory>
 #include <iostream>
+#include <chrono>
 
 #include "FilesystemAbstraction.hpp"
 #include "../utils/exc/GeneralExceptions.hpp"
@@ -25,7 +26,7 @@ public:
     ) override;
     bool fileExists(const VirtualPath& path) override;
     bool isFile(const VirtualPath& path) override;
-    std::filesystem::file_time_type getLastEditedTime(
+    Timestamp getLastEditedTime(
         const VirtualPath& path
     ) override;
 

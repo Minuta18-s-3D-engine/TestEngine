@@ -32,7 +32,6 @@ nlohmann::json PreprocessorCache::serializeProcessedShader(
     j["dependencies"] = nlohmann::json::array();
     for (const auto& dep : processedShader.dependencies) {
         j["dependencies"].push_back(dep.getVirtual());
-        std::cout << dep.getVirtual() << std::endl;
     }
     return j;
 }
@@ -78,6 +77,10 @@ bool PreprocessorCache::exists(const VirtualPath& sourcePath) {
     std::string filename = getFilename(sourcePath);
     VirtualPath exceptedPath(cacheFolder.getVirtual() + "/" + filename);
     return filesystem.fileExists(exceptedPath);
+}
+
+bool PreprocessorCache::isUpToDate(const ProcessedShader& processedShader) {
+    
 }
 
 VirtualPath PreprocessorCache::getCacheFolder() {

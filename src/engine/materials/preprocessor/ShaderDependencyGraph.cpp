@@ -141,11 +141,11 @@ void SDG::dependencyDFS(
 ) const {
     nodeUsed[node] = DFSVisitedState::Visiting;
     for (const auto& dependency : dependencyDAG.at(node).dependencies) {
-        if (!nodeUsed.contains(dependency)) {
+        if (nodeUsed.contains(dependency)) {
             if (nodeUsed[dependency] == DFSVisitedState::Visiting) {
                 throw loop_detected(
                     "Circular dependency found: " + constructNodeName(node) + 
-                    "->" + constructNodeName(dependency)
+                    " -> " + constructNodeName(dependency)
                 );
             }
             if (nodeUsed[dependency] == DFSVisitedState::Visited) {

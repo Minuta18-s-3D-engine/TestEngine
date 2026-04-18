@@ -25,9 +25,13 @@ PreprocessorCache::ProcessedShader Preprocessor::parseOrLoad(
 
         const size_t argIndex = 0;
         if (directive.args.size() < argIndex + 1) continue;
-        if (directive.args.at(0).type != PreprocessorParser::ArgType::String)
+        if (
+            directive.args.at(argIndex).type != 
+            PreprocessorParser::ArgType::String
+        ) {
             continue;
-
+        }
+        
         dependencies.push_back(std::string(directive.args.at(argIndex).value));
     }
 

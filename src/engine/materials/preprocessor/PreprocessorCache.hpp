@@ -7,6 +7,7 @@
 #include <sstream>
 #include <optional>
 #include <iostream>
+#include <filesystem>
 
 #include "../../project/FilesystemAbstraction.hpp"
 #include "PreprocessorParser.hpp"
@@ -16,7 +17,7 @@ public:
     struct ProcessedShader {
         VirtualPath sourcePath;
         std::string preprocessedCode;
-        std::vector<VirtualPath> dependencies;
+        std::vector<VirtualPath> dependencies; 
     };
 private:
     FilesystemAbstraction& filesystem;
@@ -49,6 +50,7 @@ public:
         const VirtualPath& sourcePath
     );
     bool exists(const VirtualPath& sourcePath);
+    bool isUpToDate(const ProcessedShader& processedShader);
 
     VirtualPath getCacheFolder();
 };

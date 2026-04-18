@@ -66,10 +66,16 @@ bool VirtualFilesystem::fileExists(const VirtualPath& path) {
     return true;
 }
 
-std::filesystem::file_time_type VirtualFilesystem::getLastEditedTime(
+FilesystemAbstraction::Timestamp VirtualFilesystem::getLastEditedTime(
     const VirtualPath& path
 ) {
-    return std::filesystem::last_write_time(path.resolve());
+    auto stdFormat = std::filesystem::last_write_time(path.resolve());
+    auto systemTime = std::chrono::clock_cast<std::chrono::system_clock>(
+        stdFormat
+    );
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(
+        systemTime.time_since_epoch()
+    ).count();
 }
 
 bool VirtualFilesystem::folderExists(const VirtualPath& path) {
