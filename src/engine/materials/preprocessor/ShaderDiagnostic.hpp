@@ -13,20 +13,7 @@
 
 class ShaderDiagnostic {
 public:
-    class preprocessor_error : public std::exception {
-        std::string message;
-        ShaderDiagnostic& diagnostic;
-    public:
-        preprocessor_error(
-            const char* _message, ShaderDiagnostic diagnostic
-        ) : message(_message), diagnostic(diagnostic) {}
-        preprocessor_error(
-            const std::string& _message, ShaderDiagnostic diagnostic
-        ) : message(_message), diagnostic(diagnostic) {}
-
-        const char* what() const noexcept { return message.c_str(); }
-        ShaderDiagnostic getDiagnostic() const noexcept { return diagnostic; }
-    };
+    class preprocessor_error;
 
     enum class IssueType {
         Note,
@@ -38,7 +25,7 @@ public:
         { IssueType::Note, "Note" },
         { IssueType::Warning, "Warning" },
         { IssueType::Error, "Error" },
-        { IssueType::Critical, "Bool" }
+        { IssueType::Critical, "Critical" }
     }; 
 
     struct Issue {
@@ -72,6 +59,21 @@ public:
     std::vector<Issue>& getFullDiagnostic();
 
     void dumpToLogs();
+};
+
+class ShaderDiagnostic::preprocessor_error : public std::exception {
+    std::string message;
+    ShaderDiagnostic diagnostic;
+public:
+    preprocessor_error(
+        const char* _message, ShaderDiagnostic diagnostic
+    ) : message(_message), diagnostic(diagnostic) {}
+    preprocessor_error(
+        const std::string& _message, ShaderDiagnostic diagnostic
+    ) : message(_message), diagnostic(diagnostic) {}
+
+    const char* what() const noexcept { return message.c_str(); }
+    ShaderDiagnostic getDiagnostic() const noexcept { return diagnostic; }
 };
 
 #endif // ENGINE_MATERIALS_PREPROCESSOR_SHADERDIAGNOSTIC_H_

@@ -86,7 +86,7 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
     }
     currentToken = token;
 
-    if (result.tokens.size() < 1) {
+    if (result.tokens.size() < 2) {
         makeException(directiveToken, "Syntax error");
     }
 

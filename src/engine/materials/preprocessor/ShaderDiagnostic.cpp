@@ -34,7 +34,7 @@ void ShaderDiagnostic::clear() {
 }
 
 bool ShaderDiagnostic::isEmpty() const {
-    return reportedIssues.size() > 0;
+    return reportedIssues.empty();
 }
 
 std::vector<ShaderDiagnostic::Issue>& ShaderDiagnostic::getFullDiagnostic() {

@@ -98,7 +98,7 @@ std::pair<std::string, ShaderDiagnostic> Preprocessor::preprocess(
         std::stringstream resultingCode;
         for (const auto& node : sorted) {
             std::string content = filesystem.readFile(node.path);
-            auto parser = createParser(content, filePath, diagnostic);
+            auto parser = createParser(content, node.path, diagnostic);
             auto result = parser->parse();
             resultingCode << result.code << '\n';
         }
