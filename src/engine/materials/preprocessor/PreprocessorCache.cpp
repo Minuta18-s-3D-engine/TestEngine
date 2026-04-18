@@ -28,6 +28,7 @@ nlohmann::json PreprocessorCache::serializeProcessedShader(
 ) {
     nlohmann::json j;
     j["meta"]["sourcePath"] = processedShader.sourcePath.getVirtual();
+    j["meta"]["sourceEditTime"] = processedShader.sourceEditTime;
     j["glslCode"] = processedShader.preprocessedCode;
     j["dependencies"] = nlohmann::json::array();
     for (const auto& dep : processedShader.dependencies) {
@@ -45,6 +46,7 @@ PreprocessorCache::deserializeProcessedShader(
     section.sourcePath = VirtualPath(
         j.at("meta").at("sourcePath").get<std::string>()
     );
+    section.sourceEditTime = j.at("meta").at("sourceEditTime");
     section.preprocessedCode = j.at("glslCode").get<std::string>();
     section.dependencies.reserve(j.at("dependencies").size());
     for (auto& elm : j.at("dependencies")) {
@@ -64,7 +66,11 @@ std::optional<PreprocessorCache::ProcessedShader> PreprocessorCache::load(
     }
 
     std::string contents = filesystem.readFile(exceptedPath);
-    return deserializeProcessedShader(contents);
+    auto result = deserializeProcessedShader(contents);
+    if (!isUpToDate(result)) {
+        return std::nullopt;
+    }
+    return result;
 }
 
 void PreprocessorCache::store(const ProcessedShader& processedShader) {
@@ -73,14 +79,10 @@ void PreprocessorCache::store(const ProcessedShader& processedShader) {
     filesystem.writeFile(cacheFolder.resolve() + "/" + filename, j.dump());
 }
 
-bool PreprocessorCache::exists(const VirtualPath& sourcePath) {
-    std::string filename = getFilename(sourcePath);
-    VirtualPath exceptedPath(cacheFolder.getVirtual() + "/" + filename);
-    return filesystem.fileExists(exceptedPath);
-}
-
 bool PreprocessorCache::isUpToDate(const ProcessedShader& processedShader) {
-    
+    FilesystemAbstraction::Timestamp sourceEditTime = \
+        filesystem.getLastEditedTime(processedShader.sourcePath);
+    return sourceEditTime == processedShader.sourceEditTime;    
 }
 
 VirtualPath PreprocessorCache::getCacheFolder() {

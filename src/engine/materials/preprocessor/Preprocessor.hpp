@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_set>
 #include <iostream>
+#include <sstream>
 
 #include "PreprocessorParser.hpp"
 #include "PreprocessorCache.hpp" 

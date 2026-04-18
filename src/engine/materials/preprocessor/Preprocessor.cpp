@@ -38,7 +38,8 @@ PreprocessorCache::ProcessedShader Preprocessor::parseOrLoad(
     PreprocessorCache::ProcessedShader cacheEntry(
         filePath,
         result.code,
-        dependencies
+        dependencies,
+        filesystem.getLastEditedTime(filePath)
     );
 
     cache.store(cacheEntry);
@@ -85,13 +86,13 @@ std::string Preprocessor::preprocess(const VirtualPath& filePath) {
 
     auto sorted = dependencyGraph.getSortedDependencies(rootNode);
 
-    std::string resultingCode = "";
+    std::stringstream resultingCode;
     for (const auto& node : sorted) {
         std::string content = filesystem.readFile(node.path);
         auto parser = createParser(content);
         auto result = parser->parse();
-        resultingCode += result.code + '\n';
+        resultingCode << result.code << '\n';
     }
 
-    return resultingCode;
+    return resultingCode.str();
 }
