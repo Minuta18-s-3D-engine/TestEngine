@@ -51,6 +51,15 @@ public:
     const char* what() const noexcept { return message.c_str(); }
 };
 
+class critical_error : public std::exception {
+    std::string message;
+public:
+    critical_error(const char* _message) : message(_message) {}
+    critical_error(const std::string& _message) : message(_message) {}
+
+    const char* what() const noexcept { return message.c_str(); }
+};
+
 }
 
 #endif // ENGINE_UTILS_EXC_GENERALEXCEPTIONS_H_
