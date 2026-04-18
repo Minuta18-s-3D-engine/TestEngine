@@ -32,6 +32,7 @@ nlohmann::json PreprocessorCache::serializeProcessedShader(
     j["dependencies"] = nlohmann::json::array();
     for (const auto& dep : processedShader.dependencies) {
         j["dependencies"].push_back(dep.getVirtual());
+        std::cout << dep.getVirtual() << std::endl;
     }
     return j;
 }

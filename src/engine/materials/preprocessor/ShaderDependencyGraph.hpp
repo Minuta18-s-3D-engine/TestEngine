@@ -98,7 +98,10 @@ public:
         const std::vector<NodeId>& dependencies
     );
 
-    std::vector<NodeId> getSortedDependencies(const NodeId& node) const;
+    std::vector<NodeId> getSortedDependencies(
+        const NodeId& node,
+        bool reverse = false
+    ) const;
 };
 
 #endif // ENGINE_MATERIALS_PREPROCESSOR_SHADERDEPENDENCYGRAPH_H_

@@ -112,7 +112,7 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
                 result.tokens[i], PreprocessorLexer::TokenType::Identifier,
                 "name"
             );
-            result.name.push_back(std::string_view(result.tokens[i].value));
+            result.name.push_back(result.tokens[i].value);
             prevDot = true;
         }
     }
@@ -142,6 +142,7 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
                 arg.type = ArgType::Number;
             } else if (t.type == PreprocessorLexer::TokenType::String) {
                 arg.type = ArgType::String;
+                arg.value = StringFunctions::unquote(arg.value);
             } else if (t.type == PreprocessorLexer::TokenType::Identifier) {
                 if (t.value == "true" || t.value == "false") { 
                     arg.type = ArgType::Bool;

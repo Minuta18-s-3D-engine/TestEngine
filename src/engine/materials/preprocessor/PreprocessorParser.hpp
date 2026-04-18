@@ -32,12 +32,12 @@ public:
 
     struct DirectiveArg {
         ArgType type;
-        std::string_view value;
+        std::string value;
         StringPos position;
     };
 
     struct Directive {
-        std::vector<std::string_view> name;
+        std::vector<std::string> name;
         std::vector<PreprocessorLexer::Token> tokens;
         std::vector<DirectiveArg> args;
         StringPos position;

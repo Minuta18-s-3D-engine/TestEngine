@@ -158,7 +158,9 @@ void SDG::dependencyDFS(
     dfsResult.push_back(node);
 }
 
-std::vector<SDG::NodeId> SDG::getSortedDependencies(const NodeId& node) const {
+std::vector<SDG::NodeId> SDG::getSortedDependencies(
+    const NodeId& node, bool reverse
+) const {
     if (!nodeExists(node)) {
         makeInvalidNodeException(node, "node not exists");
     }
@@ -166,6 +168,8 @@ std::vector<SDG::NodeId> SDG::getSortedDependencies(const NodeId& node) const {
     DfsNodesUsed nodeUsed;
     DfsResult dfsResult;
     dependencyDFS(node, nodeUsed, dfsResult);
-    std::reverse(dfsResult.begin(), dfsResult.end());
+    if (reverse) {
+        std::reverse(dfsResult.begin(), dfsResult.end());
+    }
     return dfsResult;
 }
