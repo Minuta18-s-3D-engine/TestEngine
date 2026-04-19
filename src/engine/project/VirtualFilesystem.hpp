@@ -11,7 +11,7 @@
 #include "PathResolver.hpp"
 
 class VirtualFilesystem : public FilesystemAbstraction {
-    std::unique_ptr<PathResolver> pathResolver;
+    std::shared_ptr<PathResolver> pathResolver;
 public:
     VirtualFilesystem(std::unique_ptr<PathResolver> _pathResolver);
     ~VirtualFilesystem() override;

@@ -33,7 +33,10 @@ PreprocessorCache::ProcessedShader Preprocessor::parseOrLoad(
             continue;
         }
         
-        dependencies.push_back(std::string(directive.args.at(argIndex).value));
+        dependencies.push_back(
+            VirtualPath(std::string(directive.args.at(argIndex).value))
+                .resolveFrom(filePath)
+        );
     }
 
     PreprocessorCache::ProcessedShader cacheEntry(

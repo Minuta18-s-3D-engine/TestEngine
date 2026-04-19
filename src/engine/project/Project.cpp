@@ -5,7 +5,10 @@ Project::Project(
     const std::filesystem::path& rootPath,
     const std::filesystem::path& coreRootPath
 ) : name(name), projectVersion(projectVersion), engineVersion(engineVersion) {
-    auto pathResolver = std::make_unique<PathResolver>(rootPath, coreRootPath);
+    auto pathResolver = std::make_unique<GeneralPathResolver>();
+    pathResolver->addPrefix("fs://", rootPath);
+    pathResolver->addPrefix("core://", coreRootPath);
+
     filesystem = std::make_unique<VirtualFilesystem>(std::move(pathResolver));
     assetManager = std::make_unique<AssetManager>();
 

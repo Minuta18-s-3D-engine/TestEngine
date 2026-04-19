@@ -3,9 +3,7 @@
 VirtualFilesystem::VirtualFilesystem(
     std::unique_ptr<PathResolver> _pathResolver
 ) : pathResolver(std::move(_pathResolver)) {
-    VirtualPath::setResolverFunc([this](const std::string& p) {
-        return this->getResolver().resolve(p);
-    });
+    VirtualPath::setResolverFunc(pathResolver);
 }
 
 VirtualFilesystem::~VirtualFilesystem() {

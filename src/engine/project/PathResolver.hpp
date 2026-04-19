@@ -1,22 +1,19 @@
 #ifndef ENGINE_PROJECT_PATHRESOLVER_HPP_
 #define ENGINE_PROJECT_PATHRESOLVER_HPP_
 
-#include <filesystem>
 #include <string>
 
 class PathResolver {
-    const std::string prefix = "fs://";
-    const std::string corePrefix = "core://";
-    
-    std::filesystem::path root;
-    std::filesystem::path coreRoot;
 public:
-    PathResolver(
-        const std::filesystem::path& _root,
-        const std::filesystem::path& _coreRoot
-    );
+    virtual ~PathResolver() = default;
 
-    std::filesystem::path resolve(const std::string& virtualPath) const; 
+    virtual void addPrefix(std::string name, std::filesystem::path path) = 0;
+
+    virtual std::string resolve(const std::string& virtualPath) const = 0; 
+    virtual std::string resolveFrom(
+        const std::string& virtualPath,
+        const std::string& folder 
+    ) const = 0; 
 };
 
 #endif // ENGINE_PROJECT_PATHRESOLVER_HPP_
