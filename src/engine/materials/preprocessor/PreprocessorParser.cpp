@@ -63,6 +63,130 @@ PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
     return arg;
 }
 
+std::vector<PreprocessorLexer::Token>
+PreprocessorParser::collectDirectiveTokens(
+    PreprocessorLexer& lexer,
+    const PreprocessorLexer::Token& directiveToken,
+    PreprocessorLexer::Token& currentToken
+) {
+    std::vector<PreprocessorLexer::Token> tokens;
+    tokens.push_back(directiveToken);
+
+    auto token = lexer.nextToken();
+    while (
+        token.type != PreprocessorLexer::TokenType::Code &&
+        token.type != PreprocessorLexer::TokenType::EndOfFile
+    ) {
+        tokens.push_back(token);
+        token = lexer.nextToken();
+    }
+
+    currentToken = token;
+    return tokens;
+}
+
+size_t PreprocessorParser::parseDirectiveName(Directive& result) const {
+    exceptToken(
+        result.tokens[1],
+        PreprocessorLexer::TokenType::Identifier,
+        "directive name"
+    );
+
+    bool prevDot = false;
+    size_t bracketIndex = result.tokens.size();
+
+    for (size_t i = 1; i < result.tokens.size(); ++i) {
+        const auto& token = result.tokens[i];
+        if (token.type == PreprocessorLexer::TokenType::LBracket) {
+            bracketIndex = i;
+            if (!prevDot) {
+                makeException(result.tokens[i - 1], "Invalid syntax");
+            }
+            break;
+        }
+
+        if (prevDot) {
+            exceptToken(
+                token, PreprocessorLexer::TokenType::Dot,
+                "dot separator"
+            );
+            prevDot = false;
+        } else {
+            exceptToken(
+                token, PreprocessorLexer::TokenType::Identifier,
+                "name"
+            );
+            result.name.push_back(token.value);
+            prevDot = true;
+        }
+    }
+
+    if (bracketIndex == result.tokens.size()) {
+        makeException(result.tokens[0], "Brackets not found");
+    }
+
+    return bracketIndex;
+}
+
+PreprocessorParser::DirectiveArg
+PreprocessorParser::makeDirectiveArg(
+    const PreprocessorLexer::Token& token
+) const {
+    DirectiveArg arg;
+    arg.position = {
+        .line = token.line,
+        .col = token.column,
+        .pos = token.position
+    };
+    arg.value = token.value;
+
+    if (token.type == PreprocessorLexer::TokenType::Number) {
+        arg.type = ArgType::Number;
+    } else if (token.type == PreprocessorLexer::TokenType::String) {
+        arg.type = ArgType::String;
+        arg.value = StringFunctions::unquote(arg.value);
+    } else if (token.type == PreprocessorLexer::TokenType::Identifier) {
+        if (token.value == "true" || token.value == "false") {
+            arg.type = ArgType::Bool;
+        } else {
+            arg.type = ArgType::Identifier;
+        }
+    } else {
+        makeException(token, "Invalid argument type");
+    }
+
+    return arg;
+}
+
+void PreprocessorParser::parseDirectiveArgs(
+    Directive& result,
+    size_t bracketIndex
+) const {
+    bool expectArg = true;
+    for (size_t i = bracketIndex + 1; i < result.tokens.size(); ++i) {
+        const auto& token = result.tokens[i];
+
+        if (token.type == PreprocessorLexer::TokenType::RBracket) {
+            break;
+        }
+
+        if (expectArg) {
+            result.args.push_back(makeDirectiveArg(token));
+            expectArg = false;
+        } else {
+            if (token.type == PreprocessorLexer::TokenType::Comma) {
+                expectArg = true;
+            } else {
+                makeException(token, "Expected ',' or ')'");
+            }
+        }
+    }
+
+    if (result.tokens.back().type != PreprocessorLexer::TokenType::RBracket) {
+        makeException(result.tokens.back(), "Missing closing ')'");
+    }
+}
+
 PreprocessorParser::Directive PreprocessorParser::parseDirective(
     PreprocessorLexer& lexer,
     const PreprocessorLexer::Token directiveToken,
@@ -75,103 +199,15 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
         .pos = directiveToken.position
     };
 
-    result.tokens.push_back(directiveToken);
-    auto token = lexer.nextToken();
-    while (
-        token.type != PreprocessorLexer::TokenType::Code &&
-        token.type != PreprocessorLexer::TokenType::EndOfFile
-    ) {
-        result.tokens.push_back(token);
-        token = lexer.nextToken();
-    }
-    currentToken = token;
-
+    result.tokens = collectDirectiveTokens(
+        lexer, directiveToken, currentToken
+    );
     if (result.tokens.size() < 2) {
         makeException(directiveToken, "Syntax error");
     }
 
-    exceptToken(
-        result.tokens[1], 
-        PreprocessorLexer::TokenType::Identifier, 
-        "directive name"
-    );
-
-    bool prevDot = false;
-    size_t bracketIndex = result.tokens.size();
-    for (size_t i = 1; i < result.tokens.size(); ++i) {
-        if (result.tokens[i].type == PreprocessorLexer::TokenType::LBracket) {
-            bracketIndex = i;
-            if (!prevDot) {
-                makeException(result.tokens[i - 1], "Invalid syntax");
-            }
-            break;
-        }
-        if (prevDot) {
-            exceptToken(
-                result.tokens[i], PreprocessorLexer::TokenType::Dot,
-                "dot separator"
-            );
-            prevDot = false;
-        } else {
-            exceptToken(
-                result.tokens[i], PreprocessorLexer::TokenType::Identifier,
-                "name"
-            );
-            result.name.push_back(result.tokens[i].value);
-            prevDot = true;
-        }
-    }
-
-    if (bracketIndex == result.tokens.size()) {
-        makeException(result.tokens[0], "Brackets not found");
-    }
-
-    bool exceptArg = true;
-    for (size_t i = bracketIndex + 1; i < result.tokens.size(); ++i) {
-        const auto& t = result.tokens[i];
-
-        if (t.type == PreprocessorLexer::TokenType::RBracket) {
-            break;
-        }
-
-        if (exceptArg) {
-            DirectiveArg arg;
-            arg.position = { 
-                .line = t.line, 
-                .col = t.column, 
-                .pos = t.position
-            };
-            arg.value = t.value;
-
-            if (t.type == PreprocessorLexer::TokenType::Number) {
-                arg.type = ArgType::Number;
-            } else if (t.type == PreprocessorLexer::TokenType::String) {
-                arg.type = ArgType::String;
-                arg.value = StringFunctions::unquote(arg.value);
-            } else if (t.type == PreprocessorLexer::TokenType::Identifier) {
-                if (t.value == "true" || t.value == "false") { 
-                    arg.type = ArgType::Bool;
-                } else { 
-                    arg.type = ArgType::Identifier;
-                }
-            } else {
-                makeException(t, "Invalid argument type");
-            } 
-
-            result.args.push_back(arg);
-            exceptArg = false;
-        } else {
-            if (t.type == PreprocessorLexer::TokenType::Comma) {
-                exceptArg = true;
-            } else {
-                makeException(t, "Expected ',' or ')'");
-            }
-        }
-    }
-
-    if (result.tokens.back().type != PreprocessorLexer::TokenType::RBracket) {
-        makeException(result.tokens.back(), "Missing closing ')'");
-    }
+    size_t bracketIndex = parseDirectiveName(result);
+    parseDirectiveArgs(result, bracketIndex);
     return result;
 }
 

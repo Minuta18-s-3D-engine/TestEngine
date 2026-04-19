@@ -1,5 +1,7 @@
 #include "VirtualPath.hpp"
 
+std::shared_ptr<PathResolver> VirtualPath::resolver = nullptr;
+
 VirtualPath::VirtualPath() : path("") {}
 
 VirtualPath::VirtualPath(const std::string& _path) : path(_path) {}

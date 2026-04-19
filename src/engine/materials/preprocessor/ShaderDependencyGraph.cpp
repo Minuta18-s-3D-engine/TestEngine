@@ -39,9 +39,10 @@ void SDG::makeInvalidDependencyException(
     const SDG::NodeId& dependency, 
     const std::string& message
 ) const {
-    makeInvalidNodeException(node, " " + constructNodeName(node) + 
-        ": " + message
-    );  
+    std::string formattedMessage = "Exception in node " + 
+        constructNodeName(node) + ": dependency " + 
+        constructNodeName(dependency) + ": " + message; 
+    throw std::invalid_argument(formattedMessage);
 }
 
 bool SDG::nodeExists(const SDG::NodeId& node) const {

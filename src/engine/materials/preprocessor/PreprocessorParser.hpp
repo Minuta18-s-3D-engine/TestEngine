@@ -130,6 +130,16 @@ private:
         PreprocessorLexer::Token& currentToken
     );
 
+    std::vector<PreprocessorLexer::Token> collectDirectiveTokens(
+        PreprocessorLexer& lexer,
+        const PreprocessorLexer::Token& directiveToken,
+        PreprocessorLexer::Token& currentToken
+    );
+
+    size_t parseDirectiveName(Directive& result) const;
+    DirectiveArg makeDirectiveArg(const PreprocessorLexer::Token& token) const;
+    void parseDirectiveArgs(Directive& result, size_t bracketIndex) const;
+
     std::optional<Warning> validateDirective(const Directive& d) const;
 public:
     PreprocessorParser(

@@ -87,6 +87,16 @@ std::shared_ptr<PreprocessorParser> Preprocessor::createParser(
     return parser;
 }
 
+void Preprocessor::onException(
+    std::exception& e, ShaderDiagnostic& diagnostic
+) {
+    diagnostic.report(
+        ShaderDiagnostic::IssueType::Error,
+        e.what()
+    );
+    throw ShaderDiagnostic::preprocessor_error(e.what(), diagnostic);
+}
+
 std::pair<std::string, ShaderDiagnostic> Preprocessor::preprocess(
     const VirtualPath& filePath
 ) {
@@ -107,17 +117,7 @@ std::pair<std::string, ShaderDiagnostic> Preprocessor::preprocess(
         }
 
         return { resultingCode.str(), diagnostic };
-    } catch (std::invalid_argument& e) {
-        diagnostic.report(
-            ShaderDiagnostic::IssueType::Error,
-            e.what()
-        );
-        throw ShaderDiagnostic::preprocessor_error(e.what(), diagnostic);
-    } catch (loop_detected& e) {
-        diagnostic.report(
-            ShaderDiagnostic::IssueType::Error,
-            e.what()
-        );
-        throw ShaderDiagnostic::preprocessor_error(e.what(), diagnostic);
-    }
+    } catch (std::exception& e) {
+        onException(e, diagnostic);
+    } 
 }

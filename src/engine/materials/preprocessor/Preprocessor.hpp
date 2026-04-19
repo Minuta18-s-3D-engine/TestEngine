@@ -35,6 +35,8 @@ class Preprocessor {
         const VirtualPath& filePath,
         ShaderDiagnostic& diagnostic
     );
+
+    void onException(std::exception& e, ShaderDiagnostic& diagnostic);
 public:
     Preprocessor(FilesystemAbstraction& _filesystem);
 
@@ -43,4 +45,4 @@ public:
     );
 };
 
-#endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSOR_H_
+#endif // ENGINE_MATERIALS_PREPROCESSOR_PREPROCESSOR_H_
