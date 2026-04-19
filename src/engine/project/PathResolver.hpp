@@ -2,6 +2,7 @@
 #define ENGINE_PROJECT_PATHRESOLVER_HPP_
 
 #include <string>
+#include <filesystem>
 
 class PathResolver {
 public:

@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <memory>
 
-#include <GeneralPathResolver.hpp>
+#include "PathResolver.hpp"
 
 class VirtualPath {
     static std::shared_ptr<PathResolver> resolver;
@@ -21,7 +21,7 @@ public:
     std::string resolveFrom(const VirtualPath& folder) const;
     const std::string& getVirtual() const { return path; }
 
-    static void setResolverFunc(std::shared_ptr<PathResolver> _resolver) { 
+    static void setResolver(std::shared_ptr<PathResolver> _resolver) { 
         resolver = _resolver; 
     }
 };
