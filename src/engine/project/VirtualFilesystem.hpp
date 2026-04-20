@@ -33,6 +33,7 @@ public:
     bool folderExists(const VirtualPath& path) override;
     void createFolder(const VirtualPath& path) override;
     void removeFolder(const VirtualPath& path, bool recursively = false) override;
+    VirtualPath getParent(const VirtualPath& path) override;
 
     PathResolver& getResolver() override;
 };

@@ -43,6 +43,12 @@ std::vector<ShaderDiagnostic::Issue>& ShaderDiagnostic::getFullDiagnostic() {
 
 void ShaderDiagnostic::dumpToLogs() {
     for (auto& issue : reportedIssues) {
+        if (!issue.relatedToFile) {
+            std::cerr << issueMapper.toString(issue.type) << ": " << 
+                issue.message << std::endl;
+            continue;
+        }
+
         std::cerr << issueMapper.toString(issue.type) << ": in file " << 
             issue.file.getVirtual() << ": " << issue.message << std::endl;
     }

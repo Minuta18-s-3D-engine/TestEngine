@@ -35,7 +35,7 @@ PreprocessorCache::ProcessedShader Preprocessor::parseOrLoad(
         
         dependencies.push_back(
             VirtualPath(std::string(directive.args.at(argIndex).value))
-                .resolveFrom(filePath)
+                .resolveFrom(filesystem.getParent(filePath))
         );
     }
 

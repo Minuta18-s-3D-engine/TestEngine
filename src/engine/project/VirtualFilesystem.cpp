@@ -92,6 +92,14 @@ void VirtualFilesystem::removeFolder(const VirtualPath& path, bool recursively) 
     }
 }
 
+VirtualPath VirtualFilesystem::getParent(const VirtualPath& path) {
+    auto fs_path = std::filesystem::path(path.resolve());
+    if (fs_path.has_parent_path()) {
+        return fs_path.parent_path();
+    }
+    return fs_path;
+}
+
 PathResolver& VirtualFilesystem::getResolver() {
     return *pathResolver;
 }

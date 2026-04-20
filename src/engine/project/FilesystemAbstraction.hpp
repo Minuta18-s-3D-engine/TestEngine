@@ -33,6 +33,7 @@ public:
         const VirtualPath& path, 
         bool recursively = false
     ) = 0;
+    virtual VirtualPath getParent(const VirtualPath& path) = 0;
 
     virtual PathResolver& getResolver() = 0;
 };
