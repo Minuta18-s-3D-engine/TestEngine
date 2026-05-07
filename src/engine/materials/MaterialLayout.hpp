@@ -3,24 +3,26 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
+#include <algorithm>
 
 #define PROPERTY_TYPE_LIST \
-    X(Int,   int32_t,    "int")     \
-    X(Uint,  uint32_t,   "uint")    \
+    X(Int,   int32_t,    "int"  )   \
+    X(Uint,  uint32_t,   "uint" )   \
     X(Float, float,      "float")   \
-    X(Bool,  bool,       "bool")    \
-    X(Vec2,  glm::vec2,  "vec2")    \
+    X(Bool,  bool,       "bool" )   \
+    X(Vec2,  glm::vec2,  "vec2" )   \
     X(IVec2, glm::ivec2, "ivec2")   \
     X(UVec2, glm::uvec2, "uvec2")   \
-    X(Vec3,  glm::vec3,  "vec3")    \
+    X(Vec3,  glm::vec3,  "vec3" )   \
     X(IVec3, glm::ivec3, "ivec3")   \
     X(UVec3, glm::uvec3, "uvec3")   \
-    X(Vec4,  glm::vec4,  "vec4")    \
+    X(Vec4,  glm::vec4,  "vec4" )   \
     X(IVec4, glm::ivec4, "ivec4")   \
     X(UVec4, glm::uvec4, "uvec4")   \
-    X(Mat2,  glm::mat2,  "mat2")    \
-    X(Mat3,  glm::mat3,  "mat3")    \
-    X(Mat4,  glm::mat4,  "mat4")    \
+    X(Mat2,  glm::mat2,  "mat2" )   \
+    X(Mat3,  glm::mat3,  "mat3" )   \
+    X(Mat4,  glm::mat4,  "mat4" )   \
 
 class MaterialLayout {
 public:
@@ -32,7 +34,7 @@ public:
     };
 
     template <typename T>
-    static constexpr PropertyType getPropertyType() {
+    static PropertyType getPropertyType() {
         using DecayedT = std::decay_t<T>;
 
         #define X(name, type, glslType) \
@@ -45,35 +47,46 @@ public:
         return PropertyType::Unknown;
     }
 
-    static constexpr std::string getGLSLType(PropertyType t) {
-        #define X(name, type, glslType) \
-            if (t == PropertyType::name) return glslType ;
+    static std::string getGLSLType(PropertyType type);
+    static size_t getStd430Alignment(PropertyType type);
+    static size_t getStd430Size(PropertyType type); 
 
-            PROPERTY_TYPE_LIST
-        #undef X
-        return "unknown";
-    }
 
-    static constexpr size_t getStd430Alignment(PropertyType type);
-    
     struct Property {
         PropertyType type;
-        bool isDefaultDataSet;
+
+        size_t offset;
+        size_t size;
     };
 private:
     std::unordered_map<std::string, Property> properties;
+
+    size_t materialSize = 0;
+    size_t maxAlignment;  
+    bool finalized = false;
+
+    void repackData();
 public:
     template <typename T>
-    void setProperty(const std::string& name);
-
-    template <typename T>
-    void setProperty(const std::string& name, const T& value);
-
-    template <typename T>
-    const T& getProperty(const std::string& name) const;
-
+    void addProperty(const std::string& name);
     bool hasProperty(const std::string& name) const;
-    bool isPropertySet(const std::string& name) const;
+
+    const Property& getPropertyInfo(const std::string& name) const;
+    size_t getLayoutSize() const;
+
+    void finalize();
+    bool isFinalized() const;
 };
+
+template <typename T>
+void MaterialLayout::addProperty(const std::string& name) {
+    if (finalized) return;
+
+    PropertyType type = getPropertyType<T>();
+
+    properties[name] = {
+        .type = type,
+    };
+}
 
 #endif // ENGINE_MATERIALS_MATERIALLAYOUT_H_
