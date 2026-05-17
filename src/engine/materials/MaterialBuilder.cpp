@@ -10,8 +10,19 @@ MaterialBuilder& MaterialBuilder::addSampler(const std::string& name) {
     return *this;
 }
 
-Material MaterialBuilder::finalize() {
+Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
     resultLayout.finalize();
 
-    // TODO
+    PropertyDataStorage tempStorage(resultLayout, buffer);
+
+    for (const auto& binder : propertyBinders) {
+        binder(tempStorage);
+    }
+
+    return Material(
+        name,
+        cfg,
+        resultLayout,
+        tempStorage
+    );
 }

@@ -1,24 +1,45 @@
 #include "Texture.hpp"
 
+GLenum Texture::getGLTarget() const {
+    switch (type) {
+        case TextureType::Texture2D: return GL_TEXTURE_2D;
+        case TextureType::CubeMap2D: return GL_TEXTURE_CUBE_MAP;
+    }
+}
+
 Texture::Texture(
     uint width, uint height, ImageFormat format, 
-    const uint8_t* image_data
-) : width(width), height(height), format(format) {
+    const uint8_t* image_data, TextureType _type
+) : width(width), height(height), format(format), type(_type) {
     glGenTextures(1, &id);
     this->bind();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     GLenum fmt = GL_RGB;
-
     if (format == ImageFormat::rgba) fmt = GL_RGBA;
 
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, fmt, width, height, 0, 
-        fmt, GL_UNSIGNED_BYTE, image_data
-    );
+    GLenum target = getGLTarget();
+
+    if (type == TextureType::Texture2D) {
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, fmt, width, height, 0, 
+            fmt, GL_UNSIGNED_BYTE, image_data
+        );
+    } else if (type == TextureType::CubeMap2D) {
+        for (uint i = 0; i < 6; ++i) {
+            glTexImage2D(
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, fmt, 
+                width, height, 0, fmt, GL_UNSIGNED_BYTE, image_data
+            );
+        }
+    }
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    if (type == TextureType::CubeMap2D) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+    }
+
     glTexParameteri(GL_TEXTURE_2D, 
         GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, 
@@ -26,9 +47,15 @@ Texture::Texture(
 
     glGenerateMipmap(GL_TEXTURE_2D);
     this->unbind();
+
+    bindlessHandle = glGetTextureHandleARB(id);
+    glMakeTextureHandleResidentARB(bindlessHandle);
 }
 
 Texture::~Texture() {
+    if (bindlessHandle != NO_HANDLE) {
+        glMakeTextureHandleNonResidentARB(bindlessHandle);
+    }
     glDeleteTextures(1, &id);
 }
 
@@ -50,6 +77,14 @@ uint Texture::getHeight() {
 
 uint Texture::getId() {
     return id;
+}
+
+uint64_t Texture::getHandle() const {
+    return bindlessHandle;
+}
+
+TextureType Texture::getType() const {
+    return type;
 }
 
 std::shared_ptr<Texture> Texture::create(const ImageData* img) {

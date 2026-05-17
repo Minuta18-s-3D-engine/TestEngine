@@ -9,6 +9,7 @@
 #include "MaterialGraphicsConfig.hpp"
 #include "PropertyDataStorage.hpp"
 #include "MaterialLayout.hpp"
+#include "MaterialDataBuffer.hpp"
 
 class MaterialBuilder {
     MaterialGraphicsConfig cfg;
@@ -32,7 +33,7 @@ public:
 
     MaterialBuilder& addSampler(const std::string& name);
 
-    Material finalize();
+    Material finalize(MaterialDataBuffer& buffer);
 };
 
 template <typename T>

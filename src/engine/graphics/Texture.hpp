@@ -10,18 +10,35 @@
 #include <memory>
 #include <iostream>
 
+enum class TextureType {
+    Texture2D,
+    CubeMap2D
+};
+
 class Texture {
+    const uint64_t NO_HANDLE = 0;
+
     uint width, height;
     ImageFormat format;
+    TextureType type;
 
     uint id;
+    uint64_t bindlessHandle = NO_HANDLE;
+
+    GLenum getGLTarget() const;
 public:
     Texture(
         uint width, uint height, 
         ImageFormat format, 
-        const uint8_t* image_data
+        const uint8_t* image_data,
+        TextureType _type = TextureType::Texture2D
     );
     ~Texture();
+
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+
+    Texture(Texture&& other) noexcept = delete; // TODO
 
     void bind();
     void unbind();
@@ -29,6 +46,8 @@ public:
     uint getWidth();
     uint getHeight();
     uint getId();
+    uint64_t getHandle() const;
+    TextureType getType() const;
 
     static std::shared_ptr<Texture> create(const ImageData* img);
 };
