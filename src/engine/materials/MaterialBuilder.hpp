@@ -16,7 +16,7 @@ class MaterialBuilder {
 
     using BinderFunc = std::function<void(PropertyDataStorage&)>;
     std::vector<BinderFunc> propertyBinders;
-    std::vector<string> samplers;
+    std::vector<std::string> samplers;
 
     MaterialLayout resultLayout; 
 public:

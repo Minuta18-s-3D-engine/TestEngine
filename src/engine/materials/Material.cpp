@@ -1,64 +1,39 @@
 #include "Material.hpp"
 
 Material::Material(
-    const std::string& _name
-) : name(_name) {}
+    const std::string& _name,
+    MaterialGraphicsConfig _cfg,
+    MaterialLayout _layout,
+    PropertyDataStorage&& _storage
+) : name(_name), cfg(_cfg), layout(std::move(_layout)),
+    defaultValues(std::move(_storage)) {}
 
-bool Material::hasProperty(const std::string& name) const {
-    return properties.hasProperty(name);
-}
+Material::Material(Material&& other) noexcept
+  : name(std::move(other.name)), 
+    cfg(std::move(other.cfg)),
+    layout(std::move(other.layout)),
+    defaultValues(std::move(other.defaultValues)) {}
 
-bool Material::isPropertySet(const std::string& name) const {
-    return properties.isPropertySet(name);
-}
-
-Material& Material::setTexture(
-    const std::string& name, std::shared_ptr<Texture> _tex
-) {
-    textures[name] = _tex;
+Material& Material::operator=(Material&& other) noexcept {
+    if (this != &other) {
+        name = std::move(other.name);
+        cfg = std::move(other.cfg);
+        layout = std::move(other.layout);
+        defaultValues = std::move(other.defaultValues);
+    }
     return *this;
 }
 
-Material& Material::setTexture(const std::string& name) {
-    textures[name] = nullptr;
-    return *this;
+bool Material::hasProperty(const std::string& name) {
+    return layout.hasProperty(name);
 }
 
-Material& Material::addTexture(
-    const std::string& name, std::shared_ptr<Texture> _tex
+bool Material::hasDefaultValue(const std::string& name) {
+    return hasProperty(name);
+}
+
+MaterialLayout::PropertyType Material::getPropertyType(
+    const std::string& name
 ) {
-    return this->setTexture(name, _tex);   
-}
-
-Material& Material::addTexture(const std::string& name) {
-    return this->setTexture(name);   
-}
-
-std::shared_ptr<Texture> Material::getTexture(const std::string& name) {
-    if (!textures.contains(name)) {
-        throw std::invalid_argument("No such texture: " + name);
-    }
-    if (textures[name] == nullptr) {
-        throw std::invalid_argument("Texture is unset: " + name);
-    }
-    return textures[name];
-}
-
-bool Material::hasTexture(const std::string& name) const {
-    return textures.contains(name);
-}
-
-bool Material::isTextureSet(const std::string& name) const {
-    if (!hasTexture(name)) {
-        throw std::invalid_argument("No such texture: " + name);
-    }
-    return !(textures.at(name) == nullptr);
-}
-
-const TypedPropertyStorage& Material::getPropertyStorage() const { 
-    return properties; 
-}
-
-const Material::TextureStorage& Material::getTextureStorage() const { 
-    return textures; 
+    return layout.getPropertyInfo(name).type;
 }
