@@ -7,22 +7,24 @@
 #include <algorithm>
 
 #define PROPERTY_TYPE_LIST \
-    X(Int,   int32_t,    "int"  )   \
-    X(Uint,  uint32_t,   "uint" )   \
-    X(Float, float,      "float")   \
-    X(Bool,  bool,       "bool" )   \
-    X(Vec2,  glm::vec2,  "vec2" )   \
-    X(IVec2, glm::ivec2, "ivec2")   \
-    X(UVec2, glm::uvec2, "uvec2")   \
-    X(Vec3,  glm::vec3,  "vec3" )   \
-    X(IVec3, glm::ivec3, "ivec3")   \
-    X(UVec3, glm::uvec3, "uvec3")   \
-    X(Vec4,  glm::vec4,  "vec4" )   \
-    X(IVec4, glm::ivec4, "ivec4")   \
-    X(UVec4, glm::uvec4, "uvec4")   \
-    X(Mat2,  glm::mat2,  "mat2" )   \
-    X(Mat3,  glm::mat3,  "mat3" )   \
-    X(Mat4,  glm::mat4,  "mat4" )   \
+    X(Int,    int32_t,    "int"     ) \
+    X(Uint,   uint32_t,   "uint"    ) \
+    X(Uint64, uint64_t,   "uint64_t") \ 
+    X(Int64,  int64_t,    "int64_t" ) \ 
+    X(Float,  float,      "float"   ) \
+    X(Bool,   bool,       "bool"    ) \
+    X(Vec2,   glm::vec2,  "vec2"    ) \
+    X(IVec2,  glm::ivec2, "ivec2"   ) \
+    X(UVec2,  glm::uvec2, "uvec2"   ) \
+    X(Vec3,   glm::vec3,  "vec3"    ) \
+    X(IVec3,  glm::ivec3, "ivec3"   ) \
+    X(UVec3,  glm::uvec3, "uvec3"   ) \
+    X(Vec4,   glm::vec4,  "vec4"    ) \
+    X(IVec4,  glm::ivec4, "ivec4"   ) \
+    X(UVec4,  glm::uvec4, "uvec4"   ) \
+    X(Mat2,   glm::mat2,  "mat2"    ) \
+    X(Mat3,   glm::mat3,  "mat3"    ) \
+    X(Mat4,   glm::mat4,  "mat4"    ) \
 
 class MaterialLayout {
 public:

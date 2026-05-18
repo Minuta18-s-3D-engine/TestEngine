@@ -5,10 +5,31 @@ MaterialBuilder::MaterialBuilder(
 ) : name(_name), cfg(_cfg) {}
 
 MaterialBuilder& MaterialBuilder::addSampler(const std::string& name) {
-    samplers.push_back(name);
+    return addSampler(name, SamplerType::Texture2D);
+}
+
+MaterialBuilder& MaterialBuilder::addSampler(
+    const std::string& name, SamplerType type
+) {
+    if (samplersIndexes.contains(name)) {
+        return *this;
+    }
+
+    SamplerDefinition def;
+    def.type = type;
+    def.slot = static_cast<uint32_t>(samplersIndexes.size());
+    samplersIndexes[name] = samplersIndexes.size();
+    samplerDefinitions.push_back(def);
+
+    resultLayout.addProperty<uint64_t>(name);
+
+    propertyBinders.push_back([name](PropertyDataStorage& storage) {
+        storage.setProperty<uint64_t>(name, 0ULL);
+    });
 
     return *this;
 }
+
 
 Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
     resultLayout.finalize();
@@ -22,7 +43,9 @@ Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
     return Material(
         name,
         cfg,
-        resultLayout,
-        tempStorage
+        std::move(resultLayout),
+        std::move(tempStorage),
+        std::move(samplersIndexes),
+        std::move(samplerDefinitions)
     );
 }

@@ -3,6 +3,7 @@
 
 #include "../utils/EngineTypes.h"
 #include "../assets/utils/ImageData.hpp"
+#include "SamplerType.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -10,17 +11,12 @@
 #include <memory>
 #include <iostream>
 
-enum class TextureType {
-    Texture2D,
-    CubeMap2D
-};
-
 class Texture {
     const uint64_t NO_HANDLE = 0;
 
     uint width, height;
     ImageFormat format;
-    TextureType type;
+    SamplerType type;
 
     uint id;
     uint64_t bindlessHandle = NO_HANDLE;
@@ -31,7 +27,7 @@ public:
         uint width, uint height, 
         ImageFormat format, 
         const uint8_t* image_data,
-        TextureType _type = TextureType::Texture2D
+        SamplerType _type = SamplerType::Texture2D
     );
     ~Texture();
 
@@ -47,7 +43,7 @@ public:
     uint getHeight();
     uint getId();
     uint64_t getHandle() const;
-    TextureType getType() const;
+    SamplerType getType() const;
 
     static std::shared_ptr<Texture> create(const ImageData* img);
 };

@@ -4,12 +4,15 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <unordered_map>
 
 #include "Material.hpp"
 #include "MaterialGraphicsConfig.hpp"
 #include "PropertyDataStorage.hpp"
 #include "MaterialLayout.hpp"
 #include "MaterialDataBuffer.hpp"
+#include "../graphics/SamplerType.hpp"
+#include "../graphics/SamplerDefinition.hpp"
 
 class MaterialBuilder {
     MaterialGraphicsConfig cfg;
@@ -17,7 +20,8 @@ class MaterialBuilder {
 
     using BinderFunc = std::function<void(PropertyDataStorage&)>;
     std::vector<BinderFunc> propertyBinders;
-    std::vector<std::string> samplers;
+    std::unordered_map<std::string, size_t> samplersIndexes;
+    std::vector<SamplerDefinition> samplerDefinitions;
 
     MaterialLayout resultLayout; 
 public:
@@ -32,16 +36,17 @@ public:
     );
 
     MaterialBuilder& addSampler(const std::string& name);
+    MaterialBuilder& addSampler(const std::string& name, SamplerType type);
 
     Material finalize(MaterialDataBuffer& buffer);
 };
 
 template <typename T>
 MaterialBuilder& MaterialBuilder::addProperty(const std::string& name) {
-    resultLayout.addProperty(name);
+    resultLayout.addProperty<T>(name);
 
     propertyBinders.push_back(
-        [name, defaultValue](PropertyDataStorage& storage) {
+        [name](PropertyDataStorage& storage) {
             storage.setProperty<T>(name);
         }
     );
@@ -53,7 +58,7 @@ template <typename T>
 MaterialBuilder& MaterialBuilder::addProperty(
     const std::string& name, const T& defaultValue
 ) {
-    resultLayout.addProperty(name);
+    resultLayout.addProperty<T>(name);
 
     propertyBinders.push_back(
         [name, defaultValue](PropertyDataStorage& storage) {

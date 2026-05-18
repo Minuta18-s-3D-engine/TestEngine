@@ -2,14 +2,14 @@
 
 GLenum Texture::getGLTarget() const {
     switch (type) {
-        case TextureType::Texture2D: return GL_TEXTURE_2D;
-        case TextureType::CubeMap2D: return GL_TEXTURE_CUBE_MAP;
+        case SamplerType::Texture2D: return GL_TEXTURE_2D;
+        case SamplerType::CubeMap2D: return GL_TEXTURE_CUBE_MAP;
     }
 }
 
 Texture::Texture(
     uint width, uint height, ImageFormat format, 
-    const uint8_t* image_data, TextureType _type
+    const uint8_t* image_data, SamplerType _type
 ) : width(width), height(height), format(format), type(_type) {
     glGenTextures(1, &id);
     this->bind();
@@ -20,12 +20,12 @@ Texture::Texture(
 
     GLenum target = getGLTarget();
 
-    if (type == TextureType::Texture2D) {
+    if (type == SamplerType::Texture2D) {
         glTexImage2D(
             GL_TEXTURE_2D, 0, fmt, width, height, 0, 
             fmt, GL_UNSIGNED_BYTE, image_data
         );
-    } else if (type == TextureType::CubeMap2D) {
+    } else if (type == SamplerType::CubeMap2D) {
         for (uint i = 0; i < 6; ++i) {
             glTexImage2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, fmt, 
@@ -36,7 +36,7 @@ Texture::Texture(
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    if (type == TextureType::CubeMap2D) {
+    if (type == SamplerType::CubeMap2D) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
     }
 
@@ -48,8 +48,10 @@ Texture::Texture(
     glGenerateMipmap(GL_TEXTURE_2D);
     this->unbind();
 
-    bindlessHandle = glGetTextureHandleARB(id);
-    glMakeTextureHandleResidentARB(bindlessHandle);
+    if (GL_ARB_bindless_texture) {
+        bindlessHandle = glGetTextureHandleARB(id);
+        glMakeTextureHandleResidentARB(bindlessHandle);
+    }
 }
 
 Texture::~Texture() {
@@ -60,11 +62,11 @@ Texture::~Texture() {
 }
 
 void Texture::bind() {
-    glBindTexture(GL_TEXTURE_2D, id);
+    glBindTexture(getGLTarget(), id);
 }
 
 void Texture::unbind() {
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(getGLTarget(), 0);
 }
 
 uint Texture::getWidth() {
@@ -83,7 +85,7 @@ uint64_t Texture::getHandle() const {
     return bindlessHandle;
 }
 
-TextureType Texture::getType() const {
+SamplerType Texture::getType() const {
     return type;
 }
 

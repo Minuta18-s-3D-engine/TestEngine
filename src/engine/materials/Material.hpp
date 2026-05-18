@@ -6,6 +6,7 @@
 #include "MaterialLayout.hpp"
 #include "MaterialGraphicsConfig.hpp"
 #include "PropertyDataStorage.hpp"
+#include "../graphics/SamplerDefinition.hpp"
 
 class Material {
     friend class MaterialBuilder;
@@ -15,11 +16,16 @@ class Material {
     MaterialLayout layout;
     PropertyDataStorage defaultValues;
 
+    std::unordered_map<std::string, size_t> samplersIndexes;
+    std::vector<SamplerDefinition> samplerDefinitions;
+
     Material(
         const std::string& _name,
         MaterialGraphicsConfig _cfg,
         MaterialLayout _layout,
-        PropertyDataStorage&& _storage
+        PropertyDataStorage&& _storage,
+        std::unordered_map<std::string, size_t>&& _samplerIndexes,
+        std::vector<SamplerDefinition>&& samplerDefinitions
     );
 public:
     Material(const Material& other) = delete;
@@ -32,10 +38,16 @@ public:
     const MaterialGraphicsConfig& getConfig() const { return cfg; }
     const MaterialLayout& getLayout() const { return layout; }
     const PropertyDataStorage& getDefaultValues() const { return defaultValues; }
+    const std::vector<SamplerDefinition>& getSamplerDefinitions() const {
+        return samplerDefinitions;
+    }
 
-    bool hasProperty(const std::string& name);
-    bool hasDefaultValue(const std::string& name);
-    MaterialLayout::PropertyType getPropertyType(const std::string& name);
+    bool hasProperty(const std::string& name) const;
+    bool hasDefaultValue(const std::string& name) const;
+    MaterialLayout::PropertyType getPropertyType(const std::string& name) const;
+
+    bool hasSampler(const std::string& name) const;
+    const SamplerDefinition& getSampler(const std::string& name) const;
 
     template <typename T>
     const T& getPropertyDefaultValue(const std::string& name);
