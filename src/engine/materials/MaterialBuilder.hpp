@@ -14,9 +14,12 @@
 #include "../graphics/SamplerType.hpp"
 #include "../graphics/SamplerDefinition.hpp"
 
+class Shader;
+
 class MaterialBuilder {
     MaterialGraphicsConfig cfg;
     std::string name;
+    std::shared_ptr<Shader> shader = nullptr;
 
     using BinderFunc = std::function<void(PropertyDataStorage&)>;
     std::vector<BinderFunc> propertyBinders;
@@ -25,7 +28,11 @@ class MaterialBuilder {
 
     MaterialLayout resultLayout; 
 public:
-    MaterialBuilder(const std::string& _name, MaterialGraphicsConfig _cfg);
+    MaterialBuilder(
+        const std::string& _name, 
+        MaterialGraphicsConfig _cfg,
+        std::shared_ptr<Shader> _shader
+    );
 
     template <typename T>
     MaterialBuilder& addProperty(const std::string& name);
@@ -37,6 +44,8 @@ public:
 
     MaterialBuilder& addSampler(const std::string& name);
     MaterialBuilder& addSampler(const std::string& name, SamplerType type);
+
+    MaterialBuilder& setShader(std::shared_ptr<Shader> _shader);
 
     Material finalize(MaterialDataBuffer& buffer);
 };

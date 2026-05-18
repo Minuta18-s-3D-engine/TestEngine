@@ -2,17 +2,19 @@
 
 Material::Material(
     const std::string& _name,
+    std::shared_ptr<Shader> _shader,
     MaterialGraphicsConfig _cfg,
     MaterialLayout _layout,
     PropertyDataStorage&& _storage,
     std::unordered_map<std::string, size_t>&& _samplerIndexes,
     std::vector<SamplerDefinition>&& _samplerDefinitions
-) : name(_name), cfg(_cfg), layout(std::move(_layout)), 
+) : name(_name), shader(_shader), cfg(_cfg), layout(std::move(_layout)), 
     samplersIndexes(_samplerIndexes), samplerDefinitions(_samplerDefinitions),
     defaultValues(std::move(_storage)) {}
 
 Material::Material(Material&& other) noexcept
-  : name(std::move(other.name)), 
+  : name(std::move(other.name)),
+    shader(std::move(other.shader)),
     cfg(std::move(other.cfg)),
     layout(std::move(other.layout)),
     defaultValues(std::move(other.defaultValues)),
@@ -22,6 +24,7 @@ Material::Material(Material&& other) noexcept
 Material& Material::operator=(Material&& other) noexcept {
     if (this != &other) {
         name = std::move(other.name);
+        shader = std::move(other.shader);
         cfg = std::move(other.cfg);
         layout = std::move(other.layout);
         defaultValues = std::move(other.defaultValues);
@@ -44,7 +47,7 @@ bool Material::hasSampler(const std::string& name) const {
 }
 
 const SamplerDefinition& Material::getSampler(const std::string& name) const {
-    size_t index = samplersIndexes[name];
+    size_t index = samplersIndexes.at(name);
     return samplerDefinitions[index];
 }
 

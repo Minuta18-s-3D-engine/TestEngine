@@ -1,8 +1,9 @@
 #include "MaterialBuilder.hpp"
 
 MaterialBuilder::MaterialBuilder(
-    const std::string& _name, MaterialGraphicsConfig _cfg
-) : name(_name), cfg(_cfg) {}
+    const std::string& _name, MaterialGraphicsConfig _cfg, 
+    std::shared_ptr<Shader> _shader
+) : name(_name), cfg(_cfg), shader(_shader) {}
 
 MaterialBuilder& MaterialBuilder::addSampler(const std::string& name) {
     return addSampler(name, SamplerType::Texture2D);
@@ -30,7 +31,6 @@ MaterialBuilder& MaterialBuilder::addSampler(
     return *this;
 }
 
-
 Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
     resultLayout.finalize();
 
@@ -42,6 +42,7 @@ Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
 
     return Material(
         name,
+        shader,
         cfg,
         std::move(resultLayout),
         std::move(tempStorage),

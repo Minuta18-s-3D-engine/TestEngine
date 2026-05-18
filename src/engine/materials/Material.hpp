@@ -2,16 +2,20 @@
 #define ENGINE_MATERIALS_MATERIAL_H_
 
 #include <string>
+#include <memory>
 
 #include "MaterialLayout.hpp"
 #include "MaterialGraphicsConfig.hpp"
 #include "PropertyDataStorage.hpp"
 #include "../graphics/SamplerDefinition.hpp"
 
+class Shader;
+
 class Material {
     friend class MaterialBuilder;
 
     std::string name;
+    std::shared_ptr<Shader> shader;
     MaterialGraphicsConfig cfg;
     MaterialLayout layout;
     PropertyDataStorage defaultValues;
@@ -21,6 +25,7 @@ class Material {
 
     Material(
         const std::string& _name,
+        std::shared_ptr<Shader> _shader,
         MaterialGraphicsConfig _cfg,
         MaterialLayout _layout,
         PropertyDataStorage&& _storage,
@@ -51,6 +56,8 @@ public:
 
     template <typename T>
     const T& getPropertyDefaultValue(const std::string& name);
+
+    std::shared_ptr<Shader> getShader() const { return shader; }
 };
 
 template <typename T>
