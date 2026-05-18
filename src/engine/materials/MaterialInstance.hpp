@@ -1,70 +1,68 @@
 #ifndef ENGINE_MATERIALS_MATERIALINSTANCE_H_
 #define ENGINE_MATERIALS_MATERIALINSTANCE_H_
 
-#include <memory>
+#include <string>
+#include <unordered_map>
 
-#include "TypedPropertyStorage.hpp"
 #include "Material.hpp"
-
-class Shader;
+#include "MaterialDataBuffer.hpp"
+#include "../graphics/Texture.hpp"
 
 class MaterialInstance {
-    std::shared_ptr<Shader> shader;
-    std::shared_ptr<Material> material;
-    TypedPropertyStorage propertyOverrides;
-    Material::TextureStorage textureOverrides;
     std::string name;
 
-    void checkTextureExists(const std::string& name) const;
+    const Material* baseMaterial;
+    MaterialDataBuffer* buffer;
+    PropertyDataStorage properties;
+
+    std::unordered_map<std::string, std::shared_ptr<Texture>> samplers;
+
+    void throwIfNoSampler(const std::string& samplerName) const;
+    void throwIfNoProperty(const std::string& propertyName) const;
 public:
     MaterialInstance(
-        const std::string& _name,
-        std::shared_ptr<Shader> _shader,
-        std::shared_ptr<Material> _material
+        const std::string& _name, 
+        const Material& _material, 
+        MaterialDataBuffer& _buffer
     );
 
-    template <typename T>
-    MaterialInstance& setProperty(
-        const std::string& name, const T& value
-    ) {
-        if (!material->hasProperty(name)) {
-            throw std::invalid_argument(
-                "Property '" + name + "' does not exist in the material."
-            );
-        }
-        propertyOverrides.setProperty<T>(name, value);
-        return *this;
-    }
+    ~MaterialInstance() = default;
+    
+    MaterialInstance(const MaterialInstance& other);
+    MaterialInstance& operator=(const MaterialInstance& other);
 
-    template <typename T>
-    MaterialInstance& setProperty(const std::string& name) {
-        propertyOverrides.setProperty<T>(name);
-        return *this;
-    }
-
-    template <typename T>
-    const T& getProperty(const std::string& name) const {
-        if (propertyOverrides.hasProperty(name)) {
-            return propertyOverrides.getProperty<T>(name);
-        }
-        return material->getProperty<T>(name);
-    }
+    MaterialInstance(MaterialInstance&& other) noexcept;
+    MaterialInstance& operator=(MaterialInstance&& other) noexcept;
 
     bool hasProperty(const std::string& name) const;
 
-    MaterialInstance& setTexture(
-        const std::string& name, std::shared_ptr<Texture> _tex
-    );
-    MaterialInstance& setTexture(const std::string& name);
-    std::shared_ptr<Texture> getTexture(const std::string& name);
-    bool hasTexture(const std::string& name) const;
+    template <typename T>
+    void setProperty(const std::string& name, const T& value);
 
-    const std::string& getName() const { return name; }
-    std::shared_ptr<Shader> getShader() const { return shader; }
-    std::shared_ptr<Material> getMaterial() const { return material; }
+    template <typename T>
+    const T& getProperties(const std::string& name) const;
 
-    const TypedPropertyStorage& getPropertyStorage() const;
-    const Material::TextureStorage& getTextureStorage() const;
+    bool hasSampler(const std::string& name) const;
+    void setSampler(const std::string& name, std::shared_ptr<Texture> texture);
+    std::shared_ptr<Texture> getSampler(const std::string& name) const;
+
+    void bindSamplers() const;
+    void unbindSamplers() const;
+
+    const Material& getMaterial() const { return *baseMaterial; }
+    const PropertyDataStorage& getProperties() const { return properties; }
 };
+
+template <typename T>
+void MaterialInstance::setProperty(const std::string& name, const T& value) {
+    throwIfNoProperty(name);
+    properties.setProperty<T>(name, value);
+}
+
+template <typename T>
+const T& MaterialInstance::getProperties(const std::string& name) const {
+    throwIfNoProperty(name);
+    return properties.getProperty<T>(name);
+}
 
 #endif // ENGINE_MATERIALS_MATERIALINSTANCE_H_

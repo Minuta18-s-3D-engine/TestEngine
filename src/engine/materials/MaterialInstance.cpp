@@ -1,54 +1,122 @@
 #include "MaterialInstance.hpp"
 
 MaterialInstance::MaterialInstance(
-    const std::string& _name,
-    std::shared_ptr<Shader> _shader,
-    std::shared_ptr<Material> _material
-) : shader(_shader), material(_material), name(_name) {
+    const std::string& _name, 
+    const Material& _material, 
+    MaterialDataBuffer& _buffer
+) : name(_name), baseMaterial(&_material), buffer(&_buffer), 
+    properties(baseMaterial->getDefaultValues()) {}
+
+MaterialInstance::MaterialInstance(const MaterialInstance& other)
+  : name(other.name),
+    baseMaterial(other.baseMaterial),
+    buffer(other.buffer),
+    properties(other.properties),
+    samplers(other.samplers) {}
+
+MaterialInstance& MaterialInstance::operator=(const MaterialInstance& other) {
+    if (this != &other) {
+        name = other.name;
+        baseMaterial = other.baseMaterial;
+        buffer = other.buffer;
+        properties = other.properties;
+        samplers = other.samplers;
+    }
+    return *this;
 }
 
-void MaterialInstance::checkTextureExists(const std::string& name) const {
-    if (!material->hasTexture(name)) {
+MaterialInstance::MaterialInstance(MaterialInstance&& other) noexcept
+  : name(std::move(other.name)),
+    baseMaterial(other.baseMaterial),
+    buffer(other.buffer),
+    properties(std::move(other.properties)),
+    samplers(std::move(other.samplers)) {
+    other.baseMaterial = nullptr;
+    other.buffer = nullptr;
+}
+
+MaterialInstance& MaterialInstance::operator=(
+    MaterialInstance&& other
+) noexcept {
+    if (this != &other) {
+        name = std::move(other.name);
+        baseMaterial = other.baseMaterial;
+        buffer = other.buffer;
+        properties = std::move(other.properties);
+        samplers = std::move(other.samplers);
+
+        other.baseMaterial = nullptr;
+        other.buffer = nullptr;
+    }
+    return *this;
+}
+
+void MaterialInstance::throwIfNoSampler(const std::string& samplerName) const {
+    if (!baseMaterial->hasSampler(samplerName)) {
         throw std::invalid_argument(
-            "Texture '" + name + "' does not exist in the material."
+            "Material \"" + name + "\" has no sampler \"" + samplerName + "\""
+        );
+    }
+}
+
+void MaterialInstance::throwIfNoProperty(
+    const std::string& propertyName
+) const {
+    if (!baseMaterial->hasProperty(propertyName)) {
+        throw std::invalid_argument(
+            "Material \"" + name + "\" has no property \"" + propertyName + 
+            "\""
         );
     }
 }
 
 bool MaterialInstance::hasProperty(const std::string& name) const {
-    return propertyOverrides.hasProperty(name) || material->hasProperty(name);
+    return baseMaterial->hasProperty(name);
 }
 
-MaterialInstance& MaterialInstance::setTexture(
-    const std::string& name, std::shared_ptr<Texture> _tex
+bool MaterialInstance::hasSampler(const std::string& name) const {
+    return baseMaterial->hasSampler(name);
+}
+
+void MaterialInstance::setSampler(
+    const std::string& _name,
+    std::shared_ptr<Texture> _texture
 ) {
-    checkTextureExists(name);
-    textureOverrides[name] = _tex;
-    return *this;
+    throwIfNoSampler(_name);
+    samplers[_name] = _texture;
+
+    uint64_t handle = _texture ? _texture->getHandle() : 0ULL;
+    properties.setProperty<uint64_t>(_name, handle);
 }
 
-MaterialInstance& MaterialInstance::setTexture(const std::string& name) {
-    checkTextureExists(name);
-    textureOverrides.erase(name);
-    return *this;
-}
-
-std::shared_ptr<Texture> MaterialInstance::getTexture(const std::string& name) {
-    auto it = textureOverrides.find(name);
-    if (it != textureOverrides.end()) {
+std::shared_ptr<Texture> MaterialInstance::getSampler(
+    const std::string& samplerName
+) const {
+    throwIfNoSampler(samplerName);
+    auto it = samplers.find(samplerName);
+    if (it != samplers.end()) {
         return it->second;
     }
-    return material->getTexture(name);
+    return nullptr;
 }
 
-bool MaterialInstance::hasTexture(const std::string& name) const {
-    return textureOverrides.contains(name) || material->hasTexture(name);
+void MaterialInstance::bindSamplers() const {
+    const GLuint GL_NO_BIND = 0;
+
+    for (const auto& samplerDef : baseMaterial->getSamplerDefinitions()) {
+        auto it = samplers.find(samplerDef.name);
+
+        if (it != samplers.end() && it->second) {
+            glBindTextureUnit(samplerDef.slot, it->second->getId());
+        } else {
+            glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
+        }
+    }
 }
 
-const TypedPropertyStorage& MaterialInstance::getPropertyStorage() const {
-    return propertyOverrides;
-}
-
-const Material::TextureStorage& MaterialInstance::getTextureStorage() const {
-    return textureOverrides;
+void MaterialInstance::unbindSamplers() const {
+    const GLuint GL_NO_BIND = 0;
+    for (const auto& samplerDef : baseMaterial->getSamplerDefinitions()) {
+        glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
+    }
 }
