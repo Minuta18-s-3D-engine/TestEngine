@@ -1,12 +1,10 @@
-{{ material_definition }}
-
 // Built-in variables available in the shader:
 // currentMaterial     - ({{ material_name }}) variable that contains current 
 //                       material.
 // Attributes:
 // a_Position          - (vec3) Vertex position in Object Space.
-// a_TexCoords         - (vec2) UV coordinates.
 // a_Normal            - (vec3) Normal in Object Space.
+// a_TexCoords         - (vec2) UV coordinates.
 // a_Tangent           - (vec3) Tangent for normal mapping.
 // a_Bitangent         - (vec3) Bitangent for normal mapping.
 // Uniforms:
@@ -22,9 +20,11 @@
 // u_Projection        - (mat4) View-to-Clip matrix.
 // u_InvModel, u_InvView, u_InvProjection (mat4) inverse matrices.
 // Outputs:
-// v_Data.worldPos     - (vec3) World-space position.
-// v_Data.uv           - (vec2) UV coordinates.
-// v_Data.normal       - (vec3) World-space normal.
+// v_WorldPos     - (vec3) World-space position.
+// v_UV           - (vec2) UV coordinates.
+// v_Normal       - (vec3) World-space normal.
+// v_Tangent      - (vec3) Tangent
+// v_Bitangent    - (vec3) Bitangent
 
 void vertex() {
     // Your code here

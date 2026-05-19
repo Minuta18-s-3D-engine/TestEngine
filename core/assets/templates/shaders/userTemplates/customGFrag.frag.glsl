@@ -1,10 +1,12 @@
-{{ material_definition }}
-
 // Built-in variables available in the shader:
 // currentMaterial     - ({{ material_name }}) variable that contains current 
 //                       material.
 // Inputs:
-// v_Data              - (struct) Interpolated data from vertex shader.
+// v_WorldPos          - (vec3) World-space position.
+// v_UV                - (vec2) UV coordinates.
+// v_Normal            - (vec3) World-space normal.
+// v_Tangent           - (vec3) Tangent
+// v_Bitangent         - (vec3) Bitangent
 // Uniforms:
 // u_Time              - (float) Time in seconds.
 // u_DeltaTime         - (float) Frame time.
