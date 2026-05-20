@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
+#include <exception>
+#include <stdexcept>
 
 #define PROPERTY_TYPE_LIST \
     X(Int,    int32_t,    "int"     ) \
@@ -61,7 +63,10 @@ public:
         size_t size;
     };
 private:
+    using SortEntry = std::pair<std::size_t, const std::string&>; 
+
     std::unordered_map<std::string, Property> properties;
+    std::vector<std::string> propsOrder;
 
     size_t materialSize = 0;
     size_t maxAlignment;  
@@ -78,6 +83,8 @@ public:
 
     void finalize();
     bool isFinalized() const;
+
+    std::vector<std::string> getPropertyOrder() const;
 };
 
 template <typename T>

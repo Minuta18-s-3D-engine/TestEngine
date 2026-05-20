@@ -49,8 +49,7 @@ size_t MaterialLayout::getStd430Size(PropertyType type) {
 void MaterialLayout::repackData() {
     if (finalized) return;
     
-    using SortEntry = std::pair<std::size_t, const std::string&>; 
-    std::vector<SortEntry> sortedProps;
+    std::vector<MaterialLayout::SortEntry> sortedProps;
     for (const auto& [name, prop] : properties) {
         sortedProps.push_back({ getStd430Alignment(prop.type), name });
     }
@@ -78,6 +77,11 @@ void MaterialLayout::repackData() {
     }
 
     materialSize = (currentOffset + maxAlignment - 1) & ~(maxAlignment - 1);
+    
+    propsOrder.reserve(sortedProps.size());
+    for (const auto& [size, name] : sortedProps) {
+        propsOrder.push_back(name);
+    }
 }
 
 bool MaterialLayout::hasProperty(const std::string& name) const {
@@ -106,3 +110,12 @@ bool MaterialLayout::isFinalized() const {
     return finalized;
 }
 
+std::vector<std::string> MaterialLayout::getPropertyOrder() const {
+    if (!finalized) {
+        throw std::invalid_argument(
+            "Unable to get property order before finalization"
+        );
+    }
+
+    return propsOrder;
+}

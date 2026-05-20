@@ -41,10 +41,6 @@ layout(std430, binding = 4) restrict buffer bvhIndicesSSBO {
     uint b_BvhIndices[];
 };
 
-{{ material_definition }}
-
-Material_Structure_{{ material_name }} currentMaterial;
-
 layout(std430, binding = 5) buffer materialBuffer {
     uint b_MaterialData[];
 }
@@ -74,3 +70,5 @@ uniform mat4  u_InvView;
 uniform mat4  u_InvProjection;
 uniform float u_ZNear;
 uniform float u_ZFar;
+
+{{ material_definition }}
