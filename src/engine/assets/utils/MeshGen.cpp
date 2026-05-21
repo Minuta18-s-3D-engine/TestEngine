@@ -4,7 +4,7 @@
 
 std::shared_ptr<Mesh> generateCubeMesh(
     glm::vec3 scale, glm::vec2 textureScale,
-    std::string textureKey, AssetManager& manager, Material mat
+    std::string textureKey, AssetManager& manager, OldMaterial mat
 ) {
     float data[24 * 14] = {
         // POS         NORMAL    TEX CORDS      TAN      BITAN

@@ -5,7 +5,7 @@
 #include "../../graphics/Shader.hpp"
 #include "BaseMaterial.hpp"
 
-class Material : public BaseMaterial {
+class OldMaterial : public BaseMaterial {
 public:
     glm::vec3 ambient;
     glm::vec3 diffuse;
@@ -14,14 +14,14 @@ public:
     glm::vec3 color;
     float shininess;
 
-    Material(
+    OldMaterial(
         glm::vec3 color = glm::vec3(0.8f, 0.8f, 0.8f),
         glm::vec3 ambient = glm::vec3(0.1f, 0.1f, 0.1f),
         glm::vec3 diffuse = glm::vec3(0.5f, 0.5f, 0.5f),
         glm::vec3 specular = glm::vec3(0.2f, 0.2f, 0.2f),
         float shininess = 16
     );
-    ~Material();
+    ~OldMaterial();
 
     void passToShader(Shader& shader, std::string name);
 };

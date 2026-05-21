@@ -119,5 +119,6 @@ std::pair<std::string, ShaderDiagnostic> Preprocessor::preprocess(
         return { resultingCode.str(), diagnostic };
     } catch (std::exception& e) {
         onException(e, diagnostic);
+        return { "", diagnostic };
     } 
 }

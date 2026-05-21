@@ -17,6 +17,7 @@ MaterialBuilder& MaterialBuilder::addSampler(
     }
 
     SamplerDefinition def;
+    def.name = name;
     def.type = type;
     def.slot = static_cast<uint32_t>(samplersIndexes.size());
     samplersIndexes[name] = samplersIndexes.size();

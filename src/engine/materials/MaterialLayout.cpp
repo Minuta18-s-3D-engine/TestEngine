@@ -16,6 +16,7 @@ size_t MaterialLayout::getStd430Alignment(PropertyType type) {
             return 4;
         case PropertyType::Vec2:  case PropertyType::IVec2: 
         case PropertyType::UVec2: case PropertyType::Mat2: 
+        case PropertyType::Int64: case PropertyType::Uint64: 
             return 8;
         case PropertyType::Vec3:  case PropertyType::IVec3: 
         case PropertyType::UVec3: case PropertyType::UVec4:
@@ -37,7 +38,8 @@ size_t MaterialLayout::getStd430Size(PropertyType type) {
         case PropertyType::Mat4:
             return 64;
         case PropertyType::Vec2:  case PropertyType::IVec2: 
-        case PropertyType::UVec2: 
+        case PropertyType::UVec2: case PropertyType::Int64:
+        case PropertyType::Uint64: 
             return 8;
         case PropertyType::Vec4:  case PropertyType::IVec4: 
         case PropertyType::UVec4: case PropertyType::Mat2:  
@@ -51,36 +53,42 @@ void MaterialLayout::repackData() {
     
     std::vector<MaterialLayout::SortEntry> sortedProps;
     for (const auto& [name, prop] : properties) {
-        sortedProps.push_back({ getStd430Alignment(prop.type), name });
+        sortedProps.push_back({ 
+            getStd430Alignment(prop.type),
+            getStd430Size(prop.type),
+            name 
+        });
     }
 
     std::sort(sortedProps.begin(), sortedProps.end(), [](
-        const SortEntry& a, const SortEntry& b 
+        const MaterialLayout::SortEntry& a, 
+        const MaterialLayout::SortEntry& b 
     ) {
-        return a.first > b.first;
+        if (a.alignment != b.alignment) return a.alignment > b.alignment;
+        if (a.size != b.size) return a.size > b.size;
+        return a.name < b.name;
     });
 
     size_t currentOffset = 0;
     maxAlignment = 4; // Min. alignment in GLSL is 4 bytes.
     for (const auto& entry : sortedProps) {
-        Property& prop = properties.at(entry.second);
-        size_t align = entry.first;
-        size_t size = getStd430Size(prop.type);
+        Property& prop = properties.at(entry.name);
 
-        currentOffset = (currentOffset + align - 1) & ~(align - 1);
+        currentOffset = (currentOffset + entry.alignment - 1) & 
+            ~(entry.alignment - 1);
 
         prop.offset = currentOffset;
-        prop.size = size;
+        prop.size = entry.size;
 
-        currentOffset += size;
-        maxAlignment = std::max(maxAlignment, align);
+        currentOffset += entry.size;
+        maxAlignment = std::max(maxAlignment, entry.alignment);
     }
 
     materialSize = (currentOffset + maxAlignment - 1) & ~(maxAlignment - 1);
     
     propsOrder.reserve(sortedProps.size());
-    for (const auto& [size, name] : sortedProps) {
-        propsOrder.push_back(name);
+    for (const auto& prop: sortedProps) {
+        propsOrder.push_back(prop.name);
     }
 }
 
@@ -116,6 +124,5 @@ std::vector<std::string> MaterialLayout::getPropertyOrder() const {
             "Unable to get property order before finalization"
         );
     }
-
     return propsOrder;
 }

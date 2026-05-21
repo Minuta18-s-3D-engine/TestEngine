@@ -1,6 +1,6 @@
 #include "Material.hpp"
 
-Material::Material(
+OldMaterial::OldMaterial(
     glm::vec3 color,
     glm::vec3 ambient,
     glm::vec3 diffuse,
@@ -11,11 +11,11 @@ Material::Material(
 
 }
 
-Material::~Material() {
+OldMaterial::~OldMaterial() {
 
 }
 
-void Material::passToShader(Shader& shader, std::string name) {
+void OldMaterial::passToShader(Shader& shader, std::string name) {
     shader.setUniform(name + ".ambient", ambient);
     shader.setUniform(name + ".diffuse", diffuse);
     shader.setUniform(name + ".specular", specular);

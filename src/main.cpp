@@ -42,6 +42,53 @@
 #include "engine/project/ProjectLoader.hpp"
 #include "engine/materials/preprocessor/Preprocessor.hpp"
 
+#include "engine/materials/Material.hpp"
+#include "engine/materials/MaterialBuilder.hpp"
+#include "engine/materials/MaterialDataBuffer.hpp"
+#include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
+
+
+void setupSimpleMaterial(
+    Project& proj, std::shared_ptr<Shader> shader
+) {
+    MaterialDataBuffer globalBuffer;
+
+    MaterialGraphicsConfig cfg{
+        .renderingType = RenderingType::Forward
+    };
+    Material simpleMaterial = MaterialBuilder(
+        "SimpleMaterial", cfg, shader
+    ).addProperty<int>("u_IntProperty")
+        .addProperty<uint>("u_UintProperty", 3)
+        .addProperty<float>("u_FloatProperty", 5.0f)
+        .addProperty<float>("u_AnotherFloatProperty", 4.0f)
+        .addProperty<bool>("u_BoolProperty", true)
+        .addProperty<int64_t>(
+            "u_Int64Property", static_cast<int64_t>(INT32_MAX) + 1)
+        .addProperty<uint64_t>("u_Uint64Property")
+        .addProperty<glm::vec2>("u_Vec2Property")
+        .addProperty<glm::uvec3>("u_Uvec3Property", glm::uvec3(0.0, 1.0, 2.0))
+        .addProperty<glm::ivec4>("u_Ivec4Property")
+        .addProperty<glm::mat3>("u_Mat3Prop")
+        .addSampler("u_exampleSampler")
+        .addSampler("u_exampleAnotherSampler", SamplerType::Texture2D)
+        .addSampler("u_exampleSkybox", SamplerType::CubeMap2D)
+        .finalize(globalBuffer);
+
+    std::string userCode = proj.getFilesystem().readFile(
+        "core://assets/templates/shaders/userTemplates/customGVert.vert.glsl"
+    );
+
+    ShaderCodeGenerator generator;
+    std::string generatedSource = generator.generateShader(
+        simpleMaterial, "forwardVertex", userCode, "vertex"
+    );
+
+    proj.getFilesystem().writeFile(
+        "core://generated.glsl", generatedSource, true
+    );
+}
+
 namespace fs = std::filesystem;
 
 Light l1(glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f));
@@ -50,7 +97,7 @@ const float MOUSE_SENSITIVITY = 0.10;
 
 // temporary solution
 void createRect(
-    glm::vec3 pos, glm::vec3 scale, glm::vec2 textureScale, Material mat, 
+    glm::vec3 pos, glm::vec3 scale, glm::vec2 textureScale, OldMaterial mat, 
     std::string textureKey, AssetManager& manager,
     GameObjectManager& objectManager
 ) {
@@ -197,8 +244,11 @@ int main(int argc, char* argv[]) {
         "core://assets/shaders/lightingShader.fragment.glsl"
     );
 
-    assetManager.set<Shader>(std::make_shared<Shader>(geomShader), "shaders/geomShader");
+    std::shared_ptr<Shader> geomShaderPtr = std::make_shared<Shader>(geomShader);
+    assetManager.set<Shader>(geomShaderPtr, "shaders/geomShader");
     assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
+
+    setupSimpleMaterial(project, geomShaderPtr);
 
     ComputeShader buildClustersShader("core://assets/shaders/buildClusters.comp.glsl"), 
         lightCullingShader("core://assets/shaders/lightCulling.comp.glsl");
@@ -220,7 +270,7 @@ int main(int argc, char* argv[]) {
 
     createRect(
         glm::vec3(2.0, 2.0, 5.0), glm::vec3(1.0, 1.0, 1.0), 
-        glm::vec2(1.0, 1.0), Material(), "materials/container",
+        glm::vec2(1.0, 1.0), OldMaterial(), "materials/container",
         assetManager, objectManager
     );
 

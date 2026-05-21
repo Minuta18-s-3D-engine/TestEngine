@@ -26,7 +26,7 @@ public:
     PropertyDataStorage(PropertyDataStorage&& other) noexcept;
     PropertyDataStorage& operator=(PropertyDataStorage&& other) noexcept;
 
-    bool hasProperty(const std::string& name);
+    bool hasProperty(const std::string& name) const;
 
     template <typename T>
     void setProperty(const std::string& name, const T& value);
@@ -40,7 +40,7 @@ void PropertyDataStorage::setProperty(
     const std::string& name, const T& value
 ) {
     if (!hasProperty(name)) {
-        throw std::invalid_argument("No such property: " + name)
+        throw std::invalid_argument("No such property: " + name);
     }
 
     const auto& info = layout.getPropertyInfo(name);
@@ -56,10 +56,10 @@ void PropertyDataStorage::setProperty(
 template <typename T>
 T PropertyDataStorage::getProperty(const std::string& name) const {
     if (!hasProperty(name)) {
-        throw std::invalid_argument("No such property: " + name)
+        throw std::invalid_argument("No such property: " + name);
     }
     
-    const auto& info = layout.getPropertyInfo();
+    const auto& info = layout.getPropertyInfo(name);
 
     T value;
     buffer.read(instanceId, info.offset, sizeof(T), &value);

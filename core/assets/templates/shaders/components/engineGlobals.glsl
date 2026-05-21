@@ -43,16 +43,16 @@ layout(std430, binding = 4) restrict buffer bvhIndicesSSBO {
 
 layout(std430, binding = 5) buffer materialBuffer {
     uint b_MaterialData[];
-}
+};
 
 struct MaterialMeta {
     uint offset;
     uint size;
-}
+};
 
 layout (std430, binding = 6) buffer materialMetaSSBO {
     MaterialMeta b_MaterialMeta[];
-}
+};
 
 uniform uint  u_CurrentMaterialStartId;
 uniform float u_Time;

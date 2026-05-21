@@ -1,18 +1,21 @@
 #ifndef ENGINE_MATERIALS_MATERIALLAYOUT_H_
 #define ENGINE_MATERIALS_MATERIALLAYOUT_H_
 
+#include <glm/glm.hpp>
+
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
 #include <exception>
+#include <iostream>
 #include <stdexcept>
 
 #define PROPERTY_TYPE_LIST \
     X(Int,    int32_t,    "int"     ) \
     X(Uint,   uint32_t,   "uint"    ) \
-    X(Uint64, uint64_t,   "uint64_t") \ 
-    X(Int64,  int64_t,    "int64_t" ) \ 
+    X(Uint64, uint64_t,   "uint64_t") \
+    X(Int64,  int64_t,    "int64_t" ) \
     X(Float,  float,      "float"   ) \
     X(Bool,   bool,       "bool"    ) \
     X(Vec2,   glm::vec2,  "vec2"    ) \
@@ -63,7 +66,11 @@ public:
         size_t size;
     };
 private:
-    using SortEntry = std::pair<std::size_t, const std::string&>; 
+    struct SortEntry {
+        size_t alignment;
+        size_t size;
+        std::string name;
+    };
 
     std::unordered_map<std::string, Property> properties;
     std::vector<std::string> propsOrder;
@@ -95,6 +102,8 @@ void MaterialLayout::addProperty(const std::string& name) {
 
     properties[name] = {
         .type = type,
+        .offset = 0,
+        .size = 0
     };
 }
 

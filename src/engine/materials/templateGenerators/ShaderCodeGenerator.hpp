@@ -5,6 +5,7 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
 
 #include "../../stringProcessing/templateEngine/TemplateEngine.hpp"
 #include "../../stringProcessing/templateEngine/TemplateParser.hpp"

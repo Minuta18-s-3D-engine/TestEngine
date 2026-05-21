@@ -54,12 +54,6 @@ template <typename T>
 MaterialBuilder& MaterialBuilder::addProperty(const std::string& name) {
     resultLayout.addProperty<T>(name);
 
-    propertyBinders.push_back(
-        [name](PropertyDataStorage& storage) {
-            storage.setProperty<T>(name);
-        }
-    );
-
     return *this;
 }
 

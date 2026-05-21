@@ -14,7 +14,7 @@ std::string ShaderCodeGenerator::getIndentStr(uint32_t indent) const {
 }
 
 std::string ShaderCodeGenerator::generateMaterialProperties(
-    const Material& mat, uint32_t indent = 4
+    const Material& mat, uint32_t indent
 ) const {
     const auto& layout = mat.getLayout();
     const auto& props = layout.getPropertyOrder();
@@ -55,7 +55,7 @@ std::string ShaderCodeGenerator::generateSamplerDefinitions(
     std::stringstream result;
     for (const auto& sampler : samplers) {
         result << "uniform " << getGLSLSamplerType(sampler.type) << " ";
-        result << getGLSLSamplerName(sampler.name) << "\n";
+        result << getGLSLSamplerName(sampler.name) << ";\n";
     }
 
     return result.str();
@@ -69,7 +69,8 @@ std::string ShaderCodeGenerator::generateSamplerGetter(
     result << " get_" << name << "() {\n";
     result << "    return ";
     if (GL_ARB_bindless_texture) {
-        result << mat.getName() + "." << name << ";\n";
+        result << getGLSLSamplerType(mat.getSampler(name).type) << 
+            "(currentMaterial." << name << ");\n";
     } else {
         result << getGLSLSamplerName(name) << ";\n";
     }
@@ -155,10 +156,12 @@ std::string ShaderCodeGenerator::unpackVecIndexes(
 }
 
 std::string ShaderCodeGenerator::generateMaterialUnpacker(
-    const Material& mat, const std::string& prop, uint32_t indent = 4
+    const Material& mat, const std::string& prop, uint32_t indent
 ) const {
     const auto& propInfo = mat.getLayout().getPropertyInfo(prop);
-    std::string base = generateBase(propInfo.offset);
+    size_t inArrayOffset = propInfo.offset / 4;
+    int matOffset = static_cast<int>(inArrayOffset);
+    std::string base = generateBase(inArrayOffset);
 
     std::string converterFunc = "";
     switch (propInfo.type) {
@@ -169,10 +172,10 @@ std::string ShaderCodeGenerator::generateMaterialUnpacker(
             converterFunc = unpackUint(base);
             break;
         case MaterialLayout::PropertyType::Int64:
-            converterFunc = unpackInt64(propInfo.offset);
+            converterFunc = unpackInt64(inArrayOffset);
             break;
         case MaterialLayout::PropertyType::Uint64:
-            converterFunc = unpackUint64(propInfo.offset);
+            converterFunc = unpackUint64(inArrayOffset);
             break;
         case MaterialLayout::PropertyType::Float:
             converterFunc = unpackFloat(base);
@@ -182,68 +185,72 @@ std::string ShaderCodeGenerator::generateMaterialUnpacker(
             break;
         case MaterialLayout::PropertyType::Vec2:
             converterFunc = unpackVecIndexes(
-                "vec2", propInfo.offset, propInfo.offset + 1,
+                "vec2", inArrayOffset, inArrayOffset + 1,
                 "uintBitsToFloat"
             );
             break;
         case MaterialLayout::PropertyType::IVec2:
             converterFunc = unpackVecIndexes(
-                "ivec2", propInfo.offset, propInfo.offset + 1,
+                "ivec2", inArrayOffset, inArrayOffset + 1,
                 "int"
             );
             break;
         case MaterialLayout::PropertyType::UVec2:
             converterFunc = unpackVecIndexes(
-                "uvec2", propInfo.offset, propInfo.offset + 1
+                "uvec2", inArrayOffset, inArrayOffset + 1
             );
             break;
         case MaterialLayout::PropertyType::Vec3:
             converterFunc = unpackVecIndexes(
-                "vec3", propInfo.offset, propInfo.offset + 2,
+                "vec3", inArrayOffset, inArrayOffset + 2,
                 "uintBitsToFloat"
             );
             break;
         case MaterialLayout::PropertyType::IVec3:
             converterFunc = unpackVecIndexes(
-                "ivec3", propInfo.offset, propInfo.offset + 2, "int"
+                "ivec3", inArrayOffset, inArrayOffset + 2, "int"
             );
             break;
         case MaterialLayout::PropertyType::UVec3:
             converterFunc = unpackVecIndexes(
-                "uvec3", propInfo.offset, propInfo.offset + 2
+                "uvec3", inArrayOffset, inArrayOffset + 2
             );
             break;
         case MaterialLayout::PropertyType::Vec4:
             converterFunc = unpackVecIndexes(
-                "vec4", propInfo.offset, propInfo.offset + 3,
+                "vec4", inArrayOffset, inArrayOffset + 3,
                 "uintBitsToFloat"
             );
             break;
         case MaterialLayout::PropertyType::IVec4:
             converterFunc = unpackVecIndexes(
-                "ivec4", propInfo.offset, propInfo.offset + 3, "int"
+                "ivec4", inArrayOffset, inArrayOffset + 3, "int"
             );
             break;
         case MaterialLayout::PropertyType::UVec4:
             converterFunc = unpackVecIndexes(
-                "uvec4", propInfo.offset, propInfo.offset + 3
+                "uvec4", inArrayOffset, inArrayOffset + 3
             );
             break;
         case MaterialLayout::PropertyType::Mat2:
             converterFunc = unpackVecIndexes(
-                "mat2", propInfo.offset, propInfo.offset + 3,
+                "mat2", inArrayOffset, inArrayOffset + 3,
                 "uintBitsToFloat"
             ); 
             break;
         case MaterialLayout::PropertyType::Mat3:
             converterFunc = unpackVecIndexes(
-                "mat3", propInfo.offset, propInfo.offset + 8,
+                "mat3", { 
+                    matOffset,     matOffset + 1, matOffset + 2,
+                    matOffset + 4, matOffset + 5, matOffset + 6, 
+                    matOffset + 8, matOffset + 9, matOffset + 10
+                },
                 "uintBitsToFloat"
             ); 
             break;
         case MaterialLayout::PropertyType::Mat4:
             converterFunc = unpackVecIndexes(
-                "mat4", propInfo.offset, propInfo.offset + 15,
+                "mat4", inArrayOffset, inArrayOffset + 15,
                 "uintBitsToFloat"
             ); 
             break;
@@ -277,9 +284,14 @@ std::string ShaderCodeGenerator::generateMaterialDefinition(
 ) const {
     TemplateArguments args;
     args.set("material_name", mat.getName());
-    args.set("sampler_definitions", generateSamplerDefinitions(mat));
+    if (GL_ARB_bindless_texture) {
+        args.set("sampler_definitions", "");
+    } else {
+        args.set("sampler_definitions", generateSamplerDefinitions(mat));
+    }
     args.set("sampler_getters", generateSamplerGetters(mat));
     args.set("unpack_lines", generateUnpackerFunc(mat));
+    args.set("material_properties", generateMaterialProperties(mat));
 
     return templateEngine.render(
         "shaders/materialDefinition.glsl", args
@@ -311,7 +323,7 @@ std::string ShaderCodeGenerator::generateShader(
     args.set("engine_globals", engineGlobals);
     args.set(
         "shader_specific_globals", 
-        templateEngine.render("shaders/components" + type + "Globals.glsl")
+        templateEngine.render("shaders/components/" + type + "Globals.glsl")
     );
     args.set(
         "generated_header", 

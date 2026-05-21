@@ -11,7 +11,7 @@ PropertyDataStorage::PropertyDataStorage(
     instanceId = buffer.allocateBlock(layout.getLayoutSize());
 }
 
-bool PropertyDataStorage::hasProperty(const std::string& name) {
+bool PropertyDataStorage::hasProperty(const std::string& name) const {
     return layout.hasProperty(name);
 }
 

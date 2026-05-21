@@ -22,11 +22,11 @@ public:
     std::vector<Vertex> vertices;
     std::vector<uint> indices;
     std::vector<TextureMaterial> textures;
-    Material mainMaterial;
+    OldMaterial mainMaterial;
     bool hasMaterial;
 
     Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
-        std::vector<TextureMaterial> _textures, Material _mainMaterial);
+        std::vector<TextureMaterial> _textures, OldMaterial _mainMaterial);
     Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
         std::vector<TextureMaterial> _textures);
     ~Mesh();

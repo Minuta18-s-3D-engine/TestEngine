@@ -6,7 +6,7 @@
 
 std::shared_ptr<Mesh> generateCubeMesh(
     glm::vec3 scale, glm::vec2 textureScale,
-    std::string textureKey, AssetManager& manager, Material mat
+    std::string textureKey, AssetManager& manager, OldMaterial mat
 );
 
 #endif // ENGINE_ASSETS_UTILS_MESHGEN_H_

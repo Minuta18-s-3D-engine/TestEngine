@@ -5,6 +5,7 @@ GLenum Texture::getGLTarget() const {
         case SamplerType::Texture2D: return GL_TEXTURE_2D;
         case SamplerType::CubeMap2D: return GL_TEXTURE_CUBE_MAP;
     }
+    return GL_TEXTURE_2D;
 }
 
 Texture::Texture(
