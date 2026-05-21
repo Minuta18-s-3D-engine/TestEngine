@@ -330,6 +330,7 @@ std::string ShaderCodeGenerator::generateShader(
         materialLoaderHeader
     );
     args.set("user_code", userCode);
+    args.set("material_name", mat.getName());
 
     return templateEngine.render("shaders/generalShaderTemplate.glsl", args);
 }
