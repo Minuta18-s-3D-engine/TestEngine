@@ -10,9 +10,7 @@ std::string ShaderCodeGenerator::generateEngineGlobals() const {
 }
 
 std::string ShaderCodeGenerator::getIndentStr(uint32_t indent) const {
-    std::string indentStr = "";
-    for (int i = 0; i < indent; ++i) indentStr += " ";
-    return indentStr;
+    return std::string(indent, ' ');
 }
 
 std::string ShaderCodeGenerator::generateMaterialProperties(
@@ -20,8 +18,6 @@ std::string ShaderCodeGenerator::generateMaterialProperties(
 ) const {
     const auto& layout = mat.getLayout();
     const auto& props = layout.getPropertyOrder();
-    
-    
 
     std::stringstream result;
     for (const std::string& name : props) {
@@ -136,24 +132,26 @@ std::string ShaderCodeGenerator::unpackVec(
 }
 
 std::string ShaderCodeGenerator::unpackVecIndexes(
-    const std::string& type, const std::vector<int>& values
+    const std::string& type, const std::vector<int>& values,
+    const std::string& wrapFunc
 ) const {
     std::vector<std::string> strValues;
     strValues.reserve(values.size());
     for (int index : values) {
-        strValues.push_back(generateBase(index));
+        strValues.push_back(wrapFunc + "(" + generateBase(index) + ")");
     }
     return unpackVec(type, strValues);
 }
 
 std::string ShaderCodeGenerator::unpackVecIndexes(
-    const std::string& type, int minValue, int maxValue
+    const std::string& type, int minValue, int maxValue,
+    const std::string& wrapFunc
 ) const {
     std::vector<int> values(maxValue - minValue + 1);
     for (int i = minValue; i <= maxValue; ++i) {
         values[i - minValue] = i;
     }
-    return unpackVecIndexes(type, values);
+    return unpackVecIndexes(type, values, wrapFunc);
 }
 
 std::string ShaderCodeGenerator::generateMaterialUnpacker(
@@ -166,66 +164,92 @@ std::string ShaderCodeGenerator::generateMaterialUnpacker(
     switch (propInfo.type) {
         case MaterialLayout::PropertyType::Int:
             converterFunc = unpackInt(base);
+            break;
         case MaterialLayout::PropertyType::Uint:
             converterFunc = unpackUint(base);
+            break;
         case MaterialLayout::PropertyType::Int64:
             converterFunc = unpackInt64(propInfo.offset);
+            break;
         case MaterialLayout::PropertyType::Uint64:
             converterFunc = unpackUint64(propInfo.offset);
+            break;
         case MaterialLayout::PropertyType::Float:
             converterFunc = unpackFloat(base);
+            break;
         case MaterialLayout::PropertyType::Bool:
             converterFunc = unpackBool(base);
+            break;
         case MaterialLayout::PropertyType::Vec2:
             converterFunc = unpackVecIndexes(
-                "vec2", propInfo.offset, propInfo.offset + 1
+                "vec2", propInfo.offset, propInfo.offset + 1,
+                "uintBitsToFloat"
             );
+            break;
         case MaterialLayout::PropertyType::IVec2:
             converterFunc = unpackVecIndexes(
-                "ivec2", propInfo.offset, propInfo.offset + 1
+                "ivec2", propInfo.offset, propInfo.offset + 1,
+                "int"
             );
+            break;
         case MaterialLayout::PropertyType::UVec2:
             converterFunc = unpackVecIndexes(
                 "uvec2", propInfo.offset, propInfo.offset + 1
             );
+            break;
         case MaterialLayout::PropertyType::Vec3:
             converterFunc = unpackVecIndexes(
-                "vec3", propInfo.offset, propInfo.offset + 2
+                "vec3", propInfo.offset, propInfo.offset + 2,
+                "uintBitsToFloat"
             );
+            break;
         case MaterialLayout::PropertyType::IVec3:
             converterFunc = unpackVecIndexes(
-                "ivec3", propInfo.offset, propInfo.offset + 2
+                "ivec3", propInfo.offset, propInfo.offset + 2, "int"
             );
+            break;
         case MaterialLayout::PropertyType::UVec3:
             converterFunc = unpackVecIndexes(
                 "uvec3", propInfo.offset, propInfo.offset + 2
             );
+            break;
         case MaterialLayout::PropertyType::Vec4:
             converterFunc = unpackVecIndexes(
-                "vec4", propInfo.offset, propInfo.offset + 3
+                "vec4", propInfo.offset, propInfo.offset + 3,
+                "uintBitsToFloat"
             );
+            break;
         case MaterialLayout::PropertyType::IVec4:
             converterFunc = unpackVecIndexes(
-                "ivec4", propInfo.offset, propInfo.offset + 3
+                "ivec4", propInfo.offset, propInfo.offset + 3, "int"
             );
+            break;
         case MaterialLayout::PropertyType::UVec4:
             converterFunc = unpackVecIndexes(
                 "uvec4", propInfo.offset, propInfo.offset + 3
             );
+            break;
         case MaterialLayout::PropertyType::Mat2:
             converterFunc = unpackVecIndexes(
-                "mat2", propInfo.offset, propInfo.offset + 3
+                "mat2", propInfo.offset, propInfo.offset + 3,
+                "uintBitsToFloat"
             ); 
+            break;
         case MaterialLayout::PropertyType::Mat3:
             converterFunc = unpackVecIndexes(
-                "mat3", propInfo.offset, propInfo.offset + 8
+                "mat3", propInfo.offset, propInfo.offset + 8,
+                "uintBitsToFloat"
             ); 
+            break;
         case MaterialLayout::PropertyType::Mat4:
             converterFunc = unpackVecIndexes(
-                "mat4", propInfo.offset, propInfo.offset + 15
+                "mat4", propInfo.offset, propInfo.offset + 15,
+                "uintBitsToFloat"
             ); 
+            break;
         default:
             converterFunc = "(0 /* Unsupported type */)";
+            break;
     }
 
     std::stringstream result;
@@ -263,14 +287,24 @@ std::string ShaderCodeGenerator::generateMaterialDefinition(
 }
 
 std::string ShaderCodeGenerator::generateShader(
-    const Material& mat, const std::string& type, const std::string& userCode
+    const Material& mat, const std::string& type, const std::string& userCode,
+    const std::string& userFunc
 ) const {
     TemplateArguments engineGlobalsArgs;
     engineGlobalsArgs.set(
         "material_definition", generateMaterialDefinition(mat)
     );
     std::string engineGlobals = templateEngine.render(
-        "shaders/generalShaderTemplate.glsl", engineGlobalsArgs
+        "shaders/components/engineGlobals.glsl", engineGlobalsArgs
+    );
+
+    TemplateArguments materialLoaderHeaderArgs;
+    materialLoaderHeaderArgs.set(
+        "user_func", userFunc
+    );
+    std::string materialLoaderHeader = templateEngine.render(
+        "shaders/headers/materialLoaderHeader.glsl", 
+        materialLoaderHeaderArgs
     );
 
     TemplateArguments args;
@@ -281,7 +315,7 @@ std::string ShaderCodeGenerator::generateShader(
     );
     args.set(
         "generated_header", 
-        templateEngine.render("shaders/headers/materialLoaderHeader.glsl")
+        materialLoaderHeader
     );
     args.set("user_code", userCode);
 

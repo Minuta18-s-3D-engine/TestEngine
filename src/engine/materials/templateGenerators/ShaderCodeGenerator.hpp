@@ -1,6 +1,8 @@
 #ifndef ENGINE_MATERIALS_TEMPLATEGENERATORS_SHADERCODEGENRATOR_H_
 #define ENGINE_MATERIALS_TEMPLATEGENERATORS_SHADERCODEGENRATOR_H_
 
+#include <glad/glad.h>
+
 #include <string>
 #include <sstream>
 
@@ -24,10 +26,12 @@ class ShaderCodeGenerator {
         const std::string& type, const std::vector<std::string>& values
     ) const;
     std::string unpackVecIndexes(
-        const std::string& type, const std::vector<int>& values
+        const std::string& type, const std::vector<int>& values,
+        const std::string& wrapFunc = ""
     ) const;
     std::string unpackVecIndexes(
-        const std::string& type, int minValue, int maxValue
+        const std::string& type, int minValue, int maxValue,
+        const std::string& wrapFunc = ""
     ) const;
     std::string generateMaterialUnpacker(
         const Material& mat, const std::string& prop, uint32_t indent = 4
@@ -51,7 +55,7 @@ public:
     std::string generateMaterialDefinition(const Material& mat) const;
     std::string generateShader(
         const Material& mat, const std::string& type, 
-        const std::string& userCode
+        const std::string& userCode, const std::string& userFunc
     ) const;
 };
 
