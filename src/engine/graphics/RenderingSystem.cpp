@@ -5,7 +5,7 @@ RenderingSystem::RenderingSystem(
     GameObjectManager& _gameObjectManager, 
     EventManager& _eventManager,
     Window& _window,
-    MaterialDataBuffer& _globalMaterialBuffer,
+    MaterialDataBuffer& _globalMaterialBuffer
 ): assetManager(_assetManager), gameObjectManager(_gameObjectManager),
     window(_window), eventManager(_eventManager),
     globalMaterialBuffer(_globalMaterialBuffer) {
@@ -165,5 +165,5 @@ void RenderingSystem::render(float deltaTime) {
 }
 
 void RenderingSystem::update() {
-    this->render();
+    // this->render();
 }

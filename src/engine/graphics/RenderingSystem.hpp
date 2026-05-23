@@ -50,7 +50,7 @@ public:
         GameObjectManager& _gameObjectManager,
         EventManager& _eventManager,
         Window& _window,
-        MaterialDataBuffer& _globalMaterialBuffer,
+        MaterialDataBuffer& _globalMaterialBuffer
     );
     ~RenderingSystem();
 

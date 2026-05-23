@@ -321,10 +321,14 @@ std::string ShaderCodeGenerator::generateShader(
 
     TemplateArguments args;
     args.set("engine_globals", engineGlobals);
-    args.set(
-        "shader_specific_globals", 
-        templateEngine.render("shaders/components/" + type + "Globals.glsl")
-    );
+    if (type == "other") {
+        args.set("shader_specific_globals", "");
+    } else {
+        args.set(
+            "shader_specific_globals", 
+            templateEngine.render("shaders/components/" + type + "Globals.glsl")
+        );
+    }
     args.set(
         "generated_header", 
         materialLoaderHeader

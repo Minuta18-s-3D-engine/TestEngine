@@ -3,7 +3,12 @@
 // learnopengl.com saves the day once again
 // https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/model.h
 
-std::unique_ptr<Model> ModelLoader::loadModel(const VirtualPath& _filename) {
+std::unique_ptr<Model> ModelLoader::loadModel(
+    const VirtualPath& _filename, 
+    std::shared_ptr<Material> _baseMaterial
+) {
+    baseMaterial = _baseMaterial;
+
     std::string filename = _filename.resolve();
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
@@ -18,8 +23,10 @@ std::unique_ptr<Model> ModelLoader::loadModel(const VirtualPath& _filename) {
     }
 
     directory = filename.substr(0, filename.find_last_of('/'));
-
     createdModel = std::make_unique<Model>();
+
+    loadedTextures.clear();
+    loadedMaterials.clear();
 
     processNode(scene->mRootNode, scene);
 
@@ -38,11 +45,10 @@ void ModelLoader::processNode(aiNode* node, const aiScene* scene) {
 }
 
 std::shared_ptr<Mesh> ModelLoader::processMesh(
-    aiMesh* mesh, const aiScene* scene) 
-{
+    aiMesh* mesh, const aiScene* scene
+) {
     std::vector<Vertex> vertices;
     std::vector<uint> indices;
-    std::vector<TextureMaterial> textures;
 
     for (uint i = 0; i < mesh->mNumVertices; ++i) {
         Vertex vertex;
@@ -88,106 +94,99 @@ std::shared_ptr<Mesh> ModelLoader::processMesh(
         }
     }
 
-    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+    std::shared_ptr<MaterialInstance> meshMaterial = nullptr;
 
-    std::vector<TextureMaterial> diffuseMaps = loadMaterialTextures(
-        material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+    if (mesh->mMaterialIndex >= 0) {
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+        meshMaterial = loadMaterial(material, mesh->mMaterialIndex, scene);
+    } else {
+        meshMaterial = std::make_shared<MaterialInstance>(baseMaterial);
+    }
 
-    std::vector<TextureMaterial> specularMaps = loadMaterialTextures(
-        material, aiTextureType_SPECULAR, "texture_specular", scene);
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-
-    std::vector<TextureMaterial> normalMaps = loadMaterialTextures(
-        material, aiTextureType_HEIGHT, "texture_normal", scene);
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-
-    std::vector<TextureMaterial> heightMaps = loadMaterialTextures(
-        material, aiTextureType_AMBIENT, "texture_height", scene);
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
-    return std::make_shared<Mesh>(vertices, indices, textures);
+    return std::make_shared<Mesh>(
+        std::move(vertices), 
+        std::move(indices), 
+        meshMaterial
+    );
 }
 
-std::vector<TextureMaterial> ModelLoader::loadMaterialTextures(
+std::shared_ptr<MaterialInstance> ModelLoader::loadMaterial(
     aiMaterial* mat, 
-    aiTextureType type, 
-    const std::string& typeName,
+    uint32_t matIndex,
     const aiScene* scene
 ) {
-    std::vector<TextureMaterial> textures;
-    for (uint i = 0; i < mat->GetTextureCount(type); ++i) {
+    if (loadedMaterials.contains(matIndex)) {
+        return loadedMaterials[matIndex];
+    }
+
+    auto instance = std::make_shared<MaterialInstance>(baseMaterial);
+
+    if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
         aiString str;
-        mat->GetTexture(type, i, &str);
-        bool skip = false;
-        for (uint j = 0; j < loadedTextures.size(); ++j) {
-            if (std::strcmp(
-                loadedTextures[j].filename.data(),
-                str.C_Str()
-            ) == 0) {
-                textures.push_back(loadedTextures[j]);
-                skip = true;
-                break;
-            }
-        }        
+        mat->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+        std::string path = str.C_Str();
 
-        if (!skip) {
-            TextureType texType;
-            if (typeName == "texture_diffuse") {
-                texType = TextureType::DIFFUSE;
-            } else if (typeName == "texture_specular") {
-                texType = TextureType::SPECULAR;
-            } else if (typeName == "texture_normal") {
-                texType = TextureType::NORMAL;
-            } else if (typeName == "texture_height") {
-                texType = TextureType::HEIGHT;
-            }
+        std::shared_ptr<Texture> tex = nullptr;
+        if (path[0] == '*') {
+            int texIndex = std::stoi(path.substr(1));
+            tex = loadEmbeddedTexture(scene->mTextures[texIndex], path);
+        } else {
+            tex = loadExternalTexture(path);
+        }
 
-            TextureMaterial textureMat;
-
-            std::string texturePath = str.C_Str();
-            // IMPORTANT: Embedded textures are marked "*" in assimp
-            if (texturePath[0] == '*') {
-                int textureIndex = std::stoi(texturePath.substr(1));
-                if (textureIndex >= 0 && 
-                    textureIndex < (int) scene->mNumTextures) {
-                    textureMat = loadEmbeddedTexture(
-                        scene->mTextures[textureIndex],
-                        texType,
-                        texturePath
-                    );
-                }
-            } else {
-                textureMat = loadExternalTexture(texturePath, texType);
-            }
-
-            textures.push_back(textureMat);
-            loadedTextures.push_back(textureMat);
+        if (tex) {
+            instance->setSampler("diffuseMap", tex);
         }
     }
 
-    return textures;
+    if (mat->GetTextureCount(aiTextureType_SPECULAR) > 0) {
+        aiString str;
+        mat->GetTexture(aiTextureType_SPECULAR, 0, &str);
+        std::string path = str.C_Str();
+
+        std::shared_ptr<Texture> tex = nullptr;
+        if (path[0] == '*') {
+            int texIndex = std::stoi(path.substr(1));
+            tex = loadEmbeddedTexture(scene->mTextures[texIndex], path);
+        } else {
+            tex = loadExternalTexture(path);
+        }
+
+        if (tex) {
+            instance->setSampler("specularMap", tex);
+        }
+    }
+
+    loadedMaterials[matIndex] = instance;
+    return instance;
 }
 
-TextureMaterial ModelLoader::loadExternalTexture(
-    const std::string& path, TextureType type
+std::shared_ptr<Texture> ModelLoader::loadExternalTexture(
+    const std::string& path
 ) {    
+    if (loadedTextures.contains(path)) {
+        return loadedTextures[path];
+    }
+
     size_t len = 0;
     auto fullPath = directory + "/" + path;
     auto textureContent = read_bytes(fullPath, len);
     auto texture = this->loadTexture(
         textureContent.get(), len, fullPath);
 
-    auto textureMat = TextureMaterial(texture, type);
-        textureMat.filename = fullPath;
+    loadedTextures[path] = texture;
 
-    return textureMat;
+    return texture;
 }
 
-TextureMaterial ModelLoader::loadEmbeddedTexture(
-    const aiTexture* embeddedTexture, TextureType texType,
+std::shared_ptr<Texture> ModelLoader::loadEmbeddedTexture(
+    const aiTexture* embeddedTexture,
     const std::string& embeddedId
 ) {
+    if (loadedTextures.contains(embeddedId)) {
+        return loadedTextures[embeddedId];
+    }
+
     if (embeddedTexture->mHeight == 0) {
         auto texture = this->loadTexture(
             reinterpret_cast<const uint8_t*>(embeddedTexture->pcData),
@@ -195,10 +194,9 @@ TextureMaterial ModelLoader::loadEmbeddedTexture(
             embeddedId
         );
 
-        auto res = TextureMaterial(texture, texType);
-        res.filename = embeddedId;
+        loadedTextures[embeddedId] = texture;
 
-        return res;
+        return texture;
     } else {
         throw std::runtime_error(
             "Uncompressed textures are not implemented yet"

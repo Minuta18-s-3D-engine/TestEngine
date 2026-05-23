@@ -46,18 +46,27 @@
 
 namespace fs = std::filesystem;
 
-Light l1(glm::vec3(1.5f, 2.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-
 const float MOUSE_SENSITIVITY = 0.10;
 
 // temporary solution
 void createRect(
-    glm::vec3 pos, glm::vec3 scale, glm::vec2 textureScale, OldMaterial mat, 
-    std::string textureKey, AssetManager& manager,
+    glm::vec3 pos, glm::vec3 scale, glm::vec2 textureScale, 
+    std::string baseMaterialKey,
+    std::string diffuseTexKey,
+    std::string specularTexKey,
+    AssetManager& manager,
     GameObjectManager& objectManager
 ) {
+    const Material& baseMaterial = manager.require<Material>(baseMaterialKey);
+    auto matInstance = std::make_shared<MaterialInstance>(baseMaterial);
+
+    matInstance->setSampler(
+        "diffuseMap", manager.getShared<Texture>(diffuseTexKey));
+    matInstance->setSampler(
+        "diffuseMap", manager.getShared<Texture>(specularTexKey));
+
     std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(
-        scale, textureScale, textureKey, manager, mat
+        scale, textureScale, matInstance
     );
 
     std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
@@ -100,19 +109,103 @@ void createPointLight(
 }
 
 void loadTexture(
-    const VirtualPath& path, std::string key, std::string material_key, 
-    const TextureType& type, AssetManager& manager
+    const VirtualPath& path, std::string key, AssetManager& manager
 ) {
     size_t len = 0;
     auto texture_content = read_bytes(path.resolve(), len);
-    auto texture = PngCoder::load_texture(
-        texture_content.get(), len, key);
-    manager.set<Texture>(texture, key);
+    std::shared_ptr<Texture> texture = nullptr;
+    ImageType imgFormat = getImageType(texture_content.get(), len);
+    
+    if (imgFormat == ImageType::PNG) {
+        texture = PngCoder::load_texture(texture_content.get(), len, key);
+    } else if (imgFormat == ImageType::JPG) {
+        texture = JpgCoder::load_texture(texture_content.get(), len, key);
+    } else {
+        throw std::runtime_error("Unsupported image type for texture: " + key);
+    }
 
-    auto mat = std::make_shared<TextureMaterial>(texture, type);
-    manager.set<TextureMaterial>(
-        mat, material_key
+    manager.set<Texture>(texture, key);
+}
+
+enum class ShaderPreprocessingType {
+    VERTEX,
+    FRAGMENT,
+    COMPUTATIONAL,
+    OTHER
+};
+
+std::string processShaderSource(
+    const VirtualPath& path, const Material& baseMaterial, 
+    ShaderPreprocessingType type, Project& proj
+) {
+    Preprocessor preprocessor(proj.getFilesystem());
+
+    std::string source;
+    try {
+        auto result = preprocessor.preprocess(path);
+
+        source = result.first;
+        if (!result.second.isEmpty()) {
+            result.second.dumpToLogs();
+        }
+    } catch (ShaderDiagnostic::preprocessor_error& e) {
+        e.getDiagnostic().dumpToLogs();
+    }
+
+    std::string globalsType = "other";
+    if (type == ShaderPreprocessingType::VERTEX) {
+        globalsType = (baseMaterial.getConfig().renderingType == RenderingType::Deferred) ?
+            "geom" : "forward";
+        globalsType += "Vertex";
+    }
+    if (type == ShaderPreprocessingType::FRAGMENT) {
+        globalsType = (baseMaterial.getConfig().renderingType == RenderingType::Deferred) ?
+            "geom" : "forward";
+        globalsType += "Fragment";
+    }
+
+    std::string callingFunc = "userFunc";
+    if (type == ShaderPreprocessingType::VERTEX)
+        callingFunc = "vertex";
+    else if (type == ShaderPreprocessingType::FRAGMENT)
+        callingFunc = "fragment";
+    else if (type == ShaderPreprocessingType::COMPUTATIONAL)
+        callingFunc = "comp";
+
+    ShaderCodeGenerator generator;
+    std::string generatedSource = generator.generateShader(
+        baseMaterial, globalsType, source, callingFunc
     );
+
+    return generatedSource;
+} 
+
+Shader compileShader(
+    const VirtualPath& vertex, const VirtualPath& frag,
+    const Material& baseMaterial, Project& proj
+) {
+    auto& fs = proj.getFilesystem();
+    std::string vertexSource = processShaderSource(
+        vertex, baseMaterial, ShaderPreprocessingType::VERTEX, proj
+    );
+
+    std::string fragmentSource = processShaderSource(
+        fragmentSource, baseMaterial, ShaderPreprocessingType::FRAGMENT, proj
+    );
+
+    return Shader(vertexSource, fragmentSource);
+}
+
+ComputeShader compileComputeShader(
+    const VirtualPath& sourcePath, const Material& baseMaterial, 
+    Project& proj
+) {
+    auto& fs = proj.getFilesystem();
+    std::string source = processShaderSource(
+        sourcePath, baseMaterial, ShaderPreprocessingType::COMPUTATIONAL, proj
+    );
+
+    return ComputeShader(source);
 }
 
 std::unordered_map<std::string, std::string> parseArguments(
@@ -184,8 +277,6 @@ int main(int argc, char* argv[]) {
         loadTexture(
             "fs://assets/textures/" + p.filename().string(), 
             "textures/" + stem, 
-            "materials/" + stem, 
-            isSpecular ? TextureType::SPECULAR : TextureType::DIFFUSE, 
             assetManager
         );
     }
@@ -227,8 +318,8 @@ int main(int argc, char* argv[]) {
         assetManager,
         objectManager,
         eventManager,
-        globalMaterialBuffer,
-        win
+        win,
+        globalMaterialBuffer
     );
 
     Player player(glm::vec3(0.0f, 2.0f, -1.0f));
@@ -238,14 +329,15 @@ int main(int argc, char* argv[]) {
 
     createRect(
         glm::vec3(2.0, 2.0, 5.0), glm::vec3(1.0, 1.0, 1.0), 
-        glm::vec2(1.0, 1.0), OldMaterial(), "materials/container",
+        glm::vec2(1.0, 1.0), "materials/standardMaterial", "materials/container", "materials/containerSpecular",
         assetManager, objectManager
     );
 
     ModelLoader modelLoader;
     
     {
-        auto sponzaModel = modelLoader.loadModel("fs://assets/models/sponza_low_res.glb");
+        auto baseMaterial = assetManager.getShared<Material>("materials/standardMaterial");
+        auto sponzaModel = modelLoader.loadModel("fs://assets/models/sponza_low_res.glb", baseMaterial);
         auto modelName = "sponza_model";
 
         std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
@@ -276,24 +368,6 @@ int main(int argc, char* argv[]) {
             glm::vec3(lightR, lightG, lightB),
             0.01, 0.02, objectManager
         );
-    }
-
-    {
-        const std::string preprocessArgName = "--preprocess-shader";
-        if (args.contains(preprocessArgName)) {
-            Preprocessor preprocessor(project.getFilesystem());
-            try {
-                auto result = preprocessor.preprocess(
-                    args.at(preprocessArgName));
-
-                std::cout << result.first << std::endl;
-                if (!result.second.isEmpty()) {
-                    result.second.dumpToLogs();
-                }
-            } catch (ShaderDiagnostic::preprocessor_error& e) {
-                e.getDiagnostic().dumpToLogs();
-            }
-        }
     }
 
     renderingSystem.updateCache();

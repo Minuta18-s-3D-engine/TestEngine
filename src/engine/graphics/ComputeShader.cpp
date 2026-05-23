@@ -1,16 +1,15 @@
 #include "ComputeShader.hpp"
 
-ComputeShader::ComputeShader(const VirtualPath& name) {
-    this->compileComputeShader(name.resolve());
+ComputeShader::ComputeShader(const std::string& source) {
+    this->compileComputeShader(source);
 }
 
 ComputeShader::~ComputeShader() {
     glDeleteProgram(glId);
 }
 
-void ComputeShader::compileComputeShader(const std::string& filename) {
-    std::string cShaderCode = this->readShaderFile(filename);
-    const char* vShaderCode = cShaderCode.c_str();
+void ComputeShader::compileComputeShader(const std::string& source) {
+    const char* vShaderCode = source.c_str();
 
     uint computeId;
     int success;
@@ -22,11 +21,10 @@ void ComputeShader::compileComputeShader(const std::string& filename) {
     glGetShaderiv(computeId, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(computeId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader " << filename << " compilation failed: ";
-        std::cerr << filename << ":" << std::endl;
+        std::cerr << "Shader compilation failed: ";
         std::cerr << infoLog << std::endl;
         glDeleteShader(computeId);
-        throw std::runtime_error("Shader " + filename + " compilation failed");
+        throw std::runtime_error("Shader compilation failed");
     }
 
     glId = glCreateProgram();
@@ -36,11 +34,11 @@ void ComputeShader::compileComputeShader(const std::string& filename) {
 
     if (!success) {
         glGetProgramInfoLog(glId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader " << filename << " linking failed: ";
+        std::cerr << "Shader linking failed: ";
         std::cerr << infoLog << std::endl;
         glDeleteShader(computeId);
         glDeleteProgram(glId);
-        throw std::runtime_error("Shader " + filename + " linking failed");
+        throw std::runtime_error("Shader linking failed");
     }
 
     glDeleteShader(computeId);

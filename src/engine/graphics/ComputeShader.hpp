@@ -7,9 +7,9 @@
 
 class ComputeShader : public Shader {
 protected:
-    void compileComputeShader(const std::string& filename);
+    void compileComputeShader(const std::string& source);
 public:
-    ComputeShader(const VirtualPath& name);
+    ComputeShader(const std::string& source);
     virtual ~ComputeShader();
 };
 
