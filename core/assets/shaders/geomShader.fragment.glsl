@@ -7,18 +7,12 @@ in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
 
-struct TextureMaterial {
-    bool isActive;
-};
-
-uniform TextureMaterial textureDiffuse1Mat;
-uniform TextureMaterial textureSpecular1Mat;
-uniform sampler2D textureDiffuse1;
-uniform sampler2D textureSpecular1;
+uniform sampler2D diffuseMap;
+uniform sampler2D specularMap;
 
 void main() {    
     gPosition = FragPos;
     gNormal = normalize(Normal);
-    gAlbedoSpec.rgb = texture(textureDiffuse1, TexCoords).rgb;
-    gAlbedoSpec.a = texture(textureSpecular1, TexCoords).r;
+    gAlbedoSpec.rgb = texture(diffuseMap, TexCoords).rgb;
+    gAlbedoSpec.a = texture(specularMap, TexCoords).r;
 }

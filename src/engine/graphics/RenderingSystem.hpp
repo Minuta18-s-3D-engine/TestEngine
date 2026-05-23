@@ -21,12 +21,14 @@
 #include "../window/Window.hpp"
 #include "../window/WindowEvents.hpp"
 #include "../events/EventManager.hpp"
+#include "../materials/MaterialDataBuffer.hpp"
 
 class RenderingSystem : public System {
     AssetManager& assetManager;
     GameObjectManager& gameObjectManager;
     Window& window;
     EventManager& eventManager;
+    MaterialDataBuffer& globalMaterialBuffer;
 
     ClusteredRenderer* renderer;
     GBuffer* gBuffer;
@@ -39,17 +41,26 @@ class RenderingSystem : public System {
     uint quadVAO = 0, quadVBO;
     void renderQuad();
     void onWindowResize(WindowResizeEvent& event);
+
+    float time = 0;
+    int currentFrame = 0;
 public:
     RenderingSystem(
         AssetManager& _assetManager, 
         GameObjectManager& _gameObjectManager,
         EventManager& _eventManager,
-        Window& _window
+        Window& _window,
+        MaterialDataBuffer& _globalMaterialBuffer,
     );
     ~RenderingSystem();
 
+    RenderingSystem(const RenderingSystem&) = delete;
+    RenderingSystem& operator=(const RenderingSystem&) = delete;
+    RenderingSystem(RenderingSystem&&) noexcept = delete;
+    RenderingSystem& operator=(RenderingSystem&&) noexcept = delete;
+
     void update() override;
-    void render();
+    void render(float deltaTime);
     void bindCamera(Camera* camera);
     void setDrawMode(uint newDrawMode);
     void updateCache();

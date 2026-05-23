@@ -4,9 +4,9 @@
 #include "glm/glm.hpp"
 #include <vector>
 #include "../utils/EngineTypes.h"
-#include "../materials/old/TextureMaterial.hpp"
-#include "../materials/old/Material.hpp"
 #include "../graphics/Shader.hpp"
+#include "../materials/Material.hpp"
+#include "../materials/MaterialInstance.hpp"
 
 struct Vertex {
     glm::vec3 pos, normal;
@@ -21,15 +21,17 @@ class Mesh {
 public:
     std::vector<Vertex> vertices;
     std::vector<uint> indices;
-    std::vector<TextureMaterial> textures;
-    OldMaterial mainMaterial;
-    bool hasMaterial;
+    std::shared_ptr<MaterialInstance> material;
 
     Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
-        std::vector<TextureMaterial> _textures, OldMaterial _mainMaterial);
-    Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
-        std::vector<TextureMaterial> _textures);
+        std::shared_ptr<MaterialInstance> _material);
     ~Mesh();
+
+    Mesh(const Mesh&) = delete;
+    Mesh& operator=(const Mesh&) = delete;
+
+    Mesh(Mesh&& other) noexcept;
+    Mesh& operator=(Mesh&& other) noexcept;
     
     void draw(Shader& shader);
 };

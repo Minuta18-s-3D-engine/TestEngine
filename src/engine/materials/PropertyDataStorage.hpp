@@ -33,6 +33,10 @@ public:
 
     template <typename T>
     T getProperty(const std::string& name) const;
+
+    uint32_t getStartId() const { 
+        return buffer.getMetadataById(instanceId).offset; 
+    }
 };
 
 template <typename T>

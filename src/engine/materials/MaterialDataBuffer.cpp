@@ -50,3 +50,8 @@ void MaterialDataBuffer::bind() {
     gpuMetaBuffer.bind();
 }
 
+const MaterialInstanceShaderMetadata& MaterialDataBuffer::getMetadataById(
+    uint32_t id
+) const {
+    return instances.at(id);
+}

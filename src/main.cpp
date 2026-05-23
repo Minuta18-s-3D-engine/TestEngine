@@ -26,9 +26,6 @@
 #include "engine/assets/AssetManager.hpp"
 #include "engine/graphics/Texture.hpp"
 #include "engine/player/Player.hpp"
-#include "engine/materials/old/Material.hpp"
-#include "engine/materials/old/Light.hpp"
-#include "engine/materials/old/TextureMaterial.hpp"
 #include "engine/models/Mesh.hpp"
 #include "engine/models/Model.hpp"
 #include "engine/models/ModelComponent.hpp"
@@ -46,48 +43,6 @@
 #include "engine/materials/MaterialBuilder.hpp"
 #include "engine/materials/MaterialDataBuffer.hpp"
 #include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
-
-
-void setupSimpleMaterial(
-    Project& proj, std::shared_ptr<Shader> shader
-) {
-    MaterialDataBuffer globalBuffer;
-
-    MaterialGraphicsConfig cfg{
-        .renderingType = RenderingType::Forward
-    };
-    Material simpleMaterial = MaterialBuilder(
-        "SimpleMaterial", cfg, shader
-    ).addProperty<int>("u_IntProperty")
-        .addProperty<uint>("u_UintProperty", 3)
-        .addProperty<float>("u_FloatProperty", 5.0f)
-        .addProperty<float>("u_AnotherFloatProperty", 4.0f)
-        .addProperty<bool>("u_BoolProperty", true)
-        .addProperty<int64_t>(
-            "u_Int64Property", static_cast<int64_t>(INT32_MAX) + 1)
-        .addProperty<uint64_t>("u_Uint64Property")
-        .addProperty<glm::vec2>("u_Vec2Property")
-        .addProperty<glm::uvec3>("u_Uvec3Property", glm::uvec3(0.0, 1.0, 2.0))
-        .addProperty<glm::ivec4>("u_Ivec4Property")
-        .addProperty<glm::mat3>("u_Mat3Prop")
-        .addSampler("u_exampleSampler")
-        .addSampler("u_exampleAnotherSampler", SamplerType::Texture2D)
-        .addSampler("u_exampleSkybox", SamplerType::CubeMap2D)
-        .finalize(globalBuffer);
-
-    std::string userCode = proj.getFilesystem().readFile(
-        "core://assets/templates/shaders/userTemplates/customGVert.vert.glsl"
-    );
-
-    ShaderCodeGenerator generator;
-    std::string generatedSource = generator.generateShader(
-        simpleMaterial, "forwardVertex", userCode, "vertex"
-    );
-
-    proj.getFilesystem().writeFile(
-        "core://generated.glsl", generatedSource, true
-    );
-}
 
 namespace fs = std::filesystem;
 
@@ -248,18 +203,31 @@ int main(int argc, char* argv[]) {
     assetManager.set<Shader>(geomShaderPtr, "shaders/geomShader");
     assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
 
-    setupSimpleMaterial(project, geomShaderPtr);
-
     ComputeShader buildClustersShader("core://assets/shaders/buildClusters.comp.glsl"), 
         lightCullingShader("core://assets/shaders/lightCulling.comp.glsl");
 
     assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
     assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
 
+    MaterialDataBuffer globalMaterialBuffer;
+
+    {
+        MaterialGraphicsConfig standardMaterialConfig;
+
+        Material standardMaterial = MaterialBuilder(
+            "StandardMaterial", standardMaterialConfig, geomShaderPtr
+        ).addSampler("diffuseMap")
+            .addSampler("specularMap")
+            .finalize(globalMaterialBuffer);
+
+        assetManager.set<Material>(std::make_shared<Material>(standardMaterial), "materials/standardMaterial");
+    }
+
     RenderingSystem renderingSystem(
         assetManager,
         objectManager,
         eventManager,
+        globalMaterialBuffer,
         win
     );
 
@@ -402,7 +370,7 @@ int main(int argc, char* argv[]) {
             isInGame = !isInGame;
         }
 
-        renderingSystem.update();
+        renderingSystem.render(deltaTime);
 
         win.swapBuffers();
     }

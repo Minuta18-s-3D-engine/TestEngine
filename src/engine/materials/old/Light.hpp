@@ -3,10 +3,9 @@
 
 #include "glm/glm.hpp"
 #include "../../graphics/Shader.hpp"
-#include "BaseMaterial.hpp"
 #include <string>
 
-class Light : public BaseMaterial {
+class Light {
 public:
     glm::vec3 color;
     glm::vec3 position;

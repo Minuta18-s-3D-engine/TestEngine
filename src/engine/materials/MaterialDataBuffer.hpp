@@ -29,6 +29,7 @@ public:
 
     void write(uint32_t id, uint32_t offset, uint32_t size, const void* data);
     void read(uint32_t id, uint32_t offset, uint32_t size, void* outData);
+    const MaterialInstanceShaderMetadata& getMetadataById(uint32_t id) const;
 
     void sync();
     void bind();

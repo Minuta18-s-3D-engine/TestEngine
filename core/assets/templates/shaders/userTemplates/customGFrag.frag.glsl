@@ -15,10 +15,9 @@
 // u_TexelSize         - (vec2) 1 / u_Resolution.
 // u_CameraPosition    - (vec3) Camera position vector.
 // u_CameraDirection   - (vec3) Camera direction vector.
-// u_Model             - (mat4) Model-to-World matrix.
 // u_View              - (mat4) World-to-View matrix.
 // u_Projection        - (mat4) View-to-Clip matrix.
-// u_InvModel, u_InvView, u_InvProjection (mat4) inverse matrices.
+// u_InvView, u_InvProjection (mat4) inverse matrices.
 // Outputs (G-Buffer):
 // out_Position        - (vec3) World-space position.
 // out_Normal          - (vec3) World-space normal.
