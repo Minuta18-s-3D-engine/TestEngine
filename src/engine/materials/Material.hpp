@@ -25,7 +25,6 @@ class Material {
 
     Material(
         const std::string& _name,
-        std::shared_ptr<Shader> _shader,
         MaterialGraphicsConfig _cfg,
         MaterialLayout _layout,
         PropertyDataStorage&& _storage,
@@ -57,6 +56,7 @@ public:
     template <typename T>
     const T& getPropertyDefaultValue(const std::string& name);
 
+    void bindShader(std::shared_ptr<Shader> _shader) { shader = _shader; }
     std::shared_ptr<Shader> getShader() const { return shader; }
 };
 

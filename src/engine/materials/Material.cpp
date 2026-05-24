@@ -2,15 +2,16 @@
 
 Material::Material(
     const std::string& _name,
-    std::shared_ptr<Shader> _shader,
     MaterialGraphicsConfig _cfg,
     MaterialLayout _layout,
     PropertyDataStorage&& _storage,
     std::unordered_map<std::string, size_t>&& _samplerIndexes,
     std::vector<SamplerDefinition>&& _samplerDefinitions
-) : name(_name), shader(_shader), cfg(_cfg), layout(std::move(_layout)), 
+) : name(_name), shader(nullptr), cfg(_cfg), layout(std::move(_layout)), 
     samplersIndexes(_samplerIndexes), samplerDefinitions(_samplerDefinitions),
-    defaultValues(std::move(_storage)) {}
+    defaultValues(std::move(_storage)) {
+    defaultValues.bindLayout(&this->layout);
+}
 
 Material::Material(Material&& other) noexcept
   : name(std::move(other.name)),
@@ -19,7 +20,9 @@ Material::Material(Material&& other) noexcept
     layout(std::move(other.layout)),
     defaultValues(std::move(other.defaultValues)),
     samplersIndexes(std::move(other.samplersIndexes)),
-    samplerDefinitions(std::move(other.samplerDefinitions)) {}
+    samplerDefinitions(std::move(other.samplerDefinitions)) {
+    defaultValues.bindLayout(&this->layout);
+}
 
 Material& Material::operator=(Material&& other) noexcept {
     if (this != &other) {
@@ -30,6 +33,7 @@ Material& Material::operator=(Material&& other) noexcept {
         defaultValues = std::move(other.defaultValues);
         samplersIndexes = std::move(other.samplersIndexes);
         samplerDefinitions = std::move(other.samplerDefinitions);
+        defaultValues.bindLayout(&this->layout);
     }
     return *this;
 }

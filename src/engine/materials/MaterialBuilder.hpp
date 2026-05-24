@@ -19,7 +19,6 @@ class Shader;
 class MaterialBuilder {
     MaterialGraphicsConfig cfg;
     std::string name;
-    std::shared_ptr<Shader> shader = nullptr;
 
     using BinderFunc = std::function<void(PropertyDataStorage&)>;
     std::vector<BinderFunc> propertyBinders;
@@ -30,8 +29,7 @@ class MaterialBuilder {
 public:
     MaterialBuilder(
         const std::string& _name, 
-        MaterialGraphicsConfig _cfg,
-        std::shared_ptr<Shader> _shader
+        MaterialGraphicsConfig _cfg
     );
 
     template <typename T>
@@ -44,8 +42,6 @@ public:
 
     MaterialBuilder& addSampler(const std::string& name);
     MaterialBuilder& addSampler(const std::string& name, SamplerType type);
-
-    MaterialBuilder& setShader(std::shared_ptr<Shader> _shader);
 
     Material finalize(MaterialDataBuffer& buffer);
 };

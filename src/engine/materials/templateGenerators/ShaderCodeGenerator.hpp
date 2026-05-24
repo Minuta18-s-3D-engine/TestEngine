@@ -55,7 +55,11 @@ public:
 
     std::string generateMaterialDefinition(const Material& mat) const;
     std::string generateShader(
-        const Material& mat, const std::string& type, 
+        const Material& mat, const std::string& userCode, 
+        const std::string& userFunc
+    ) const;
+
+    std::string generateCompShader(
         const std::string& userCode, const std::string& userFunc
     ) const;
 };

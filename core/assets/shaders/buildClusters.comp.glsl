@@ -1,43 +1,14 @@
-#version 430 core
-
 #define MATH_EPS 0.00001
 #define LIGHTS_PRE_CLUSTER_LIMIT 256
 
+uniform uvec3 u_GridSize;
+
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-struct Cluster {
-    vec4 minPoint;
-    vec4 maxPoint;
-    uint count;
-    uint lightStart;
-};
-
-layout(std430, binding = 0) restrict coherent buffer clusterSSBO {
-    Cluster clusters[];
-};
-
-layout(std430, binding = 2) restrict coherent buffer lightIndicesSSBO {
-    uint pointLightIndicies[];
-};
-
-uniform float zNear;
-uniform float zFar;
-uniform mat4 inverseProjection;
-uniform uvec3 gridSize;
-uniform uvec2 screenDimensions;
-uniform int currentDispatch;
-
-vec3 screenToView(vec2 screenCoord);
-vec3 lineIntersectionWithZPlane(
-    vec3 startPoint, 
-    vec3 endPoint, 
-    float zDistance
-);
-
 vec3 screenToView(vec2 screenCoord) {
-    vec4 ndc = vec4(screenCoord / screenDimensions * 2.0 - 1.0, -1.0, 1.0);
+    vec4 ndc = vec4(screenCoord / u_Resolution * 2.0 - 1.0, -1.0, 1.0);
 
-    vec4 viewCoord = inverseProjection * ndc;
+    vec4 viewCoord = u_InvProjection * ndc;
     viewCoord /= viewCoord.w;
     return viewCoord.xyz;
 }
@@ -54,10 +25,10 @@ vec3 lineIntersectionWithZPlane(
     return startPoint + t * direction;
 }
 
-void main() {
-    uint tileIndex = gl_WorkGroupID.x + (gl_WorkGroupID.y * gridSize.x) +
-            (gl_WorkGroupID.z * gridSize.x * gridSize.y);   
-    vec2 tileSize = vec2(screenDimensions) / vec2(gridSize.xy);
+void compute() {
+    uint tileIndex = gl_WorkGroupID.x + (gl_WorkGroupID.y * u_GridSize.x) +
+            (gl_WorkGroupID.z * u_GridSize.x * u_GridSize.y);   
+    vec2 tileSize = vec2(u_Resolution) / vec2(u_GridSize.xy);
 
     vec2 minTile_screenspace = gl_WorkGroupID.xy * tileSize;
     vec2 maxTile_screenspace = (gl_WorkGroupID.xy + 1) * tileSize;
@@ -67,10 +38,10 @@ void main() {
 
     // Exponential formula by DaveH355
     // https://github.com/DaveH355/clustered-shading
-    float planeNear = zNear * pow(zFar / zNear, 
-        gl_WorkGroupID.z / float(gridSize.z));
-    float planeFar = zNear * pow(zFar / zNear, (gl_WorkGroupID.z + 1) / 
-        float(gridSize.z));
+    float planeNear = u_ZNear * pow(u_ZFar / u_ZNear, 
+        gl_WorkGroupID.z / float(u_GridSize.z));
+    float planeFar = u_ZNear * pow(u_ZFar / u_ZNear, (gl_WorkGroupID.z + 1) / 
+        float(u_GridSize.z));
 
     // Points calculation
     vec3 minPointNear = lineIntersectionWithZPlane(
@@ -82,8 +53,8 @@ void main() {
     vec3 maxPointFar = lineIntersectionWithZPlane(
         vec3(0, 0, 0), maxTile, planeFar);
 
-    clusters[tileIndex].minPoint = vec4(min(minPointNear, minPointFar), 0.0);
-    clusters[tileIndex].maxPoint = vec4(max(maxPointNear, maxPointFar), 0.0);
-    clusters[tileIndex].count = 0; 
-    clusters[tileIndex].lightStart = LIGHTS_PRE_CLUSTER_LIMIT * tileIndex;
+    b_Clusters[tileIndex].minPoint = vec4(min(minPointNear, minPointFar), 0.0);
+    b_Clusters[tileIndex].maxPoint = vec4(max(maxPointNear, maxPointFar), 0.0);
+    b_Clusters[tileIndex].count = 0; 
+    b_Clusters[tileIndex].lightStart = LIGHTS_PRE_CLUSTER_LIMIT * tileIndex;
 }

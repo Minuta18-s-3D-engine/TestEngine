@@ -142,7 +142,6 @@ void RenderingSystem::render(float deltaTime) {
     lightingShader.setUniform("u_DeltaTime", deltaTime);
     lightingShader.setUniform("u_Frame", currentFrame);
 
-    glm::ivec2 resolution = glm::ivec2(window.getWidth(), window.getHeight());
     lightingShader.setUniform("u_Resolution", resolution);
     lightingShader.setUniform("u_TexelSize", 
         glm::vec2(1.0f / resolution.x, 1.0f / resolution.y));
@@ -157,7 +156,9 @@ void RenderingSystem::render(float deltaTime) {
 
     lightingShader.setUniform("u_ZNear", camera->zNear);
     lightingShader.setUniform("u_ZFar", camera->zFar);  
-
+    lightingShader.setUniform("u_DrawMode", drawMode);
+    lightingShader.setUniform(
+        "u_GridSize", renderer->getClusterGrid());
 
     renderer->bindClusterData();
 

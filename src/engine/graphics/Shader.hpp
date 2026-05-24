@@ -18,7 +18,7 @@
 
 class Shader {
 protected:
-    const uint ERROR_BUFFER_SIZE = 512;
+    const uint ERROR_BUFFER_SIZE = 4096;
     std::unordered_map<std::string, uint> uniformLocations;
 
     void compileShaders(

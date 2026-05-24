@@ -1,67 +1,15 @@
-#version 430 core
 out vec4 FragColor;
+in vec2 v_UV;
 
+uniform uvec3 u_GridSize;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
+uniform uint u_DrawMode;
 
-in vec2 TexCoords;
-uniform vec3 viewPos;
-uniform uint drawMode;
-
-uniform float zNear;
-uniform float zFar;
-uniform uvec3 gridSize;
-uniform uvec2 screenDimensions;
-uniform mat4 projection;
-uniform mat4 view;
-
-struct Cluster {
-    vec4 minPoint;
-    vec4 maxPoint;
-    uint count;
-    uint lightStart;
-};
-
-struct PointLight {
-    vec3 position;
-    vec3 color;
-    
-    float linear;
-    float quadratic;
-    float radius;
-};
-
-struct BVHNode {
-    vec4 minPoint;
-    vec4 maxPoint;
-    uint first_child_or_primitive;
-    uint primitive_count;
-};
-
-layout (std430, binding = 0) restrict buffer clusterSSBO {
-    Cluster clusters[];
-};
-
-layout (std430, binding = 1) restrict buffer lightSSBO {
-    PointLight lights[];
-};
-
-layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
-    uint pointLightIndicies[];
-};
-
-layout(std430, binding = 3) restrict buffer bvhNodesSSBO {
-    BVHNode bvhNodes[];
-};
-
-layout(std430, binding = 4) restrict buffer bvhIndicesSSBO {
-    uint bvhIndices[];
-};
-
-vec3 FragPos = texture(gPosition, TexCoords).rgb;
-vec4 ViewSpacePos = view * vec4(FragPos, 1.0);
-vec3 Normal = texture(gNormal, TexCoords).rgb;
+vec3 FragPos = texture(gPosition, v_UV).rgb;
+vec4 ViewSpacePos = u_View * vec4(FragPos, 1.0);
+vec3 Normal = texture(gNormal, v_UV).rgb;
 
 vec3 calcPointLight(PointLight pLight) {
     vec3 pathToLight = pLight.position - FragPos;
@@ -70,12 +18,12 @@ vec3 calcPointLight(PointLight pLight) {
 
     if (distSq > radiusSq) return vec3(0.0);
 
-    vec3 viewDir  = normalize(viewPos - FragPos);
+    vec3 viewDir  = normalize(u_CameraPosition - FragPos);
     vec3 lightDir = normalize(pLight.position - FragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir); 
 
-    vec3 albedo = texture(gAlbedoSpec, TexCoords).rgb;
-    float specular = texture(gAlbedoSpec, TexCoords).a;;
+    vec3 albedo = texture(gAlbedoSpec, v_UV).rgb;
+    float specular = texture(gAlbedoSpec, v_UV).a;;
 
     // TODO: shinessness will go here
     float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16);
@@ -100,14 +48,14 @@ vec3 calcAmbientLight(vec2 coords) {
 }
 
 uint findClusterIndex() {
-    uvec2 tileSize = screenDimensions / gridSize.xy;
+    uvec2 tileSize = u_Resolution / u_GridSize.xy;
     uvec2 tileXY = uvec2(gl_FragCoord.xy) / tileSize;
-    tileXY = min(tileXY, gridSize.xy - 1u);
+    tileXY = min(tileXY, u_GridSize.xy - 1u);
 
-    uint tileZ = uint((log(abs(ViewSpacePos.z) / zNear) * gridSize.z) / log(zFar / zNear));
-    tileZ = clamp(tileZ, 0u, gridSize.z - 1u);
+    uint tileZ = uint((log(abs(ViewSpacePos.z) / u_ZNear) * u_GridSize.z) / log(u_ZFar / u_ZNear));
+    tileZ = clamp(tileZ, 0u, u_GridSize.z - 1u);
 
-    return tileXY.x + tileXY.y * gridSize.x + tileZ * gridSize.x * gridSize.y;
+    return tileXY.x + tileXY.y * u_GridSize.x + tileZ * u_GridSize.x * u_GridSize.y;
 }
 
 BVHNode transformBVHNodeToViewSpace(BVHNode node) {
@@ -126,7 +74,7 @@ BVHNode transformBVHNodeToViewSpace(BVHNode node) {
     vec3 viewMax = vec3(-1e9);
     
     for (int i = 0; i < 8; i++) {
-        vec3 viewCorner = vec3(view * vec4(worldCorners[i], 1.0));
+        vec3 viewCorner = vec3(u_View * vec4(worldCorners[i], 1.0));
         viewMin = min(viewMin, viewCorner);
         viewMax = max(viewMax, viewCorner);
     }
@@ -152,15 +100,15 @@ bool AABBIntersection(
 }
 
 bool isCenterCross() {
-    return (distance(gl_FragCoord.xy, screenDimensions.xy / 2) < 2);
+    return (distance(gl_FragCoord.xy, u_Resolution.xy / 2) < 2);
 }
 
-void main() {
+void fragment() {
     // uniform sampler2D gPosition;
     // uniform sampler2D gNormal;
     // uniform sampler2D gAlbedoSpec;
 
-    // FragColor = vec4(texture(gPosition, TexCoords).xyz, 1.0);
+    // FragColor = vec4(texture(gPosition, v_UV).xyz, 1.0);
     // return;
 
     int modifier = 1;
@@ -169,24 +117,24 @@ void main() {
     }
 
     uint clusterIndex = findClusterIndex();
-    Cluster currCluster = clusters[clusterIndex];
+    Cluster currCluster = b_Clusters[clusterIndex];
 
-    uint totalClusters = gridSize.x * gridSize.y * gridSize.z;
+    uint totalClusters = u_GridSize.x * u_GridSize.y * u_GridSize.z;
     if (clusterIndex >= totalClusters) {
         return;
     }
 
-    vec3 result = calcAmbientLight(TexCoords);
+    vec3 result = calcAmbientLight(v_UV);
     uint lightCount = currCluster.count;
 
     for (int i = 0; i < lightCount; ++i) {
-        uint lightIndex = pointLightIndicies[currCluster.lightStart + i];
-        PointLight l = lights[lightIndex]; 
+        uint lightIndex = b_PointLightIndicies[currCluster.lightStart + i];
+        PointLight l = b_Lights[lightIndex]; 
         
         result += calcPointLight(l);
     }
 
-    if (drawMode == 0) {
+    if (u_DrawMode == 0) {
         if (modifier == -1) {
             FragColor = vec4(vec3(
                 1.0 - result.x,
@@ -198,11 +146,11 @@ void main() {
 
         FragColor = vec4(result, 1.0);
 
-    } else if (drawMode == 1) {
+    } else if (u_DrawMode == 1) {
         float cnt = currCluster.count;
         FragColor = vec4(cnt / 100.0, cnt / 100.0, cnt / 100.0, 1.0);
     } else {
-        BVHNode testNode = bvhNodes[1]; 
+        BVHNode testNode = b_BvhNodes[1]; 
         testNode = transformBVHNodeToViewSpace(testNode);
         
         bool intersects = AABBIntersection(

@@ -16,7 +16,6 @@ size_t MaterialLayout::getStd430Alignment(PropertyType type) {
             return 4;
         case PropertyType::Vec2:  case PropertyType::IVec2: 
         case PropertyType::UVec2: case PropertyType::Mat2: 
-        case PropertyType::Int64: case PropertyType::Uint64: 
             return 8;
         case PropertyType::Vec3:  case PropertyType::IVec3: 
         case PropertyType::UVec3: case PropertyType::UVec4:
@@ -38,8 +37,7 @@ size_t MaterialLayout::getStd430Size(PropertyType type) {
         case PropertyType::Mat4:
             return 64;
         case PropertyType::Vec2:  case PropertyType::IVec2: 
-        case PropertyType::UVec2: case PropertyType::Int64:
-        case PropertyType::Uint64: 
+        case PropertyType::UVec2: 
             return 8;
         case PropertyType::Vec4:  case PropertyType::IVec4: 
         case PropertyType::UVec4: case PropertyType::Mat2:  

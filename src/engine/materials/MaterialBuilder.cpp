@@ -1,9 +1,8 @@
 #include "MaterialBuilder.hpp"
 
 MaterialBuilder::MaterialBuilder(
-    const std::string& _name, MaterialGraphicsConfig _cfg, 
-    std::shared_ptr<Shader> _shader
-) : name(_name), cfg(_cfg), shader(_shader) {}
+    const std::string& _name, MaterialGraphicsConfig _cfg
+) : name(_name), cfg(_cfg) {}
 
 MaterialBuilder& MaterialBuilder::addSampler(const std::string& name) {
     return addSampler(name, SamplerType::Texture2D);
@@ -23,10 +22,13 @@ MaterialBuilder& MaterialBuilder::addSampler(
     samplersIndexes[name] = samplersIndexes.size();
     samplerDefinitions.push_back(def);
 
-    resultLayout.addProperty<uint64_t>(name);
+    // NOTE: It was initially planned to use uint64_t, as bindless_textures 
+    // docs suggest. Unfortunately, this causes mesa driver bug, which leads
+    // to segmentation fault.
+    resultLayout.addProperty<glm::uvec2>(name);
 
     propertyBinders.push_back([name](PropertyDataStorage& storage) {
-        storage.setProperty<uint64_t>(name, 0ULL);
+        storage.setProperty<glm::uvec2>(name, {0U, 0U});
     });
 
     return *this;
@@ -43,7 +45,6 @@ Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
 
     return Material(
         name,
-        shader,
         cfg,
         std::move(resultLayout),
         std::move(tempStorage),

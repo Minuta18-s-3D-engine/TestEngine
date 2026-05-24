@@ -3,9 +3,11 @@
 MaterialInstance::MaterialInstance(
     const std::string& _name, 
     const Material& _material, 
-    MaterialDataBuffer& _buffer
+    const MaterialDataBuffer& _buffer
 ) : name(_name), baseMaterial(&_material), buffer(&_buffer), 
-    properties(baseMaterial->getDefaultValues()) {}
+    properties(baseMaterial->getDefaultValues()) {
+    properties.bindLayout(&baseMaterial->getLayout());
+}
 
 MaterialInstance::MaterialInstance(const MaterialInstance& other)
   : name(other.name),
@@ -84,9 +86,11 @@ void MaterialInstance::setSampler(
 ) {
     throwIfNoSampler(_name);
     samplers[_name] = _texture;
-
+    
     uint64_t handle = _texture ? _texture->getHandle() : 0ULL;
-    properties.setProperty<uint64_t>(_name, handle);
+    uint32_t lowerBits = static_cast<uint32_t>(handle);
+    uint32_t upperBits = static_cast<uint32_t>(handle >> 32);   
+    properties.setProperty<glm::uvec2>(_name, glm::uvec2(lowerBits, upperBits));
 }
 
 std::shared_ptr<Texture> MaterialInstance::getSampler(

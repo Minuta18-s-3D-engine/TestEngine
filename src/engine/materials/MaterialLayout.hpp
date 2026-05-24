@@ -14,8 +14,6 @@
 #define PROPERTY_TYPE_LIST \
     X(Int,    int32_t,    "int"     ) \
     X(Uint,   uint32_t,   "uint"    ) \
-    X(Uint64, uint64_t,   "uint64_t") \
-    X(Int64,  int64_t,    "int64_t" ) \
     X(Float,  float,      "float"   ) \
     X(Bool,   bool,       "bool"    ) \
     X(Vec2,   glm::vec2,  "vec2"    ) \

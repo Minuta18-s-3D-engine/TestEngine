@@ -100,9 +100,9 @@ void ClusteredRenderer::updateLightData(const std::vector<GameObject*>& lights) 
 void ClusteredRenderer::updateClusters(const Camera* cam) {
     buildClustersShader->use();
 
-    buildClustersShader->setUniform("zNear", cam->zNear);
-    buildClustersShader->setUniform("zFar", cam->zFar);
-    buildClustersShader->setUniform("currentDispatch", 1);
+    buildClustersShader->setUniform("u_ZNear", cam->zNear);
+    buildClustersShader->setUniform("u_ZFar", cam->zFar);
+    buildClustersShader->setUniform("u_CurrentDispatch", 1);
 
     glm::mat4 proj = glm::perspective(
         cam->getZoom(), 
@@ -111,10 +111,10 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     );
     glm::mat4 invProj = glm::inverse(proj);
 
-    buildClustersShader->setUniform("inverseProjection", invProj);
-    buildClustersShader->setUniform("gridSize", 
+    buildClustersShader->setUniform("u_InvProjection", invProj);
+    buildClustersShader->setUniform("u_GridSize", 
         glm::uvec3(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z));
-    buildClustersShader->setUniform("screenDimensions", 
+    buildClustersShader->setUniform("u_Resolution", 
         glm::uvec2(window.getWidth(), window.getHeight()));
     
     glDispatchCompute(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
@@ -122,11 +122,11 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
 
     lightCullingShader->use();
 
-    lightCullingShader->setUniform("viewMat", cam->getViewMat());
-    lightCullingShader->setUniform("gridSize",
+    lightCullingShader->setUniform("u_View", cam->getViewMat());
+    lightCullingShader->setUniform("u_GridSize",
         glm::uvec3(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z));
-    lightCullingShader->setUniform("currentDispatch", 2);
-    lightCullingShader->setUniform("numLights", 
+    lightCullingShader->setUniform("u_CurrentDispatch", 2);
+    lightCullingShader->setUniform("u_NumLights", 
         (uint32_t) this->gpuLightCache.size());
     // lightCullingShader->setUniform1ui("numLights", 2);
 

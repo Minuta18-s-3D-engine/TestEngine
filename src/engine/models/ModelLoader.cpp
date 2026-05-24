@@ -100,7 +100,11 @@ std::shared_ptr<Mesh> ModelLoader::processMesh(
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         meshMaterial = loadMaterial(material, mesh->mMaterialIndex, scene);
     } else {
-        meshMaterial = std::make_shared<MaterialInstance>(baseMaterial);
+        meshMaterial = std::make_shared<MaterialInstance>(
+            baseMaterial->getName() + "Instance", 
+            *baseMaterial,
+            baseMaterial->getDefaultValues().getBuffer()
+        );
     }
 
     return std::make_shared<Mesh>(
@@ -119,7 +123,11 @@ std::shared_ptr<MaterialInstance> ModelLoader::loadMaterial(
         return loadedMaterials[matIndex];
     }
 
-    auto instance = std::make_shared<MaterialInstance>(baseMaterial);
+    auto instance = std::make_shared<MaterialInstance>(
+        baseMaterial->getName() + "Instance", 
+        *baseMaterial,
+        baseMaterial->getDefaultValues().getBuffer()
+    );
 
     if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
         aiString str;

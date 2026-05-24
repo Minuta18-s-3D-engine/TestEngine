@@ -65,16 +65,14 @@ std::string ShaderCodeGenerator::generateSamplerGetter(
     const Material& mat, const std::string& name
 ) const {
     std::stringstream result;
-    result << "inline " << getGLSLSamplerType(mat.getSampler(name).type);
-    result << " get_" << name << "() {\n";
-    result << "    return ";
+
     if (GL_ARB_bindless_texture) {
-        result << getGLSLSamplerType(mat.getSampler(name).type) << 
-            "(currentMaterial." << name << ");\n";
+        result << "#define get_" << name << "() (sampler2D(currentMaterial."
+            << name << "))\n";
     } else {
-        result << getGLSLSamplerName(name) << ";\n";
+        result << "#define get_" << name << "() (getGLSLSamplerName(name))\n";
     }
-    result << "}\n\n";
+
     return result.str();
 }
 
@@ -170,12 +168,6 @@ std::string ShaderCodeGenerator::generateMaterialUnpacker(
             break;
         case MaterialLayout::PropertyType::Uint:
             converterFunc = unpackUint(base);
-            break;
-        case MaterialLayout::PropertyType::Int64:
-            converterFunc = unpackInt64(inArrayOffset);
-            break;
-        case MaterialLayout::PropertyType::Uint64:
-            converterFunc = unpackUint64(inArrayOffset);
             break;
         case MaterialLayout::PropertyType::Float:
             converterFunc = unpackFloat(base);
@@ -299,7 +291,7 @@ std::string ShaderCodeGenerator::generateMaterialDefinition(
 }
 
 std::string ShaderCodeGenerator::generateShader(
-    const Material& mat, const std::string& type, const std::string& userCode,
+    const Material& mat, const std::string& userCode,
     const std::string& userFunc
 ) const {
     TemplateArguments engineGlobalsArgs;
@@ -321,20 +313,40 @@ std::string ShaderCodeGenerator::generateShader(
 
     TemplateArguments args;
     args.set("engine_globals", engineGlobals);
-    if (type == "other") {
-        args.set("shader_specific_globals", "");
-    } else {
-        args.set(
-            "shader_specific_globals", 
-            templateEngine.render("shaders/components/" + type + "Globals.glsl")
-        );
-    }
-    args.set(
-        "generated_header", 
-        materialLoaderHeader
-    );
+    args.set("generated_header", materialLoaderHeader);
     args.set("user_code", userCode);
-    args.set("material_name", mat.getName());
+    args.set("message", 
+        "Automatically generated shader for material: " + mat.getName()
+    );
+
+    return templateEngine.render("shaders/generalShaderTemplate.glsl", args);
+}
+
+std::string ShaderCodeGenerator::generateCompShader(
+    const std::string& userCode, const std::string& userFunc
+) const {
+    TemplateArguments engineGlobalsArgs;
+    engineGlobalsArgs.set(
+        "material_definition", ""
+    );
+    std::string engineGlobals = templateEngine.render(
+        "shaders/components/engineGlobals.glsl", engineGlobalsArgs
+    );
+
+    TemplateArguments emptyHeaderArgs;
+    emptyHeaderArgs.set(
+        "user_func", userFunc
+    );
+    std::string emptyHeader = templateEngine.render(
+        "shaders/headers/emptyHeader.glsl", 
+        emptyHeaderArgs
+    );
+
+    TemplateArguments args;
+    args.set("engine_globals", engineGlobals);
+    args.set("generated_header", emptyHeader);
+    args.set("user_code", userCode);
+    args.set("message", "Automatically generated computational shader");
 
     return templateEngine.render("shaders/generalShaderTemplate.glsl", args);
 }

@@ -1,17 +1,17 @@
 // =============================================================
-// Automatically generated material shader: {{ material_name }}.
+// Automatically generated shader.
 // Do not edit this block manually.
+//
+// {{ message }}.
 // =============================================================
 
 #version 430 core
 
 #extension GL_ARB_bindless_texture : enable
-#extension GL_ARB_gpu_shader_int64 : enable
 
 {{ engine_globals }}
 
-{{ shader_specific_globals }}
+#line 1
+{{ user_code }}
 
 {{ generated_header }}
-
-{{ user_code }}

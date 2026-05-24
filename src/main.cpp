@@ -55,10 +55,15 @@ void createRect(
     std::string diffuseTexKey,
     std::string specularTexKey,
     AssetManager& manager,
-    GameObjectManager& objectManager
+    GameObjectManager& objectManager,
+    MaterialDataBuffer& buffer
 ) {
     const Material& baseMaterial = manager.require<Material>(baseMaterialKey);
-    auto matInstance = std::make_shared<MaterialInstance>(baseMaterial);
+    auto matInstance = std::make_shared<MaterialInstance>(
+        baseMaterial.getName() + "Instance",
+        baseMaterial,
+        buffer
+    );
 
     matInstance->setSampler(
         "diffuseMap", manager.getShared<Texture>(diffuseTexKey));
@@ -152,18 +157,6 @@ std::string processShaderSource(
         e.getDiagnostic().dumpToLogs();
     }
 
-    std::string globalsType = "other";
-    if (type == ShaderPreprocessingType::VERTEX) {
-        globalsType = (baseMaterial.getConfig().renderingType == RenderingType::Deferred) ?
-            "geom" : "forward";
-        globalsType += "Vertex";
-    }
-    if (type == ShaderPreprocessingType::FRAGMENT) {
-        globalsType = (baseMaterial.getConfig().renderingType == RenderingType::Deferred) ?
-            "geom" : "forward";
-        globalsType += "Fragment";
-    }
-
     std::string callingFunc = "userFunc";
     if (type == ShaderPreprocessingType::VERTEX)
         callingFunc = "vertex";
@@ -174,7 +167,7 @@ std::string processShaderSource(
 
     ShaderCodeGenerator generator;
     std::string generatedSource = generator.generateShader(
-        baseMaterial, globalsType, source, callingFunc
+        baseMaterial, source, callingFunc
     );
 
     return generatedSource;
@@ -184,28 +177,41 @@ Shader compileShader(
     const VirtualPath& vertex, const VirtualPath& frag,
     const Material& baseMaterial, Project& proj
 ) {
-    auto& fs = proj.getFilesystem();
     std::string vertexSource = processShaderSource(
         vertex, baseMaterial, ShaderPreprocessingType::VERTEX, proj
     );
 
     std::string fragmentSource = processShaderSource(
-        fragmentSource, baseMaterial, ShaderPreprocessingType::FRAGMENT, proj
+        frag, baseMaterial, ShaderPreprocessingType::FRAGMENT, proj
     );
 
     return Shader(vertexSource, fragmentSource);
 }
 
 ComputeShader compileComputeShader(
-    const VirtualPath& sourcePath, const Material& baseMaterial, 
+    const VirtualPath& sourcePath, 
     Project& proj
 ) {
-    auto& fs = proj.getFilesystem();
-    std::string source = processShaderSource(
-        sourcePath, baseMaterial, ShaderPreprocessingType::COMPUTATIONAL, proj
+    Preprocessor preprocessor(proj.getFilesystem());
+
+    std::string source;
+    try {
+        auto result = preprocessor.preprocess(sourcePath);
+
+        source = result.first;
+        if (!result.second.isEmpty()) {
+            result.second.dumpToLogs();
+        }
+    } catch (ShaderDiagnostic::preprocessor_error& e) {
+        e.getDiagnostic().dumpToLogs();
+    }
+
+    ShaderCodeGenerator generator;
+    std::string generatedSource = generator.generateCompShader(
+        source, "compute"
     );
 
-    return ComputeShader(source);
+    return ComputeShader(generatedSource);
 }
 
 std::unordered_map<std::string, std::string> parseArguments(
@@ -265,15 +271,6 @@ int main(int argc, char* argv[]) {
         std::string stem = p.stem().string();
         std::string ending = "Specular";
 
-        bool isSpecular = true;
-        if (stem.size() < ending.size()) {
-            isSpecular = false;
-        } else {
-            isSpecular = (0 == stem.compare(
-                stem.size() - ending.size(), ending.size(), ending
-            ));
-        }
-
         loadTexture(
             "fs://assets/textures/" + p.filename().string(), 
             "textures/" + stem, 
@@ -281,38 +278,51 @@ int main(int argc, char* argv[]) {
         );
     }
 
-    Shader geomShader(
-        "core://assets/shaders/geomShader.vertex.glsl",
-        "core://assets/shaders/geomShader.fragment.glsl"
-    );
-    Shader lightingShader(
-        "core://assets/shaders/lightingShader.vertex.glsl",
-        "core://assets/shaders/lightingShader.fragment.glsl"
-    );
-
-    std::shared_ptr<Shader> geomShaderPtr = std::make_shared<Shader>(geomShader);
-    assetManager.set<Shader>(geomShaderPtr, "shaders/geomShader");
-    assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
-
-    ComputeShader buildClustersShader("core://assets/shaders/buildClusters.comp.glsl"), 
-        lightCullingShader("core://assets/shaders/lightCulling.comp.glsl");
-
-    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
-    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
-
     MaterialDataBuffer globalMaterialBuffer;
 
     {
         MaterialGraphicsConfig standardMaterialConfig;
 
-        Material standardMaterial = MaterialBuilder(
-            "StandardMaterial", standardMaterialConfig, geomShaderPtr
+        std::shared_ptr<Material> standardMaterial = std::make_shared<Material>(MaterialBuilder(
+            "StandardMaterial", standardMaterialConfig
         ).addSampler("diffuseMap")
             .addSampler("specularMap")
-            .finalize(globalMaterialBuffer);
+            .finalize(globalMaterialBuffer));
 
-        assetManager.set<Material>(std::make_shared<Material>(standardMaterial), "materials/standardMaterial");
+        assetManager.set<Material>(standardMaterial, "materials/standardMaterial");
     }
+
+    Shader geomShader = compileShader(
+        "core://assets/shaders/geom.vert.glsl",
+        "core://assets/shaders/geom.frag.glsl",
+        assetManager.require<Material>("materials/standardMaterial"),
+        project
+    );
+    
+    Shader lightingShader = compileShader(
+        "core://assets/shaders/light.vert.glsl",
+        "core://assets/shaders/light.frag.glsl",
+        assetManager.require<Material>("materials/standardMaterial"),
+        project
+    );
+    std::shared_ptr<Shader> geomShaderPtr = std::make_shared<Shader>(geomShader);
+
+    assetManager.require<Material>("materials/standardMaterial").bindShader(geomShaderPtr);
+
+    assetManager.set<Shader>(geomShaderPtr, "shaders/geomShader");
+    assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
+
+    ComputeShader buildClustersShader = compileComputeShader(
+        "core://assets/shaders/buildClusters.comp.glsl", 
+        project
+    ); 
+    ComputeShader lightCullingShader = compileComputeShader(
+        "core://assets/shaders/lightCulling.comp.glsl",
+        project
+    );
+
+    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
+    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
 
     RenderingSystem renderingSystem(
         assetManager,
@@ -330,7 +340,7 @@ int main(int argc, char* argv[]) {
     createRect(
         glm::vec3(2.0, 2.0, 5.0), glm::vec3(1.0, 1.0, 1.0), 
         glm::vec2(1.0, 1.0), "materials/standardMaterial", "materials/container", "materials/containerSpecular",
-        assetManager, objectManager
+        assetManager, objectManager, globalMaterialBuffer
     );
 
     ModelLoader modelLoader;
@@ -444,6 +454,7 @@ int main(int argc, char* argv[]) {
             isInGame = !isInGame;
         }
 
+        globalMaterialBuffer.sync();
         renderingSystem.render(deltaTime);
 
         win.swapBuffers();

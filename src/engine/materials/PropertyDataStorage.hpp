@@ -7,7 +7,7 @@
 #include "MaterialDataBuffer.hpp"
 
 class PropertyDataStorage {
-    const MaterialLayout& layout;
+    const MaterialLayout* layout;
     MaterialDataBuffer& buffer;
 
     uint32_t instanceId;
@@ -37,6 +37,13 @@ public:
     uint32_t getStartId() const { 
         return buffer.getMetadataById(instanceId).offset; 
     }
+
+    const MaterialDataBuffer& getBuffer() const { return buffer; }
+    const MaterialLayout& getLayout() const { return *layout; }
+
+    void bindLayout(const MaterialLayout* newLayout) {
+        layout = newLayout;
+    }
 };
 
 template <typename T>
@@ -47,7 +54,7 @@ void PropertyDataStorage::setProperty(
         throw std::invalid_argument("No such property: " + name);
     }
 
-    const auto& info = layout.getPropertyInfo(name);
+    const auto& info = layout->getPropertyInfo(name);
     if (MaterialLayout::getPropertyType<T>() != info.type) {
         throw std::invalid_argument(
             "Excepted type " + MaterialLayout::getGLSLType(info.type)
@@ -63,7 +70,7 @@ T PropertyDataStorage::getProperty(const std::string& name) const {
         throw std::invalid_argument("No such property: " + name);
     }
     
-    const auto& info = layout.getPropertyInfo(name);
+    const auto& info = layout->getPropertyInfo(name);
 
     T value;
     buffer.read(instanceId, info.offset, sizeof(T), &value);

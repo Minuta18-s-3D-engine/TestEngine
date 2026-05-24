@@ -27,7 +27,7 @@ void Shader::compileShaders(
     const char* vFragmentCode = fragmentSource.c_str();
 
     uint vertexId, fragmentId;
-    int success;
+    GLint success;
     char infoLog[ERROR_BUFFER_SIZE];
 
     vertexId = glCreateShader(GL_VERTEX_SHADER);
