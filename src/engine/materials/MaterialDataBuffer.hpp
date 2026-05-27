@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <vector>
 #include <cstring>
+#include <iostream>
 
 #include "../graphics/ShaderStorageBuffer.hpp"
 
@@ -18,12 +19,13 @@ class MaterialDataBuffer {
     std::vector<uint8_t> cpuBuffer;    
     std::vector<MaterialInstanceShaderMetadata> instances;
 
+    uint32_t lastDataSize = 0, lastMetaSize = 0;
+public:
     ShaderStorageBuffer gpuDataBuffer{
         SSBOBindings::MATERIALS, GL_DYNAMIC_DRAW};
     ShaderStorageBuffer gpuMetaBuffer{
         SSBOBindings::MATERIALS_META, GL_DYNAMIC_DRAW};
 
-    uint32_t lastDataSize = 0, lastMetaSize = 0;
 public:
     uint32_t allocateBlock(uint32_t size);
 

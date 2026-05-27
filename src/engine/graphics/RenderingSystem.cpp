@@ -91,6 +91,7 @@ void RenderingSystem::render(float deltaTime) {
     geomShader.use();
 
     globalMaterialBuffer.bind();
+    renderer->bindClusterData();
 
     geomShader.setUniform("u_Time", time);
     geomShader.setUniform("u_DeltaTime", deltaTime);
@@ -160,6 +161,7 @@ void RenderingSystem::render(float deltaTime) {
     lightingShader.setUniform(
         "u_GridSize", renderer->getClusterGrid());
 
+    globalMaterialBuffer.bind();
     renderer->bindClusterData();
 
     renderQuad();

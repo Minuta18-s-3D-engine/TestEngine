@@ -5,7 +5,8 @@ MaterialInstance::MaterialInstance(
     const Material& _material, 
     const MaterialDataBuffer& _buffer
 ) : name(_name), baseMaterial(&_material), buffer(&_buffer), 
-    properties(baseMaterial->getDefaultValues()) {
+    properties(baseMaterial->getDefaultValues()),
+    samplers(baseMaterial->getSamplerDefaults()) {
     properties.bindLayout(&baseMaterial->getLayout());
 }
 
@@ -84,9 +85,15 @@ void MaterialInstance::setSampler(
     const std::string& _name,
     std::shared_ptr<Texture> _texture
 ) {
+    std::cout << _name << " " << (_texture == nullptr) << std::endl;
+
     throwIfNoSampler(_name);
-    samplers[_name] = _texture;
+    if (_texture == nullptr) {
+        return;
+    }
     
+    samplers[_name] = _texture;
+
     uint64_t handle = _texture ? _texture->getHandle() : 0ULL;
     uint32_t lowerBits = static_cast<uint32_t>(handle);
     uint32_t upperBits = static_cast<uint32_t>(handle >> 32);   
@@ -104,14 +111,16 @@ std::shared_ptr<Texture> MaterialInstance::getSampler(
     return nullptr;
 }
 
-void MaterialInstance::bindSamplers() const {
+void MaterialInstance::bindSamplers(uint32_t startSlot) const {
     const GLuint GL_NO_BIND = 0;
 
     for (const auto& samplerDef : baseMaterial->getSamplerDefinitions()) {
         auto it = samplers.find(samplerDef.name);
 
         if (it != samplers.end() && it->second) {
-            glBindTextureUnit(samplerDef.slot, it->second->getId());
+            glBindTextureUnit(
+                samplerDef.slot + startSlot, it->second->getId()
+            );
         } else {
             glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
         }

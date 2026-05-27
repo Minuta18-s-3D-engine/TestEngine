@@ -1,10 +1,11 @@
 out vec4 FragColor;
 in vec2 v_UV;
 
+layout(binding = 0) uniform sampler2D gPosition;
+layout(binding = 1) uniform sampler2D gNormal;
+layout(binding = 2) uniform sampler2D gAlbedoSpec;
+
 uniform uvec3 u_GridSize;
-uniform sampler2D gPosition;
-uniform sampler2D gNormal;
-uniform sampler2D gAlbedoSpec;
 uniform uint u_DrawMode;
 
 vec3 FragPos = texture(gPosition, v_UV).rgb;
@@ -104,11 +105,8 @@ bool isCenterCross() {
 }
 
 void fragment() {
-    // uniform sampler2D gPosition;
-    // uniform sampler2D gNormal;
-    // uniform sampler2D gAlbedoSpec;
 
-    // FragColor = vec4(texture(gPosition, v_UV).xyz, 1.0);
+    // FragColor = vec4(texture(gAlbedoSpec, v_UV).xyz, 1.0);
     // return;
 
     int modifier = 1;

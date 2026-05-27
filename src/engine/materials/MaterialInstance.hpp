@@ -40,13 +40,13 @@ public:
     void setProperty(const std::string& name, const T& value);
 
     template <typename T>
-    const T& getProperties(const std::string& name) const;
+    const T getProperty(const std::string& name) const;
 
     bool hasSampler(const std::string& name) const;
     void setSampler(const std::string& name, std::shared_ptr<Texture> texture);
     std::shared_ptr<Texture> getSampler(const std::string& name) const;
 
-    void bindSamplers() const;
+    void bindSamplers(uint32_t startSlot = 0) const;
     void unbindSamplers() const;
 
     const Material& getMaterial() const { return *baseMaterial; }
@@ -60,7 +60,7 @@ void MaterialInstance::setProperty(const std::string& name, const T& value) {
 }
 
 template <typename T>
-const T& MaterialInstance::getProperties(const std::string& name) const {
+const T MaterialInstance::getProperty(const std::string& name) const {
     throwIfNoProperty(name);
     return properties.getProperty<T>(name);
 }

@@ -68,7 +68,7 @@ void createRect(
     matInstance->setSampler(
         "diffuseMap", manager.getShared<Texture>(diffuseTexKey));
     matInstance->setSampler(
-        "diffuseMap", manager.getShared<Texture>(specularTexKey));
+        "specularMap", manager.getShared<Texture>(specularTexKey));
 
     std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(
         scale, textureScale, matInstance
@@ -253,6 +253,9 @@ int main(int argc, char* argv[]) {
         std::cerr << e.what() << std::endl;
         return -1;
     }
+    EventManager eventManager;
+    Window win(eventManager);
+
     Project& project = *projectPtr;
     AssetManager& assetManager = project.getAssetManager();
 
@@ -261,8 +264,6 @@ int main(int argc, char* argv[]) {
     Scene& scene = project.getScene(mainSceneName);
     GameObjectManager& objectManager = scene.getGameObjectManager();
 
-    EventManager eventManager;
-    Window win(eventManager);
     InputController& inputController = win.getInputController();
 
     VirtualPath path = "fs://assets/textures";
@@ -278,13 +279,19 @@ int main(int argc, char* argv[]) {
         );
     }
 
+    loadTexture(
+        "core://assets/textures/missing.png",
+        "textures/missing",
+        assetManager 
+    );
+
     MaterialDataBuffer globalMaterialBuffer;
 
     {
         MaterialGraphicsConfig standardMaterialConfig;
 
         std::shared_ptr<Material> standardMaterial = std::make_shared<Material>(MaterialBuilder(
-            "StandardMaterial", standardMaterialConfig
+            "StandardMaterial", standardMaterialConfig, assetManager
         ).addSampler("diffuseMap")
             .addSampler("specularMap")
             .finalize(globalMaterialBuffer));
@@ -339,7 +346,7 @@ int main(int argc, char* argv[]) {
 
     createRect(
         glm::vec3(2.0, 2.0, 5.0), glm::vec3(1.0, 1.0, 1.0), 
-        glm::vec2(1.0, 1.0), "materials/standardMaterial", "materials/container", "materials/containerSpecular",
+        glm::vec2(1.0, 1.0), "materials/standardMaterial", "textures/container", "textures/containerSpecular",
         assetManager, objectManager, globalMaterialBuffer
     );
 

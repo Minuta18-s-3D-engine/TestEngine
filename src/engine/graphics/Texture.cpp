@@ -35,18 +35,18 @@ Texture::Texture(
         }
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
     if (type == SamplerType::CubeMap2D) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
     }
 
-    glTexParameteri(GL_TEXTURE_2D, 
+    glTexParameteri(target, 
         GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, 
+    glTexParameteri(target, 
         GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(target);
     this->unbind();
 
     if (GL_ARB_bindless_texture) {

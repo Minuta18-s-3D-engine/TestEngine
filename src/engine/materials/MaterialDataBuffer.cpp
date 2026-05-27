@@ -46,8 +46,8 @@ void MaterialDataBuffer::sync() {
 }
 
 void MaterialDataBuffer::bind() {
-    gpuDataBuffer.bind();
-    gpuMetaBuffer.bind();
+    gpuDataBuffer.bindData();
+    gpuMetaBuffer.bindData();
 }
 
 const MaterialInstanceShaderMetadata& MaterialDataBuffer::getMetadataById(

@@ -6,9 +6,11 @@ Material::Material(
     MaterialLayout _layout,
     PropertyDataStorage&& _storage,
     std::unordered_map<std::string, size_t>&& _samplerIndexes,
-    std::vector<SamplerDefinition>&& _samplerDefinitions
+    std::vector<SamplerDefinition>&& _samplerDefinitions,
+    SamplerMap&& _samplerDefaults
 ) : name(_name), shader(nullptr), cfg(_cfg), layout(std::move(_layout)), 
     samplersIndexes(_samplerIndexes), samplerDefinitions(_samplerDefinitions),
+    samplerDefaults(_samplerDefaults),
     defaultValues(std::move(_storage)) {
     defaultValues.bindLayout(&this->layout);
 }
@@ -20,7 +22,8 @@ Material::Material(Material&& other) noexcept
     layout(std::move(other.layout)),
     defaultValues(std::move(other.defaultValues)),
     samplersIndexes(std::move(other.samplersIndexes)),
-    samplerDefinitions(std::move(other.samplerDefinitions)) {
+    samplerDefinitions(std::move(other.samplerDefinitions)),
+    samplerDefaults(std::move(other.samplerDefaults)) {
     defaultValues.bindLayout(&this->layout);
 }
 
@@ -33,6 +36,7 @@ Material& Material::operator=(Material&& other) noexcept {
         defaultValues = std::move(other.defaultValues);
         samplersIndexes = std::move(other.samplersIndexes);
         samplerDefinitions = std::move(other.samplerDefinitions);
+        samplerDefaults = std::move(other.samplerDefaults);
         defaultValues.bindLayout(&this->layout);
     }
     return *this;

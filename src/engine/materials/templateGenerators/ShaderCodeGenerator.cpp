@@ -70,7 +70,8 @@ std::string ShaderCodeGenerator::generateSamplerGetter(
         result << "#define get_" << name << "() (sampler2D(currentMaterial."
             << name << "))\n";
     } else {
-        result << "#define get_" << name << "() (getGLSLSamplerName(name))\n";
+        result << "#define get_" << name << "() (" << getGLSLSamplerName(name)
+            << ")\n";
     }
 
     return result.str();
@@ -90,7 +91,7 @@ std::string ShaderCodeGenerator::generateSamplerGetters(
 }
 
 std::string ShaderCodeGenerator::generateBase(uint32_t idx) const {
-    return "b_MaterialData[u_CurrentMaterialStartId + " + std::to_string(idx) 
+    return "b_MaterialData[base + " + std::to_string(idx) 
         + "]";
 }
 

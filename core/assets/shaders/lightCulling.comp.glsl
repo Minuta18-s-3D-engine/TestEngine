@@ -4,7 +4,6 @@
 
 layout(local_size_x = LOCAL_SIZE, local_size_y = 1, local_size_z = 1) in;
 
-uniform mat4 u_ViewMat;
 uniform uint u_NumLights;
 uniform uvec3 u_GridSize;
 uniform int u_CurrentDispatch;
@@ -33,7 +32,7 @@ bool AABBIntersection(
 }
 
 bool testSphereAABB(uint lightInd, Cluster currCluster) {
-    vec3 center = vec3(u_ViewMat * vec4(b_Lights[lightInd].position, 1.0));
+    vec3 center = vec3(u_View * vec4(b_Lights[lightInd].position, 1.0));
     float radius = b_Lights[lightInd].radius;
 
     vec3 aabbMin = currCluster.minPoint.xyz;
@@ -58,7 +57,7 @@ BVHNode transformBVHNodeToViewSpace(BVHNode node) {
     vec3 viewMax = vec3(-1e9);
     
     for (int i = 0; i < 8; i++) {
-        vec3 viewCorner = vec3(u_ViewMat * vec4(worldCorners[i], 1.0));
+        vec3 viewCorner = vec3(u_View * vec4(worldCorners[i], 1.0));
         viewMin.x = min(viewMin.x, viewCorner.x);
         viewMin.y = min(viewMin.y, viewCorner.y);
         viewMin.z = min(viewMin.z, viewCorner.z);
@@ -76,10 +75,6 @@ BVHNode transformBVHNodeToViewSpace(BVHNode node) {
     return result;
 }
 
-bool isClusterInFrustum(Cluster cluster) {
-    return cluster.maxPoint.z < 0.0;
-}
-
 void compute() {
     uint clusterInd = gl_WorkGroupID.x * LOCAL_SIZE + gl_LocalInvocationID.x;
 
@@ -91,10 +86,6 @@ void compute() {
     Cluster currCluster = b_Clusters[clusterInd];
     currCluster.count = 0;
 
-    if (!isClusterInFrustum(currCluster)) {
-        b_Clusters[clusterInd] = currCluster;
-        return;
-    }
 
     uint stack[BVH_STACK_SIZE];
     uint stackPtr = 0;
@@ -130,7 +121,6 @@ void compute() {
             }
         }
     }
-    
-    // currCluster.count = nodesSkipped;
+
     b_Clusters[clusterInd] = currCluster;
 }

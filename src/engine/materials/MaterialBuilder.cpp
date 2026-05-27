@@ -1,8 +1,14 @@
 #include "MaterialBuilder.hpp"
 
 MaterialBuilder::MaterialBuilder(
-    const std::string& _name, MaterialGraphicsConfig _cfg
-) : name(_name), cfg(_cfg) {}
+    const std::string& _name, MaterialGraphicsConfig _cfg,
+    const AssetManager& _assetManager
+) : name(_name), assetManager(_assetManager), cfg(_cfg),
+    missingTexture(_assetManager.getShared<Texture>(_cfg.missingTextureKey)) {
+    if (missingTexture == nullptr) {
+        throw std::invalid_argument("Invalid missingTexture key");
+    }
+}
 
 MaterialBuilder& MaterialBuilder::addSampler(const std::string& name) {
     return addSampler(name, SamplerType::Texture2D);
@@ -11,7 +17,18 @@ MaterialBuilder& MaterialBuilder::addSampler(const std::string& name) {
 MaterialBuilder& MaterialBuilder::addSampler(
     const std::string& name, SamplerType type
 ) {
+    return addSampler(name, type, missingTexture);
+}
+
+MaterialBuilder& MaterialBuilder::addSampler(
+    const std::string& name, SamplerType type, 
+    std::shared_ptr<Texture> defaultTexture
+) {
     if (samplersIndexes.contains(name)) {
+        return *this;
+    }
+
+    if (!defaultTexture) {
         return *this;
     }
 
@@ -21,14 +38,18 @@ MaterialBuilder& MaterialBuilder::addSampler(
     def.slot = static_cast<uint32_t>(samplersIndexes.size());
     samplersIndexes[name] = samplersIndexes.size();
     samplerDefinitions.push_back(def);
+    samplerDefaults[name] = defaultTexture;
 
     // NOTE: It was initially planned to use uint64_t, as bindless_textures 
     // docs suggest. Unfortunately, this causes mesa driver bug, which leads
     // to segmentation fault.
     resultLayout.addProperty<glm::uvec2>(name);
 
-    propertyBinders.push_back([name](PropertyDataStorage& storage) {
-        storage.setProperty<glm::uvec2>(name, {0U, 0U});
+    uint64_t handle = defaultTexture->getHandle();
+    propertyBinders.push_back([handle, name](PropertyDataStorage& storage) {
+        uint32_t lowerBits = static_cast<uint32_t>(handle);
+        uint32_t upperBits = static_cast<uint32_t>(handle >> 32);   
+        storage.setProperty<glm::uvec2>(name, {lowerBits, upperBits});
     });
 
     return *this;
@@ -49,6 +70,7 @@ Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
         std::move(resultLayout),
         std::move(tempStorage),
         std::move(samplersIndexes),
-        std::move(samplerDefinitions)
+        std::move(samplerDefinitions),
+        std::move(samplerDefaults)
     );
 }

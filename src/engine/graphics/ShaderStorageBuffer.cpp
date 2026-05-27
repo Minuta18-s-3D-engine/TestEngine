@@ -43,7 +43,6 @@ void ShaderStorageBuffer::unbind() {
 void ShaderStorageBuffer::setData(const void* data, size_t size) {
     bind();
     glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, SSBOtype);
-    unbind();
 }
 
 void ShaderStorageBuffer::setSubData(
@@ -51,5 +50,4 @@ void ShaderStorageBuffer::setSubData(
 ) {
     bind();
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data);
-    unbind();
 }

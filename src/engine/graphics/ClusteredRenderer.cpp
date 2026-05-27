@@ -115,7 +115,7 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     buildClustersShader->setUniform("u_GridSize", 
         glm::uvec3(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z));
     buildClustersShader->setUniform("u_Resolution", 
-        glm::uvec2(window.getWidth(), window.getHeight()));
+        glm::ivec2(window.getWidth(), window.getHeight()));
     
     glDispatchCompute(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

@@ -10,8 +10,13 @@
 #include "../graphics/SamplerDefinition.hpp"
 
 class Shader;
+class Texture;
 
 class Material {
+public:
+    using SamplerMap = 
+        std::unordered_map<std::string, std::shared_ptr<Texture>>;
+private:
     friend class MaterialBuilder;
 
     std::string name;
@@ -22,6 +27,7 @@ class Material {
 
     std::unordered_map<std::string, size_t> samplersIndexes;
     std::vector<SamplerDefinition> samplerDefinitions;
+    SamplerMap samplerDefaults;
 
     Material(
         const std::string& _name,
@@ -29,7 +35,8 @@ class Material {
         MaterialLayout _layout,
         PropertyDataStorage&& _storage,
         std::unordered_map<std::string, size_t>&& _samplerIndexes,
-        std::vector<SamplerDefinition>&& samplerDefinitions
+        std::vector<SamplerDefinition>&& samplerDefinitions,
+        SamplerMap&& _samplerDefaults
     );
 public:
     Material(const Material& other) = delete;
@@ -45,6 +52,7 @@ public:
     const std::vector<SamplerDefinition>& getSamplerDefinitions() const {
         return samplerDefinitions;
     }
+    const SamplerMap& getSamplerDefaults() const { return samplerDefaults; }
 
     bool hasProperty(const std::string& name) const;
     bool hasDefaultValue(const std::string& name) const;

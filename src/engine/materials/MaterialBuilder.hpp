@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include <unordered_map>
+#include <memory>
 
 #include "Material.hpp"
 #include "MaterialGraphicsConfig.hpp"
@@ -13,6 +14,8 @@
 #include "MaterialDataBuffer.hpp"
 #include "../graphics/SamplerType.hpp"
 #include "../graphics/SamplerDefinition.hpp"
+#include "../assets/AssetManager.hpp"
+#include "../graphics/Texture.hpp"
 
 class Shader;
 
@@ -24,12 +27,17 @@ class MaterialBuilder {
     std::vector<BinderFunc> propertyBinders;
     std::unordered_map<std::string, size_t> samplersIndexes;
     std::vector<SamplerDefinition> samplerDefinitions;
+    std::unordered_map<std::string, std::shared_ptr<Texture>> samplerDefaults;
 
     MaterialLayout resultLayout; 
+    const AssetManager& assetManager;
+
+    std::shared_ptr<Texture> missingTexture;
 public:
     MaterialBuilder(
         const std::string& _name, 
-        MaterialGraphicsConfig _cfg
+        MaterialGraphicsConfig _cfg,
+        const AssetManager& _assetManager
     );
 
     template <typename T>
@@ -42,6 +50,10 @@ public:
 
     MaterialBuilder& addSampler(const std::string& name);
     MaterialBuilder& addSampler(const std::string& name, SamplerType type);
+    MaterialBuilder& addSampler(
+        const std::string& name, SamplerType type, 
+        std::shared_ptr<Texture> defaultTexture
+    );
 
     Material finalize(MaterialDataBuffer& buffer);
 };

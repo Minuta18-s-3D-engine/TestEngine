@@ -10,5 +10,6 @@ Material_Structure_{{ material_name }} currentMaterial;
 
 void loadCurrentMaterial() {
     uint base = u_CurrentMaterialStartId;
+    base = 0u;
 {{ unpack_lines }}   
 }
