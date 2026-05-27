@@ -8,35 +8,24 @@
 #include "MaterialGraphicsConfig.hpp"
 #include "PropertyDataStorage.hpp"
 #include "../graphics/SamplerDefinition.hpp"
+#include "MaterialDescriptor.hpp"
 
 class Shader;
 class Texture;
 
 class Material {
-public:
-    using SamplerMap = 
-        std::unordered_map<std::string, std::shared_ptr<Texture>>;
-private:
     friend class MaterialBuilder;
 
-    std::string name;
-    std::shared_ptr<Shader> shader;
-    MaterialGraphicsConfig cfg;
-    MaterialLayout layout;
-    PropertyDataStorage defaultValues;
+    MaterialDescriptor descriptor;
 
-    std::unordered_map<std::string, size_t> samplersIndexes;
-    std::vector<SamplerDefinition> samplerDefinitions;
-    SamplerMap samplerDefaults;
+    std::shared_ptr<Shader> shader;
+    PropertyDataStorage defaultValues;
+    MaterialDescriptor::SamplerMap samplerDefaults;
 
     Material(
-        const std::string& _name,
-        MaterialGraphicsConfig _cfg,
-        MaterialLayout _layout,
-        PropertyDataStorage&& _storage,
-        std::unordered_map<std::string, size_t>&& _samplerIndexes,
-        std::vector<SamplerDefinition>&& samplerDefinitions,
-        SamplerMap&& _samplerDefaults
+        MaterialDescriptor&& _descriptor,
+        MaterialDescriptor::SamplerMap&& _samplerDefaults,
+        PropertyDataStorage&& _storage
     );
 public:
     Material(const Material& other) = delete;
@@ -45,18 +34,19 @@ public:
     Material(Material&& other) noexcept;
     Material& operator=(Material&& other) noexcept;
 
-    std::string getName() const { return name; };
-    const MaterialGraphicsConfig& getConfig() const { return cfg; }
-    const MaterialLayout& getLayout() const { return layout; }
-    const PropertyDataStorage& getDefaultValues() const { return defaultValues; }
-    const std::vector<SamplerDefinition>& getSamplerDefinitions() const {
-        return samplerDefinitions;
-    }
-    const SamplerMap& getSamplerDefaults() const { return samplerDefaults; }
+    std::string getName() const;
+    const MaterialGraphicsConfig& getConfig() const;
+    const MaterialLayout& getLayout() const;
+    const PropertyDataStorage& getDefaultValues() const;
+    const std::vector<SamplerDefinition>& getSamplerDefinitions() const;
+    const MaterialDescriptor::SamplerMap& getSamplerDefaults() const;
+    const MaterialDescriptor& getDescriptor() const;
 
     bool hasProperty(const std::string& name) const;
     bool hasDefaultValue(const std::string& name) const;
-    MaterialLayout::PropertyType getPropertyType(const std::string& name) const;
+    MaterialLayout::PropertyType getPropertyType(
+        const std::string& name
+    ) const;
 
     bool hasSampler(const std::string& name) const;
     const SamplerDefinition& getSampler(const std::string& name) const;

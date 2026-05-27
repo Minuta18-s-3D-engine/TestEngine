@@ -1,49 +1,35 @@
 #include "Material.hpp"
 
 Material::Material(
-    const std::string& _name,
-    MaterialGraphicsConfig _cfg,
-    MaterialLayout _layout,
-    PropertyDataStorage&& _storage,
-    std::unordered_map<std::string, size_t>&& _samplerIndexes,
-    std::vector<SamplerDefinition>&& _samplerDefinitions,
-    SamplerMap&& _samplerDefaults
-) : name(_name), shader(nullptr), cfg(_cfg), layout(std::move(_layout)), 
-    samplersIndexes(_samplerIndexes), samplerDefinitions(_samplerDefinitions),
-    samplerDefaults(_samplerDefaults),
-    defaultValues(std::move(_storage)) {
-    defaultValues.bindLayout(&this->layout);
+    MaterialDescriptor&& _descriptor,
+    MaterialDescriptor::SamplerMap&& _samplerDefaults,
+    PropertyDataStorage&& _storage
+) : descriptor(_descriptor), samplerDefaults(_samplerDefaults), 
+    shader(nullptr), defaultValues(std::move(_storage)) {
+    defaultValues.bindLayout(&this->descriptor.layout);
 }
 
 Material::Material(Material&& other) noexcept
-  : name(std::move(other.name)),
+  : descriptor(std::move(other.descriptor)),
     shader(std::move(other.shader)),
-    cfg(std::move(other.cfg)),
-    layout(std::move(other.layout)),
     defaultValues(std::move(other.defaultValues)),
-    samplersIndexes(std::move(other.samplersIndexes)),
-    samplerDefinitions(std::move(other.samplerDefinitions)),
     samplerDefaults(std::move(other.samplerDefaults)) {
-    defaultValues.bindLayout(&this->layout);
+    defaultValues.bindLayout(&this->descriptor.layout);
 }
 
 Material& Material::operator=(Material&& other) noexcept {
     if (this != &other) {
-        name = std::move(other.name);
+        descriptor = std::move(other.descriptor);
         shader = std::move(other.shader);
-        cfg = std::move(other.cfg);
-        layout = std::move(other.layout);
         defaultValues = std::move(other.defaultValues);
-        samplersIndexes = std::move(other.samplersIndexes);
-        samplerDefinitions = std::move(other.samplerDefinitions);
         samplerDefaults = std::move(other.samplerDefaults);
-        defaultValues.bindLayout(&this->layout);
+        defaultValues.bindLayout(&this->descriptor.layout);
     }
     return *this;
 }
 
 bool Material::hasProperty(const std::string& name) const {
-    return layout.hasProperty(name);
+    return descriptor.layout.hasProperty(name);
 }
 
 bool Material::hasDefaultValue(const std::string& name) const {
@@ -51,16 +37,44 @@ bool Material::hasDefaultValue(const std::string& name) const {
 }
 
 bool Material::hasSampler(const std::string& name) const {
-    return samplersIndexes.contains(name);
+    return descriptor.samplerIndexes.contains(name);
 }
 
 const SamplerDefinition& Material::getSampler(const std::string& name) const {
-    size_t index = samplersIndexes.at(name);
-    return samplerDefinitions[index];
+    size_t index = descriptor.samplerIndexes.at(name);
+    return descriptor.samplerDefinitions[index];
 }
 
 MaterialLayout::PropertyType Material::getPropertyType(
     const std::string& name
 ) const {
-    return layout.getPropertyInfo(name).type;
+    return descriptor.layout.getPropertyInfo(name).type;
+}
+
+std::string Material::getName() const { 
+    return descriptor.name; 
+}
+
+const MaterialGraphicsConfig& Material::getConfig() const { 
+    return descriptor.config; 
+}
+
+const MaterialLayout& Material::getLayout() const { 
+    return descriptor.layout; 
+}
+
+const PropertyDataStorage& Material::getDefaultValues() const { 
+    return defaultValues; 
+}
+
+const std::vector<SamplerDefinition>& Material::getSamplerDefinitions() const {
+    return descriptor.samplerDefinitions;
+}
+
+const MaterialDescriptor::SamplerMap& Material::getSamplerDefaults() const { 
+    return samplerDefaults; 
+}
+
+const MaterialDescriptor& Material::getDescriptor() const {
+    return descriptor;
 }

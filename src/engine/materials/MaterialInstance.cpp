@@ -6,7 +6,9 @@ MaterialInstance::MaterialInstance(
     MaterialDataBuffer& _buffer
 ) : name(_name), baseMaterial(&_material), buffer(&_buffer), 
     properties(baseMaterial->getDefaultValues(), _buffer),
-    samplers(baseMaterial->getSamplerDefaults()) {
+    samplers(baseMaterial->getSamplerDefaults()),
+    descriptor(&baseMaterial->getDescriptor()) 
+{
     properties.bindLayout(&baseMaterial->getLayout());
 }
 
@@ -15,7 +17,8 @@ MaterialInstance::MaterialInstance(const MaterialInstance& other)
     baseMaterial(other.baseMaterial),
     buffer(other.buffer),
     properties(other.properties),
-    samplers(other.samplers) {}
+    samplers(other.samplers),
+    descriptor(other.descriptor) {}
 
 MaterialInstance& MaterialInstance::operator=(const MaterialInstance& other) {
     if (this != &other) {
@@ -24,6 +27,7 @@ MaterialInstance& MaterialInstance::operator=(const MaterialInstance& other) {
         buffer = other.buffer;
         properties = other.properties;
         samplers = other.samplers;
+        descriptor = other.descriptor;
     }
     return *this;
 }
@@ -33,7 +37,9 @@ MaterialInstance::MaterialInstance(MaterialInstance&& other) noexcept
     baseMaterial(other.baseMaterial),
     buffer(other.buffer),
     properties(std::move(other.properties)),
-    samplers(std::move(other.samplers)) {
+    samplers(std::move(other.samplers)),
+    descriptor(other.descriptor) 
+{
     other.baseMaterial = nullptr;
     other.buffer = nullptr;
 }
@@ -45,6 +51,7 @@ MaterialInstance& MaterialInstance::operator=(
         name = std::move(other.name);
         baseMaterial = other.baseMaterial;
         buffer = other.buffer;
+        descriptor = other.descriptor;
         properties = std::move(other.properties);
         samplers = std::move(other.samplers);
 

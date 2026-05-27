@@ -3,8 +3,11 @@
 MaterialBuilder::MaterialBuilder(
     const std::string& _name, MaterialGraphicsConfig _cfg,
     const AssetManager& _assetManager
-) : name(_name), assetManager(_assetManager), cfg(_cfg),
-    missingTexture(_assetManager.getShared<Texture>(_cfg.missingTextureKey)) {
+) : assetManager(_assetManager) {
+    resultDescriptor.name = _name;
+    resultDescriptor.config = _cfg;
+
+    missingTexture = _assetManager.getShared<Texture>(_cfg.missingTextureKey);
     if (missingTexture == nullptr) {
         throw std::invalid_argument("Invalid missingTexture key");
     }
@@ -24,7 +27,7 @@ MaterialBuilder& MaterialBuilder::addSampler(
     const std::string& name, SamplerType type, 
     std::shared_ptr<Texture> defaultTexture
 ) {
-    if (samplersIndexes.contains(name)) {
+    if (resultDescriptor.samplerIndexes.contains(name)) {
         return *this;
     }
 
@@ -35,15 +38,16 @@ MaterialBuilder& MaterialBuilder::addSampler(
     SamplerDefinition def;
     def.name = name;
     def.type = type;
-    def.slot = static_cast<uint32_t>(samplersIndexes.size());
-    samplersIndexes[name] = samplersIndexes.size();
-    samplerDefinitions.push_back(def);
+    def.slot = static_cast<uint32_t>(resultDescriptor.samplerIndexes.size());
+    resultDescriptor.samplerIndexes[name] = 
+        resultDescriptor.samplerIndexes.size();
+    resultDescriptor.samplerDefinitions.push_back(def);
     samplerDefaults[name] = defaultTexture;
 
     // NOTE: It was initially planned to use uint64_t, as bindless_textures 
     // docs suggest. Unfortunately, this causes mesa driver bug, which leads
     // to segmentation fault.
-    resultLayout.addProperty<glm::uvec2>(name);
+    resultDescriptor.layout.addProperty<glm::uvec2>(name);
 
     uint64_t handle = defaultTexture->getHandle();
     propertyBinders.push_back([handle, name](PropertyDataStorage& storage) {
@@ -56,21 +60,17 @@ MaterialBuilder& MaterialBuilder::addSampler(
 }
 
 Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
-    resultLayout.finalize();
+    resultDescriptor.layout.finalize();
 
-    PropertyDataStorage tempStorage(resultLayout, buffer);
+    PropertyDataStorage tempStorage(resultDescriptor.layout, buffer);
 
     for (const auto& binder : propertyBinders) {
         binder(tempStorage);
     }
 
     return Material(
-        name,
-        cfg,
-        std::move(resultLayout),
-        std::move(tempStorage),
-        std::move(samplersIndexes),
-        std::move(samplerDefinitions),
-        std::move(samplerDefaults)
+        std::move(resultDescriptor),
+        std::move(samplerDefaults),
+        std::move(tempStorage)
     );
 }

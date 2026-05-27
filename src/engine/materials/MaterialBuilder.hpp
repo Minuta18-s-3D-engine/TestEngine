@@ -16,23 +16,20 @@
 #include "../graphics/SamplerDefinition.hpp"
 #include "../assets/AssetManager.hpp"
 #include "../graphics/Texture.hpp"
+#include "MaterialDescriptor.hpp"
 
 class Shader;
 
 class MaterialBuilder {
-    MaterialGraphicsConfig cfg;
-    std::string name;
+    MaterialDescriptor resultDescriptor;
+
+    MaterialDescriptor::SamplerMap samplerDefaults;
+
+    const AssetManager& assetManager;
+    std::shared_ptr<Texture> missingTexture;
 
     using BinderFunc = std::function<void(PropertyDataStorage&)>;
     std::vector<BinderFunc> propertyBinders;
-    std::unordered_map<std::string, size_t> samplersIndexes;
-    std::vector<SamplerDefinition> samplerDefinitions;
-    std::unordered_map<std::string, std::shared_ptr<Texture>> samplerDefaults;
-
-    MaterialLayout resultLayout; 
-    const AssetManager& assetManager;
-
-    std::shared_ptr<Texture> missingTexture;
 public:
     MaterialBuilder(
         const std::string& _name, 
@@ -60,7 +57,7 @@ public:
 
 template <typename T>
 MaterialBuilder& MaterialBuilder::addProperty(const std::string& name) {
-    resultLayout.addProperty<T>(name);
+    resultDescriptor.layout.addProperty<T>(name);
 
     return *this;
 }
@@ -69,7 +66,7 @@ template <typename T>
 MaterialBuilder& MaterialBuilder::addProperty(
     const std::string& name, const T& defaultValue
 ) {
-    resultLayout.addProperty<T>(name);
+    resultDescriptor.layout.addProperty<T>(name);
 
     propertyBinders.push_back(
         [name, defaultValue](PropertyDataStorage& storage) {

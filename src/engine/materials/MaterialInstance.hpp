@@ -6,16 +6,19 @@
 
 #include "Material.hpp"
 #include "MaterialDataBuffer.hpp"
+#include "MaterialDescriptor.hpp"
 #include "../graphics/Texture.hpp"
 
 class MaterialInstance {
     std::string name;
 
     const Material* baseMaterial;
+    const MaterialDescriptor* descriptor;
     MaterialDataBuffer* buffer;
+
     PropertyDataStorage properties;
 
-    std::unordered_map<std::string, std::shared_ptr<Texture>> samplers;
+    MaterialDescriptor::SamplerMap samplers;
 
     void throwIfNoSampler(const std::string& samplerName) const;
     void throwIfNoProperty(const std::string& propertyName) const;
