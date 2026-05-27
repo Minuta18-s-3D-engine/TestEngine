@@ -3,9 +3,9 @@
 MaterialInstance::MaterialInstance(
     const std::string& _name, 
     const Material& _material, 
-    const MaterialDataBuffer& _buffer
+    MaterialDataBuffer& _buffer
 ) : name(_name), baseMaterial(&_material), buffer(&_buffer), 
-    properties(baseMaterial->getDefaultValues()),
+    properties(baseMaterial->getDefaultValues(), _buffer),
     samplers(baseMaterial->getSamplerDefaults()) {
     properties.bindLayout(&baseMaterial->getLayout());
 }
@@ -85,8 +85,6 @@ void MaterialInstance::setSampler(
     const std::string& _name,
     std::shared_ptr<Texture> _texture
 ) {
-    std::cout << _name << " " << (_texture == nullptr) << std::endl;
-
     throwIfNoSampler(_name);
     if (_texture == nullptr) {
         return;

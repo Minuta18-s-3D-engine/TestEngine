@@ -19,6 +19,10 @@ public:
         const MaterialLayout& _layout, 
         MaterialDataBuffer& _buffer
     );
+    PropertyDataStorage(
+        const PropertyDataStorage& other, 
+        MaterialDataBuffer& targetBuffer
+    );
 
     PropertyDataStorage(const PropertyDataStorage& other);
     PropertyDataStorage& operator=(const PropertyDataStorage& other);
@@ -38,7 +42,7 @@ public:
         return buffer.getMetadataById(instanceId).offset; 
     }
 
-    const MaterialDataBuffer& getBuffer() const { return buffer; }
+    MaterialDataBuffer& getBuffer() const { return buffer; }
     const MaterialLayout& getLayout() const { return *layout; }
 
     void bindLayout(const MaterialLayout* newLayout) {

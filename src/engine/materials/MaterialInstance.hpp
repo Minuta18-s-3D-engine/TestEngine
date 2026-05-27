@@ -12,7 +12,7 @@ class MaterialInstance {
     std::string name;
 
     const Material* baseMaterial;
-    const MaterialDataBuffer* buffer;
+    MaterialDataBuffer* buffer;
     PropertyDataStorage properties;
 
     std::unordered_map<std::string, std::shared_ptr<Texture>> samplers;
@@ -23,7 +23,7 @@ public:
     MaterialInstance(
         const std::string& _name, 
         const Material& _material, 
-        const MaterialDataBuffer& _buffer
+        MaterialDataBuffer& _buffer
     );
 
     ~MaterialInstance() = default;

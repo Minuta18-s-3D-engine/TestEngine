@@ -11,6 +11,21 @@ PropertyDataStorage::PropertyDataStorage(
     instanceId = buffer.allocateBlock(layout->getLayoutSize());
 }
 
+PropertyDataStorage::PropertyDataStorage(
+    const PropertyDataStorage& other, 
+    MaterialDataBuffer& targetBuffer
+) : layout(other.layout), buffer(targetBuffer) {
+    if (!layout->isFinalized()) {
+        throw std::invalid_argument("Layout must be finalized");
+    }
+
+    instanceId = buffer.allocateBlock(layout->getLayoutSize());
+
+    std::vector<uint8_t> temp(layout->getLayoutSize());
+    other.buffer.read(other.instanceId, 0, temp.size(), temp.data());
+    buffer.write(instanceId, 0, temp.size(), temp.data());
+}
+
 bool PropertyDataStorage::hasProperty(const std::string& name) const {
     return layout->hasProperty(name);
 }

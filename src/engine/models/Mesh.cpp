@@ -86,7 +86,7 @@ void Mesh::draw(Shader& shader) {
     if (material) {
         shader.setUniform(
             "u_CurrentMaterialStartId",
-            material->getProperties().getStartId()
+            material->getProperties().getStartId() / 4
         );
         material->bindSamplers();
     }
