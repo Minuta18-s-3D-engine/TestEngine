@@ -10,7 +10,9 @@ protected:
     void compileComputeShader(const std::string& source);
 public:
     ComputeShader(const std::string& source);
-    virtual ~ComputeShader();
+
+    ComputeShader(ComputeShader&&) noexcept = default;
+    ComputeShader& operator=(ComputeShader&&) noexcept = default;
 };
 
 #endif // ENGINE_GRAPHICS_COMPUTE_SHADER_H_

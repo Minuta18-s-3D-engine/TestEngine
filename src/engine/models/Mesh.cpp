@@ -82,9 +82,11 @@ void Mesh::setupMesh() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Mesh::draw(Shader& shader) {
+void Mesh::draw() {
+    auto shader = material->getMaterial().getShader();
+
     if (material) {
-        shader.setUniform(
+        shader->setUniform(
             "u_CurrentMaterialStartId",
             material->getProperties().getStartId() / 4
         );

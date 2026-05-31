@@ -8,7 +8,7 @@
 
 #include "../graphics/ShaderStorageBuffer.hpp"
 
-struct alignas(16) MaterialInstanceShaderMetadata {
+struct MaterialInstanceShaderMetadata {
     uint32_t offset;
     uint32_t size;
 };
@@ -21,7 +21,7 @@ class MaterialDataBuffer {
 
     uint32_t lastDataSize = 0, lastMetaSize = 0;
 public:
-    ShaderStorageBuffer gpuDataBuffer{
+    ShaderStorageBuffer gpuDataBuffer{  
         SSBOBindings::MATERIALS, GL_DYNAMIC_DRAW};
     ShaderStorageBuffer gpuMetaBuffer{
         SSBOBindings::MATERIALS_META, GL_DYNAMIC_DRAW};

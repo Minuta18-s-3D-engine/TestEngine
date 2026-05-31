@@ -14,5 +14,4 @@ void fragment() {
 
     gAlbedoSpec.rgb = texture(get_diffuseMap(), v_UV).rgb;
     gAlbedoSpec.a = texture(get_specularMap(), v_UV).r;
-    // gAlbedoSpec = vec4(0.5, 0.5, 0.5, 1.0);;
 }

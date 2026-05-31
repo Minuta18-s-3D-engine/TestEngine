@@ -19,6 +19,7 @@
 #include "../assets/utils/Files.hpp"
 #include "../assets/utils/ImageData.hpp"
 #include "../project/VirtualPath.hpp"
+#include "../assets/AssetManager.hpp"
 
 class ModelLoader {
     std::unique_ptr<Model> createdModel;
@@ -52,7 +53,8 @@ class ModelLoader {
 public:
     std::unique_ptr<Model> loadModel(
         const VirtualPath& filename,
-        std::shared_ptr<Material> baseMaterial
+        std::shared_ptr<Material> baseMaterial,
+        const AssetManager& _assetManager
     );
 };
 

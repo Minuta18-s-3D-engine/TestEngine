@@ -4,10 +4,6 @@ ComputeShader::ComputeShader(const std::string& source) {
     this->compileComputeShader(source);
 }
 
-ComputeShader::~ComputeShader() {
-    glDeleteProgram(glId);
-}
-
 void ComputeShader::compileComputeShader(const std::string& source) {
     const char* vShaderCode = source.c_str();
 

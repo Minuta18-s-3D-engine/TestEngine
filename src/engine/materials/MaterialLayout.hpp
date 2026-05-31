@@ -55,7 +55,21 @@ public:
     static std::string getGLSLType(PropertyType type);
     static size_t getStd430Alignment(PropertyType type);
     static size_t getStd430Size(PropertyType type); 
+    static size_t getSize(PropertyType propType) { 
+        if (propType == PropertyType::Bool) 
+            // Since data is packed in blocks of 4 bytes (size of uint), its 
+            // impossible to properties less than 4 bytes.
+            return 4; 
 
+        #define X(name, type, glslType) \
+            if (propType == PropertyType::name) \
+                return sizeof(type);
+
+            PROPERTY_TYPE_LIST
+        #undef X
+
+        return 0;
+    }
 
     struct Property {
         PropertyType type;

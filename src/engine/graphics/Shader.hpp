@@ -34,6 +34,13 @@ public:
         const std::string& vertexSource,
         const std::string& fragmentSource
     );
+
+    Shader(const Shader&) = delete;
+    Shader& operator=(const Shader&) = delete;
+
+    Shader(Shader&& other) noexcept;
+    Shader& operator=(Shader&& other) noexcept;
+
     virtual ~Shader();
 
     void use();

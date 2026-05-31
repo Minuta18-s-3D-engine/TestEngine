@@ -5,7 +5,8 @@
 
 std::unique_ptr<Model> ModelLoader::loadModel(
     const VirtualPath& _filename, 
-    std::shared_ptr<Material> _baseMaterial
+    std::shared_ptr<Material> _baseMaterial,
+    const AssetManager& _assetManager
 ) {
     baseMaterial = _baseMaterial;
 
@@ -24,6 +25,7 @@ std::unique_ptr<Model> ModelLoader::loadModel(
 
     directory = filename.substr(0, filename.find_last_of('/'));
     createdModel = std::make_unique<Model>();
+    createdModel->material = _assetManager.getShared<Material>("materials/standardMaterial"); 
 
     loadedTextures.clear();
     loadedMaterials.clear();

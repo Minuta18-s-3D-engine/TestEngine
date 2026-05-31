@@ -74,7 +74,6 @@ void RenderingSystem::render(float deltaTime) {
     renderer->updateLightData(lightCache);
     renderer->updateClusters(camera);
     
-    Shader& geomShader = assetManager.require<Shader>("shaders/geomShader");
     Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader");
 
     gBuffer->bind();
@@ -88,30 +87,7 @@ void RenderingSystem::render(float deltaTime) {
     glm::mat4 viewMat = camera->getViewMat();
     glm::mat4 worldModel = glm::mat4(1.0f);
 
-    geomShader.use();
-
-    globalMaterialBuffer.bind();
-    renderer->bindClusterData();
-
-    geomShader.setUniform("u_Time", time);
-    geomShader.setUniform("u_DeltaTime", deltaTime);
-    geomShader.setUniform("u_Frame", currentFrame);
-
     glm::ivec2 resolution = glm::ivec2(window.getWidth(), window.getHeight());
-    geomShader.setUniform("u_Resolution", resolution);
-    geomShader.setUniform("u_TexelSize", 
-        glm::vec2(1.0f / resolution.x, 1.0f / resolution.y));
-    
-    geomShader.setUniform("u_CameraPosition", camera->pos);
-    geomShader.setUniform("u_CameraDirection", camera->front);
-
-    geomShader.setUniform("u_View", viewMat);
-    geomShader.setUniform("u_Projection", proj);
-    geomShader.setUniform("u_InvView", glm::inverse(viewMat));
-    geomShader.setUniform("u_InvProjection", glm::inverse(proj));
-
-    geomShader.setUniform("u_ZNear", camera->zNear);
-    geomShader.setUniform("u_ZFar", camera->zFar);  
 
     for (auto& object : objectsCache) {
         auto transformComponent = object->getComponent<Transform>();
@@ -119,13 +95,41 @@ void RenderingSystem::render(float deltaTime) {
         glm::mat4 model = glm::translate(
             worldModel, transformComponent->position);
 
-        geomShader.setUniform("u_Model", model);
-        geomShader.setUniform("u_InvModel", glm::inverse(model));
         auto objModel = assetManager.get<Model>(modelComponent->managerId);
         if (!objModel) {
             continue;
         }
-        objModel->draw(geomShader); 
+
+        std::shared_ptr<Shader> geomShader = objModel->material->getShader();
+
+        geomShader->use();
+
+        globalMaterialBuffer.bind();
+        renderer->bindClusterData();
+
+        geomShader->setUniform("u_Time", time);
+        geomShader->setUniform("u_DeltaTime", deltaTime);
+        geomShader->setUniform("u_Frame", currentFrame);
+
+        geomShader->setUniform("u_Resolution", resolution);
+        geomShader->setUniform("u_TexelSize", 
+            glm::vec2(1.0f / resolution.x, 1.0f / resolution.y));
+        
+        geomShader->setUniform("u_CameraPosition", camera->pos);
+        geomShader->setUniform("u_CameraDirection", camera->front);
+
+        geomShader->setUniform("u_View", viewMat);
+        geomShader->setUniform("u_Projection", proj);
+        geomShader->setUniform("u_InvView", glm::inverse(viewMat));
+        geomShader->setUniform("u_InvProjection", glm::inverse(proj));
+
+        geomShader->setUniform("u_ZNear", camera->zNear);
+        geomShader->setUniform("u_ZFar", camera->zFar);  
+
+        geomShader->setUniform("u_Model", model);
+        geomShader->setUniform("u_InvModel", glm::inverse(model));
+        
+        objModel->draw(); 
     }
 
     gBuffer->unbind();

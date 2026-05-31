@@ -15,7 +15,28 @@ Shader::Shader(
     );
 }
 
+Shader::Shader(Shader&& other) noexcept 
+    : uniformLocations(std::move(other.uniformLocations)),
+      glId(other.glId) 
+{
+    other.glId = 0; 
+}
+
+Shader& Shader::operator=(Shader&& other) noexcept 
+{
+    if (this != &other) {
+        if (glId != 0) {
+            glDeleteProgram(glId); 
+        }
+        glId = other.glId;
+        uniformLocations = std::move(other.uniformLocations);
+        other.glId = 0;
+    }
+    return *this;
+}
+
 Shader::~Shader() {
+    if (glId == 0) return;
     glDeleteProgram(glId);
 }
 
@@ -81,6 +102,7 @@ void Shader::compileShaders(
 }
 
 void Shader::use() {
+    std::cout << "Use: " << this->glId << std::endl;
     glUseProgram(glId);
 }
 

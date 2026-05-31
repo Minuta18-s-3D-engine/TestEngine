@@ -77,6 +77,7 @@ void createRect(
     std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
     cubeMeshArray.push_back(cubeMesh);
     std::unique_ptr<Model> cubeModel = std::make_unique<Model>(cubeMeshArray);
+    cubeModel->material = manager.getShared<Material>("materials/standardMaterial");
     
     uuids::uuid modelId = uuids::uuid_system_generator{}();
     std::string modelName = uuids::to_string(modelId);
@@ -169,6 +170,9 @@ std::string processShaderSource(
     std::string generatedSource = generator.generateShader(
         baseMaterial, source, callingFunc
     );
+
+    std::cout << path.resolve() << ":" << std::endl;
+    std::cout << generatedSource << std::endl << std::endl; 
 
     return generatedSource;
 } 
@@ -299,6 +303,74 @@ int main(int argc, char* argv[]) {
         assetManager.set<Material>(standardMaterial, "materials/standardMaterial");
     }
 
+    {
+        std::shared_ptr<Material> prototypeGrid = std::make_shared<Material>(
+            MaterialBuilder(
+                "PrototypeGrid", MaterialGraphicsConfig(), assetManager
+            )
+            .addProperty<glm::vec3>("baseColor", glm::vec3(0.8, 0.8, 0.8))
+            .addProperty<float>("tilingScale", 1.0f)
+            .finalize(globalMaterialBuffer)
+        );
+          
+        assetManager.set<Material>(prototypeGrid, "materials/prototypeGrid");
+
+        auto& prototypeGridMaterial = assetManager.require<Material>(
+            "materials/prototypeGrid"
+        );
+
+        Shader prototypeShader = compileShader(
+            "fs://assets/shaders/proto1/proto1.vert.glsl",
+            "fs://assets/shaders/proto1/proto1.frag.glsl",
+            prototypeGridMaterial,
+            project
+        );
+        std::cout << "prototype shader id: " << prototypeShader.glId << std::endl;;
+        std::shared_ptr<Shader> prototypeShaderPtr = std::make_shared<Shader>(
+            std::move(prototypeShader)
+        );
+        assetManager.set<Shader>(
+            prototypeShaderPtr, "shaders/prototypeGridShader"
+        );
+
+        prototypeGridMaterial.bindShader(assetManager.getShared<Shader>("shaders/prototypeGridShader"));
+
+        auto matInstance = std::make_shared<MaterialInstance>(
+            prototypeGrid->getName() + "Instance",
+            assetManager.require<Material>("materials/prototypeGrid"),
+            globalMaterialBuffer
+        );
+        matInstance->setProperty("baseColor", glm::vec3(0.4, 0.8, 0.4));
+
+        const glm::vec3 scale(2.0f, 2.0f, 2.0f);
+        const glm::vec2 textureScale(1.0f, 1.0f);
+        const glm::vec3 pos(10.0f, 3.0f, 2.0f);
+
+        std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(
+            scale, textureScale, matInstance
+        );
+
+        std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
+        cubeMeshArray.push_back(cubeMesh);
+        std::unique_ptr<Model> cubeModel = std::make_unique<Model>(cubeMeshArray);
+        cubeModel->material = prototypeGrid;
+        
+        std::string modelName = "checkerCube";
+
+        std::unique_ptr<GameObject> cubeObject = GameObject::createGameObject();
+        auto transformComponent = cubeObject->getComponent<Transform>();
+        transformComponent->position = pos;
+        transformComponent->scale = scale;
+        auto behaviorComponent = cubeObject->getComponent<Behavior>();
+        behaviorComponent->type = BehaviorType::STATIC;
+        auto modelComponent = std::make_unique<ModelComponent>();
+        modelComponent->managerId = modelName;
+        cubeObject->addComponent<ModelComponent>(modelComponent);
+
+        objectManager.addObject(cubeObject);
+        assetManager.set<Model>(std::move(cubeModel), modelName);
+    }
+
     Shader geomShader = compileShader(
         "core://assets/shaders/geom.vert.glsl",
         "core://assets/shaders/geom.frag.glsl",
@@ -312,12 +384,12 @@ int main(int argc, char* argv[]) {
         assetManager.require<Material>("materials/standardMaterial"),
         project
     );
-    std::shared_ptr<Shader> geomShaderPtr = std::make_shared<Shader>(geomShader);
+    std::shared_ptr<Shader> geomShaderPtr = std::make_shared<Shader>(std::move(geomShader));
 
     assetManager.require<Material>("materials/standardMaterial").bindShader(geomShaderPtr);
 
     assetManager.set<Shader>(geomShaderPtr, "shaders/geomShader");
-    assetManager.set<Shader>(std::make_shared<Shader>(lightingShader), "shaders/lightingShader");
+    assetManager.set<Shader>(std::make_shared<Shader>(std::move(lightingShader)), "shaders/lightingShader");
 
     ComputeShader buildClustersShader = compileComputeShader(
         "core://assets/shaders/buildClusters.comp.glsl", 
@@ -328,8 +400,8 @@ int main(int argc, char* argv[]) {
         project
     );
 
-    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(buildClustersShader), "shaders/buildClusters");
-    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(lightCullingShader), "shaders/lightCulling");
+    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(std::move(buildClustersShader)), "shaders/buildClusters");
+    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(std::move(lightCullingShader)), "shaders/lightCulling");
 
     RenderingSystem renderingSystem(
         assetManager,
@@ -354,7 +426,9 @@ int main(int argc, char* argv[]) {
     
     {
         auto baseMaterial = assetManager.getShared<Material>("materials/standardMaterial");
-        auto sponzaModel = modelLoader.loadModel("fs://assets/models/sponza_low_res.glb", baseMaterial);
+        auto sponzaModel = modelLoader.loadModel(
+            "fs://assets/models/sponza_low_res.glb", baseMaterial, assetManager
+        );
         auto modelName = "sponza_model";
 
         std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();

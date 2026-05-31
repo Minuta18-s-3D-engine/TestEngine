@@ -47,47 +47,26 @@ size_t MaterialLayout::getStd430Size(PropertyType type) {
 }
 
 void MaterialLayout::repackData() {
-    if (finalized) return;
-    
-    std::vector<MaterialLayout::SortEntry> sortedProps;
-    for (const auto& [name, prop] : properties) {
-        sortedProps.push_back({ 
-            getStd430Alignment(prop.type),
-            getStd430Size(prop.type),
-            name 
-        });
+    propsOrder.clear();
+    propsOrder.reserve(properties.size());
+    for (const auto& [name, _] : properties) {
+        propsOrder.push_back(name);
     }
-
-    std::sort(sortedProps.begin(), sortedProps.end(), [](
-        const MaterialLayout::SortEntry& a, 
-        const MaterialLayout::SortEntry& b 
-    ) {
-        if (a.alignment != b.alignment) return a.alignment > b.alignment;
-        if (a.size != b.size) return a.size > b.size;
-        return a.name < b.name;
-    });
+    std::sort(propsOrder.begin(), propsOrder.end());
 
     size_t currentOffset = 0;
-    maxAlignment = 4; // Min. alignment in GLSL is 4 bytes.
-    for (const auto& entry : sortedProps) {
-        Property& prop = properties.at(entry.name);
+    maxAlignment = 4;
 
-        currentOffset = (currentOffset + entry.alignment - 1) & 
-            ~(entry.alignment - 1);
+    for (const std::string& name : propsOrder) {
+        Property& prop = properties.at(name);
 
         prop.offset = currentOffset;
-        prop.size = entry.size;
+        prop.size = getSize(prop.type);
 
-        currentOffset += entry.size;
-        maxAlignment = std::max(maxAlignment, entry.alignment);
+        currentOffset += prop.size;
     }
 
-    materialSize = (currentOffset + maxAlignment - 1) & ~(maxAlignment - 1);
-    
-    propsOrder.reserve(sortedProps.size());
-    for (const auto& prop: sortedProps) {
-        propsOrder.push_back(prop.name);
-    }
+    materialSize = currentOffset;
 }
 
 bool MaterialLayout::hasProperty(const std::string& name) const {
