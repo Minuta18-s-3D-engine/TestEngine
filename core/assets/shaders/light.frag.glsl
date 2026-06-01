@@ -8,9 +8,59 @@ layout(binding = 2) uniform sampler2D gAlbedoSpec;
 uniform uvec3 u_GridSize;
 uniform uint u_DrawMode;
 
-vec3 FragPos = texture(gPosition, v_UV).rgb;
-vec4 ViewSpacePos = u_View * vec4(FragPos, 1.0);
-vec3 Normal = texture(gNormal, v_UV).rgb;
+uniform float zNear;
+uniform float zFar;
+uniform uvec3 gridSize;
+uniform uvec2 screenDimensions;
+uniform mat4 projection;
+uniform mat4 view;
+
+struct Cluster {
+    vec4 minPoint;
+    vec4 maxPoint;
+    uint count;
+    uint lightStart;
+};
+
+struct PointLight {
+    vec3 position;
+    vec3 color;
+    
+    float linear;
+    float quadratic;
+    float radius;
+};
+
+struct BVHNode {
+    vec4 minPoint;
+    vec4 maxPoint;
+    uint first_child_or_primitive;
+    uint primitive_count;
+};
+
+layout (std430, binding = 0) restrict buffer clusterSSBO {
+    Cluster clusters[];
+};
+
+layout (std430, binding = 1) restrict buffer lightSSBO {
+    PointLight lights[];
+};
+
+layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
+    uint pointLightIndicies[];
+};
+
+layout(std430, binding = 3) buffer bvhNodesSSBO {
+    BVHNode bvhNodes[];
+};
+
+layout(std430, binding = 4) restrict buffer bvhIndicesSSBO {
+    uint bvhIndices[];
+};
+
+vec3 FragPos = texture(gPosition, TexCoords).rgb;
+vec4 ViewSpacePos = view * vec4(FragPos, 1.0);
+vec3 Normal = texture(gNormal, TexCoords).rgb;
 
 vec3 calcPointLight(PointLight pLight) {
     vec3 pathToLight = pLight.position - FragPos;
