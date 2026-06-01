@@ -1,11 +1,12 @@
 #include "PreprocessorParser.hpp"
 
+using IssueType = ShaderDiagnostic::IssueType;
+
 PreprocessorParser::PreprocessorParser(
-    const std::string& _source
-) : source(_source) {
-    addDirectiveValidator("section", { ArgType::String });
-    builtins.insert("section");
-}
+    const std::string& _source, 
+    const VirtualPath& _filePath,
+    ShaderDiagnostic& _diagnostic
+) : source(_source), diagnostic(_diagnostic), path(_filePath) {}
 
 void PreprocessorParser::makeException(
     const PreprocessorLexer::Token& token, 
@@ -14,7 +15,8 @@ void PreprocessorParser::makeException(
     std::string what = "Preprocessor error at line " + 
         std::to_string(token.line) + ", col " + std::to_string(token.column) + 
         ": " + message + ".";
-    throw exc::parse_error(what);
+    diagnostic.report(IssueType::Error, path, token.line, token.column, what);
+    throw ShaderDiagnostic::preprocessor_error(what, diagnostic);
 };
 
 void PreprocessorParser::exceptToken(
@@ -61,9 +63,134 @@ PreprocessorParser::DirectiveArg PreprocessorParser::requireArg(
     return arg;
 }
 
+std::vector<PreprocessorLexer::Token>
+PreprocessorParser::collectDirectiveTokens(
+    PreprocessorLexer& lexer,
+    const PreprocessorLexer::Token& directiveToken,
+    PreprocessorLexer::Token& currentToken
+) {
+    std::vector<PreprocessorLexer::Token> tokens;
+    tokens.push_back(directiveToken);
+
+    auto token = lexer.nextToken();
+    while (
+        token.type != PreprocessorLexer::TokenType::Code &&
+        token.type != PreprocessorLexer::TokenType::EndOfFile
+    ) {
+        tokens.push_back(token);
+        token = lexer.nextToken();
+    }
+
+    currentToken = token;
+    return tokens;
+}
+
+size_t PreprocessorParser::parseDirectiveName(Directive& result) const {
+    exceptToken(
+        result.tokens[1],
+        PreprocessorLexer::TokenType::Identifier,
+        "directive name"
+    );
+
+    bool prevDot = false;
+    size_t bracketIndex = result.tokens.size();
+
+    for (size_t i = 1; i < result.tokens.size(); ++i) {
+        const auto& token = result.tokens[i];
+        if (token.type == PreprocessorLexer::TokenType::LBracket) {
+            bracketIndex = i;
+            if (!prevDot) {
+                makeException(result.tokens[i - 1], "Invalid syntax");
+            }
+            break;
+        }
+
+        if (prevDot) {
+            exceptToken(
+                token, PreprocessorLexer::TokenType::Dot,
+                "dot separator"
+            );
+            prevDot = false;
+        } else {
+            exceptToken(
+                token, PreprocessorLexer::TokenType::Identifier,
+                "name"
+            );
+            result.name.push_back(token.value);
+            prevDot = true;
+        }
+    }
+
+    if (bracketIndex == result.tokens.size()) {
+        makeException(result.tokens[0], "Brackets not found");
+    }
+
+    return bracketIndex;
+}
+
+PreprocessorParser::DirectiveArg
+PreprocessorParser::makeDirectiveArg(
+    const PreprocessorLexer::Token& token
+) const {
+    DirectiveArg arg;
+    arg.position = {
+        .line = token.line,
+        .col = token.column,
+        .pos = token.position
+    };
+    arg.value = token.value;
+
+    if (token.type == PreprocessorLexer::TokenType::Number) {
+        arg.type = ArgType::Number;
+    } else if (token.type == PreprocessorLexer::TokenType::String) {
+        arg.type = ArgType::String;
+        arg.value = StringFunctions::unquote(arg.value);
+    } else if (token.type == PreprocessorLexer::TokenType::Identifier) {
+        if (token.value == "true" || token.value == "false") {
+            arg.type = ArgType::Bool;
+        } else {
+            arg.type = ArgType::Identifier;
+        }
+    } else {
+        makeException(token, "Invalid argument type");
+    }
+
+    return arg;
+}
+
+void PreprocessorParser::parseDirectiveArgs(
+    Directive& result,
+    size_t bracketIndex
+) const {
+    bool expectArg = true;
+    for (size_t i = bracketIndex + 1; i < result.tokens.size(); ++i) {
+        const auto& token = result.tokens[i];
+
+        if (token.type == PreprocessorLexer::TokenType::RBracket) {
+            break;
+        }
+
+        if (expectArg) {
+            result.args.push_back(makeDirectiveArg(token));
+            expectArg = false;
+        } else {
+            if (token.type == PreprocessorLexer::TokenType::Comma) {
+                expectArg = true;
+            } else {
+                makeException(token, "Expected ',' or ')'");
+            }
+        }
+    }
+
+    if (result.tokens.back().type != PreprocessorLexer::TokenType::RBracket) {
+        makeException(result.tokens.back(), "Missing closing ')'");
+    }
+}
+
 PreprocessorParser::Directive PreprocessorParser::parseDirective(
     PreprocessorLexer& lexer,
-    const PreprocessorLexer::Token& directiveToken
+    const PreprocessorLexer::Token directiveToken,
+    PreprocessorLexer::Token& currentToken
 ) {
     Directive result;
     result.position = {
@@ -72,101 +199,15 @@ PreprocessorParser::Directive PreprocessorParser::parseDirective(
         .pos = directiveToken.position
     };
 
-    result.tokens.push_back(directiveToken);
-    auto token = lexer.nextToken();
-    while (
-        token.type != PreprocessorLexer::TokenType::Code &&
-        token.type != PreprocessorLexer::TokenType::EndOfFile
-    ) {
-        result.tokens.push_back(token);
-        token = lexer.nextToken();
-    }
-
-    if (result.tokens.size() < 1) {
+    result.tokens = collectDirectiveTokens(
+        lexer, directiveToken, currentToken
+    );
+    if (result.tokens.size() < 2) {
         makeException(directiveToken, "Syntax error");
     }
 
-    exceptToken(
-        result.tokens[1], 
-        PreprocessorLexer::TokenType::Identifier, 
-        "directive name"
-    );
-
-    bool prevDot = false;
-    size_t bracketIndex = -1;
-    for (size_t i = 1; i < result.tokens.size(); ++i) {
-        if (result.tokens[i].type == PreprocessorLexer::TokenType::LBracket) {
-            bracketIndex = i;
-            if (!prevDot) {
-                makeException(result.tokens[i - 1], "Invalid syntax");
-            }
-            break;
-        }
-        if (prevDot) {
-            exceptToken(
-                result.tokens[i], PreprocessorLexer::TokenType::Dot,
-                "dot separator"
-            );
-            prevDot = false;
-        } else {
-            exceptToken(
-                result.tokens[i], PreprocessorLexer::TokenType::Identifier,
-                "name"
-            );
-            result.name.push_back(std::string_view(result.tokens[i].value));
-            prevDot = true;
-        }
-    }
-
-    if (bracketIndex == -1) {
-        makeException(result.tokens[0], "Brackets not found");
-    }
-
-    bool exceptArg = true;
-    for (size_t i = bracketIndex + 1; i < result.tokens.size(); ++i) {
-        const auto& t = result.tokens[i];
-
-        if (t.type == PreprocessorLexer::TokenType::RBracket) {
-            break;
-        }
-
-        if (exceptArg) {
-            DirectiveArg arg;
-            arg.position = { 
-                .line = t.line, 
-                .col = t.column, 
-                .pos = t.position
-            };
-            arg.value = t.value;
-
-            if (t.type == PreprocessorLexer::TokenType::Number) {
-                arg.type = ArgType::Number;
-            } else if (t.type == PreprocessorLexer::TokenType::String) {
-                arg.type = ArgType::String;
-            } else if (t.type == PreprocessorLexer::TokenType::Identifier) {
-                if (t.value == "true" || t.value == "false") { 
-                    arg.type = ArgType::Bool;
-                } else { 
-                    arg.type = ArgType::Identifier;
-                }
-            } else {
-                makeException(t, "Invalid argument type");
-            } 
-
-            result.args.push_back(arg);
-            exceptArg = false;
-        } else {
-            if (t.type == PreprocessorLexer::TokenType::Comma) {
-                exceptArg = true;
-            } else {
-                makeException(t, "Expected ',' or ')'");
-            }
-        }
-    }
-
-    if (result.tokens.back().type != PreprocessorLexer::TokenType::RBracket) {
-        makeException(result.tokens.back(), "Missing closing ')'");
-    }
+    size_t bracketIndex = parseDirectiveName(result);
+    parseDirectiveArgs(result, bracketIndex);
     return result;
 }
 
@@ -216,45 +257,27 @@ PreprocessorParser::ParseResult PreprocessorParser::parse() {
     result.source = this->source;
     PreprocessorLexer lexer(result.source);
 
-    const std::string noSectionTag = "none";
-    SectionBlock currentSection;
-    currentSection.type = noSectionTag;
     auto token = lexer.nextToken();
 
     while (token.type != PreprocessorLexer::TokenType::EndOfFile) {
         if (token.type == PreprocessorLexer::TokenType::Code) {
             result.code += std::string(token.value);
-            currentSection.code += std::string(token.value);
         } else if (
             token.type == PreprocessorLexer::TokenType::DirectiveMarker
         ) {
-            Directive dir = parseDirective(lexer, token);
+            Directive dir = parseDirective(lexer, token, token);
 
             if (auto warn = validateDirective(dir)) {
                 result.warnings.push_back(std::move(*warn));
             }
 
-            if (dir.nameMatch({ "section" })) {
-                if (!currentSection.directives.empty()) {
-                    result.sections.push_back(std::move(currentSection));
-                }
-
-                currentSection = SectionBlock();
-                currentSection.type = requireArg(
-                    dir, 0, PreprocessorParser::ArgType::String, 1
-                ).value;
-                currentSection.type = 
-                    StringFunctions::unquote(currentSection.type);
-                currentSection.directives.push_back(std::move(dir));
-            } else {
-                currentSection.directives.push_back(std::move(dir));
-            }
+            result.directives.push_back(std::move(dir));
+            continue;
         }
     
         token = lexer.nextToken();
     }
 
-    result.sections.push_back(std::move(currentSection));
     return result;
 }
 
@@ -262,7 +285,9 @@ void PreprocessorParser::addDirectiveValidator(
     const std::string& name, DirectiveSpec spec
 ) {
     if (builtins.contains(name)) {
-        throw exc::invalid_argument("Can't override built-in directive");
+        diagnostic.report(
+            IssueType::Critical, "Can't override built-in directive"
+        );
     }
     validators[name] = spec;
 }

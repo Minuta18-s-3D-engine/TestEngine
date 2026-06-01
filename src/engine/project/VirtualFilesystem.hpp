@@ -3,13 +3,15 @@
 
 #include <fstream>
 #include <memory>
+#include <iostream>
+#include <chrono>
 
 #include "FilesystemAbstraction.hpp"
 #include "../utils/exc/GeneralExceptions.hpp"
 #include "PathResolver.hpp"
 
 class VirtualFilesystem : public FilesystemAbstraction {
-    std::unique_ptr<PathResolver> pathResolver;
+    std::shared_ptr<PathResolver> pathResolver;
 public:
     VirtualFilesystem(std::unique_ptr<PathResolver> _pathResolver);
     ~VirtualFilesystem() override;
@@ -24,13 +26,14 @@ public:
     ) override;
     bool fileExists(const VirtualPath& path) override;
     bool isFile(const VirtualPath& path) override;
-    std::filesystem::file_time_type getLastEditedTime(
+    Timestamp getLastEditedTime(
         const VirtualPath& path
     ) override;
 
-    bool dirExists(const VirtualPath& path) override;
-    void createDir(const VirtualPath& path) override;
-    void removeDir(const VirtualPath& path, bool recursively = false) override;
+    bool folderExists(const VirtualPath& path) override;
+    void createFolder(const VirtualPath& path) override;
+    void removeFolder(const VirtualPath& path, bool recursively = false) override;
+    VirtualPath getParent(const VirtualPath& path) override;
 
     PathResolver& getResolver() override;
 };

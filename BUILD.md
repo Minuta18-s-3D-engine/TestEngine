@@ -16,9 +16,10 @@ sudo apt-get install cmake clang libglfw3 libglfw3-dev libglm-dev libpng-dev uui
 
 1. Go to https://glad.dav1d.de/
 2. Go to API section, choose GL version 4.6
-3. Press "Generate"
-4. Download glad.zip 
-5. Unzip it to lib:
+3. Add "GL_ARB_bindless_texture" extension
+4. Press "Generate"
+5. Download glad.zip 
+6. Unzip it to lib:
 
 ```
 ./lib

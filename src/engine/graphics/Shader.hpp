@@ -18,16 +18,12 @@
 
 class Shader {
 protected:
-    VirtualPath vertexFilename;
-    VirtualPath fragmentFilename;
-    
-    const uint ERROR_BUFFER_SIZE = 512;
+    const uint ERROR_BUFFER_SIZE = 4096;
     std::unordered_map<std::string, uint> uniformLocations;
 
-    std::string readShaderFile(const std::string& filename);
     void compileShaders(
-        const std::string& vertexFilename, 
-        const std::string& fragmentFilename
+        const std::string& vertexSource, 
+        const std::string& fragmentSource
     );
 
     uint getUniformLocation(const std::string& name);
@@ -35,9 +31,16 @@ public:
     uint glId;
     Shader();
     Shader(
-        const VirtualPath& vertexFilename,
-        const VirtualPath& fragmentFilename
+        const std::string& vertexSource,
+        const std::string& fragmentSource
     );
+
+    Shader(const Shader&) = delete;
+    Shader& operator=(const Shader&) = delete;
+
+    Shader(Shader&& other) noexcept;
+    Shader& operator=(Shader&& other) noexcept;
+
     virtual ~Shader();
 
     void use();

@@ -2,14 +2,47 @@
 #define ENGINE_MATERIALS_PREPROCESSOR_PREPROCESSOR_H_
 
 #include <string>
+#include <unordered_set>
+#include <iostream>
+#include <sstream>
 
-#include "PreprocessorLexer.hpp"
+#include "PreprocessorParser.hpp"
+#include "PreprocessorCache.hpp" 
+#include "ShaderDependencyGraph.hpp"   
+#include "../../project/FilesystemAbstraction.hpp"
+#include "ShaderDiagnostic.hpp"
 
 class Preprocessor {
-public:
-    Preprocessor();
-
+    const std::string IMPORT_DIRECTIVE = "import";
     
+    PreprocessorCache cache;
+    ShaderDependencyGraph dependencyGraph;
+
+    FilesystemAbstraction& filesystem;
+    
+    PreprocessorCache::ProcessedShader parseOrLoad(
+        const VirtualPath& filePath,
+        ShaderDiagnostic& diagnostic
+    );
+
+    std::shared_ptr<PreprocessorParser> createParser(
+        const std::string& fileContents,
+        const VirtualPath& path,
+        ShaderDiagnostic& diagnostic
+    );
+
+    void buildDependencyGraph(
+        const VirtualPath& filePath,
+        ShaderDiagnostic& diagnostic
+    );
+
+    void onException(std::exception& e, ShaderDiagnostic& diagnostic);
+public:
+    Preprocessor(FilesystemAbstraction& _filesystem);
+
+    std::pair<std::string, ShaderDiagnostic> preprocess(
+        const VirtualPath& filePath
+    );
 };
 
-#endif // ENGINE_MATERIALS_GLSLPREPROCESSOR_PREPROCESSOR_H_
+#endif // ENGINE_MATERIALS_PREPROCESSOR_PREPROCESSOR_H_

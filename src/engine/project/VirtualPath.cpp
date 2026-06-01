@@ -1,7 +1,6 @@
 #include "VirtualPath.hpp"
 
-VirtualPath::ResolverFunc VirtualPath::resolver = 
-    [](const std::string& p){ return p; };
+std::shared_ptr<PathResolver> VirtualPath::resolver = nullptr;
 
 VirtualPath::VirtualPath() : path("") {}
 
@@ -14,7 +13,14 @@ VirtualPath::VirtualPath(const std::filesystem::path& _path)
 
 std::string VirtualPath::resolve() const {
     if (resolver) {
-        return resolver(path);
+        return resolver->resolve(path);
+    }
+    return path;
+}
+
+std::string VirtualPath::resolveFrom(const VirtualPath& folder) const {
+    if (resolver) {
+        return resolver->resolveFrom(path, folder.resolve());
     }
     return path;
 }

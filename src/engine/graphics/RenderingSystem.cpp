@@ -4,9 +4,11 @@ RenderingSystem::RenderingSystem(
     AssetManager& _assetManager,
     GameObjectManager& _gameObjectManager, 
     EventManager& _eventManager,
-    Window& _window 
+    Window& _window,
+    MaterialDataBuffer& _globalMaterialBuffer
 ): assetManager(_assetManager), gameObjectManager(_gameObjectManager),
-    window(_window), eventManager(_eventManager) {
+    window(_window), eventManager(_eventManager),
+    globalMaterialBuffer(_globalMaterialBuffer) {
     renderer = new ClusteredRenderer(window, _assetManager);
     gBuffer = new GBuffer(window.getWidth(), window.getHeight());
 
@@ -60,7 +62,10 @@ void RenderingSystem::updateCache() {
         <Transform, ModelComponent, Behavior>();
 }
 
-void RenderingSystem::render() {
+void RenderingSystem::render(float deltaTime) {
+    time += deltaTime;
+    currentFrame++;
+
     // camera is not bound, its possible to place here some effect in future
     if (camera == nullptr) {
         return;
@@ -69,7 +74,6 @@ void RenderingSystem::render() {
     renderer->updateLightData(lightCache);
     renderer->updateClusters(camera);
     
-    Shader& geomShader = assetManager.require<Shader>("shaders/geomShader");
     Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader");
 
     gBuffer->bind();
@@ -83,21 +87,49 @@ void RenderingSystem::render() {
     glm::mat4 viewMat = camera->getViewMat();
     glm::mat4 worldModel = glm::mat4(1.0f);
 
-    geomShader.use();
-    geomShader.setUniform("projection", proj);
-    geomShader.setUniform("view", viewMat);
+    glm::ivec2 resolution = glm::ivec2(window.getWidth(), window.getHeight());
+
     for (auto& object : objectsCache) {
         auto transformComponent = object->getComponent<Transform>();
         auto modelComponent = object->getComponent<ModelComponent>();
         glm::mat4 model = glm::translate(
             worldModel, transformComponent->position);
 
-        geomShader.setUniform("model", model);
         auto objModel = assetManager.get<Model>(modelComponent->managerId);
         if (!objModel) {
             continue;
         }
-        objModel->draw(geomShader); 
+
+        std::shared_ptr<Shader> geomShader = objModel->material->getShader();
+
+        geomShader->use();
+
+        globalMaterialBuffer.bind();
+        renderer->bindClusterData();
+
+        geomShader->setUniform("u_Time", time);
+        geomShader->setUniform("u_DeltaTime", deltaTime);
+        geomShader->setUniform("u_Frame", currentFrame);
+
+        geomShader->setUniform("u_Resolution", resolution);
+        geomShader->setUniform("u_TexelSize", 
+            glm::vec2(1.0f / resolution.x, 1.0f / resolution.y));
+        
+        geomShader->setUniform("u_CameraPosition", camera->pos);
+        geomShader->setUniform("u_CameraDirection", camera->front);
+
+        geomShader->setUniform("u_View", viewMat);
+        geomShader->setUniform("u_Projection", proj);
+        geomShader->setUniform("u_InvView", glm::inverse(viewMat));
+        geomShader->setUniform("u_InvProjection", glm::inverse(proj));
+
+        geomShader->setUniform("u_ZNear", camera->zNear);
+        geomShader->setUniform("u_ZFar", camera->zFar);  
+
+        geomShader->setUniform("u_Model", model);
+        geomShader->setUniform("u_InvModel", glm::inverse(model));
+        
+        objModel->draw(); 
     }
 
     gBuffer->unbind();
@@ -107,25 +139,38 @@ void RenderingSystem::render() {
     lightingShader.use();
 
     gBuffer->bindBuffers();
-    lightingShader.setUniform("gPosition", 0);
-    lightingShader.setUniform("gNormal", 1);
-    lightingShader.setUniform("gAlbedoSpec", 2);
+    lightingShader.setUniform("u_gPosition", 0);
+    lightingShader.setUniform("u_gNormal", 1);
+    lightingShader.setUniform("u_gAlbedoSpec", 2);
 
-    lightingShader.setUniform("drawMode", drawMode);
-    lightingShader.setUniform("viewPos", camera->pos);
-    lightingShader.setUniform("zNear", camera->zNear);
-    lightingShader.setUniform("zFar", camera->zFar);
-    lightingShader.setUniform("projection", proj);
-    lightingShader.setUniform("view", viewMat);
-    lightingShader.setUniform("gridSize", renderer->getClusterGrid());
-    lightingShader.setUniform("screenDimensions", 
-        glm::uvec2(window.getWidth(), window.getHeight()));
+    lightingShader.setUniform("u_Time", time);
+    lightingShader.setUniform("u_DeltaTime", deltaTime);
+    lightingShader.setUniform("u_Frame", currentFrame);
 
+    lightingShader.setUniform("u_Resolution", resolution);
+    lightingShader.setUniform("u_TexelSize", 
+        glm::vec2(1.0f / resolution.x, 1.0f / resolution.y));
+    
+    lightingShader.setUniform("u_CameraPosition", camera->pos);
+    lightingShader.setUniform("u_CameraDirection", camera->front);
+
+    lightingShader.setUniform("u_View", viewMat);
+    lightingShader.setUniform("u_Projection", proj);
+    lightingShader.setUniform("u_InvView", glm::inverse(viewMat));
+    lightingShader.setUniform("u_InvProjection", glm::inverse(proj));
+
+    lightingShader.setUniform("u_ZNear", camera->zNear);
+    lightingShader.setUniform("u_ZFar", camera->zFar);  
+    lightingShader.setUniform("u_DrawMode", drawMode);
+    lightingShader.setUniform(
+        "u_GridSize", renderer->getClusterGrid());
+
+    globalMaterialBuffer.bind();
     renderer->bindClusterData();
 
     renderQuad();
 }
 
 void RenderingSystem::update() {
-    this->render();
+    // this->render();
 }

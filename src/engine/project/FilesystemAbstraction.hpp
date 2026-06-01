@@ -9,6 +9,8 @@
 
 class FilesystemAbstraction {
 public:
+    using Timestamp = uint64_t;
+
     virtual ~FilesystemAbstraction() = default;
 
     virtual bool exists(const VirtualPath& path) = 0;
@@ -21,16 +23,17 @@ public:
     ) = 0;
     virtual bool fileExists(const VirtualPath& path) = 0;
     virtual bool isFile(const VirtualPath& path) = 0;
-    virtual std::filesystem::file_time_type getLastEditedTime(
+    virtual Timestamp getLastEditedTime(
         const VirtualPath& path
     ) = 0;
 
-    virtual bool dirExists(const VirtualPath& path) = 0;
-    virtual void createDir(const VirtualPath& path) = 0;
-    virtual void removeDir(
+    virtual bool folderExists(const VirtualPath& path) = 0;
+    virtual void createFolder(const VirtualPath& path) = 0;
+    virtual void removeFolder(
         const VirtualPath& path, 
         bool recursively = false
     ) = 0;
+    virtual VirtualPath getParent(const VirtualPath& path) = 0;
 
     virtual PathResolver& getResolver() = 0;
 };

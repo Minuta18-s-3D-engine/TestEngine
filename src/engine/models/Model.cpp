@@ -4,8 +4,8 @@ Model::Model(std::vector<std::shared_ptr<Mesh>>& meshes) {
     this->meshes = meshes;
 }
 
-void Model::draw(Shader& shader) {
+void Model::draw() {
     for (size_t mesh = 0; mesh < meshes.size(); ++mesh) {
-        meshes[mesh]->draw(shader);
+        meshes[mesh]->draw();
     }
 }

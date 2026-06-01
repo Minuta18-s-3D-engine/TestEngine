@@ -1,64 +1,80 @@
 #include "Material.hpp"
 
 Material::Material(
-    const std::string& _name
-) : name(_name) {}
+    MaterialDescriptor&& _descriptor,
+    MaterialDescriptor::SamplerMap&& _samplerDefaults,
+    PropertyDataStorage&& _storage
+) : descriptor(_descriptor), samplerDefaults(_samplerDefaults), 
+    shader(nullptr), defaultValues(std::move(_storage)) {
+    defaultValues.bindLayout(&this->descriptor.layout);
+}
+
+Material::Material(Material&& other) noexcept
+  : descriptor(std::move(other.descriptor)),
+    shader(std::move(other.shader)),
+    defaultValues(std::move(other.defaultValues)),
+    samplerDefaults(std::move(other.samplerDefaults)) {
+    defaultValues.bindLayout(&this->descriptor.layout);
+}
+
+Material& Material::operator=(Material&& other) noexcept {
+    if (this != &other) {
+        descriptor = std::move(other.descriptor);
+        shader = std::move(other.shader);
+        defaultValues = std::move(other.defaultValues);
+        samplerDefaults = std::move(other.samplerDefaults);
+        defaultValues.bindLayout(&this->descriptor.layout);
+    }
+    return *this;
+}
 
 bool Material::hasProperty(const std::string& name) const {
-    return properties.hasProperty(name);
+    return descriptor.layout.hasProperty(name);
 }
 
-bool Material::isPropertySet(const std::string& name) const {
-    return properties.isPropertySet(name);
+bool Material::hasDefaultValue(const std::string& name) const {
+    return hasProperty(name);
 }
 
-Material& Material::setTexture(
-    const std::string& name, std::shared_ptr<Texture> _tex
-) {
-    textures[name] = _tex;
-    return *this;
+bool Material::hasSampler(const std::string& name) const {
+    return descriptor.samplerIndexes.contains(name);
 }
 
-Material& Material::setTexture(const std::string& name) {
-    textures[name] = nullptr;
-    return *this;
+const SamplerDefinition& Material::getSampler(const std::string& name) const {
+    size_t index = descriptor.samplerIndexes.at(name);
+    return descriptor.samplerDefinitions[index];
 }
 
-Material& Material::addTexture(
-    const std::string& name, std::shared_ptr<Texture> _tex
-) {
-    return this->setTexture(name, _tex);   
+MaterialLayout::PropertyType Material::getPropertyType(
+    const std::string& name
+) const {
+    return descriptor.layout.getPropertyInfo(name).type;
 }
 
-Material& Material::addTexture(const std::string& name) {
-    return this->setTexture(name);   
+std::string Material::getName() const { 
+    return descriptor.name; 
 }
 
-std::shared_ptr<Texture> Material::getTexture(const std::string& name) {
-    if (!textures.contains(name)) {
-        throw std::invalid_argument("No such texture: " + name);
-    }
-    if (textures[name] == nullptr) {
-        throw std::invalid_argument("Texture is unset: " + name);
-    }
-    return textures[name];
+const MaterialGraphicsConfig& Material::getConfig() const { 
+    return descriptor.config; 
 }
 
-bool Material::hasTexture(const std::string& name) const {
-    return textures.contains(name);
+const MaterialLayout& Material::getLayout() const { 
+    return descriptor.layout; 
 }
 
-bool Material::isTextureSet(const std::string& name) const {
-    if (!hasTexture(name)) {
-        throw std::invalid_argument("No such texture: " + name);
-    }
-    return !(textures.at(name) == nullptr);
+const PropertyDataStorage& Material::getDefaultValues() const { 
+    return defaultValues; 
 }
 
-const TypedPropertyStorage& Material::getPropertyStorage() const { 
-    return properties; 
+const std::vector<SamplerDefinition>& Material::getSamplerDefinitions() const {
+    return descriptor.samplerDefinitions;
 }
 
-const Material::TextureStorage& Material::getTextureStorage() const { 
-    return textures; 
+const MaterialDescriptor::SamplerMap& Material::getSamplerDefaults() const { 
+    return samplerDefaults; 
+}
+
+const MaterialDescriptor& Material::getDescriptor() const {
+    return descriptor;
 }

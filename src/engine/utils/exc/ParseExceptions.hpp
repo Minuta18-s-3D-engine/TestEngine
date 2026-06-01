@@ -6,7 +6,7 @@
 
 namespace exc {
 
-class parse_error : std::exception {
+class parse_error : public std::exception {
     std::string message;
 public:
     parse_error(const char* _message) : message(_message) {}
@@ -15,7 +15,7 @@ public:
     const char* what() const noexcept { return message.c_str(); }
 };
 
-class validation_error : std::exception {
+class validation_error : public std::exception {
     std::string message;
 public:
     validation_error(const char* _message) : message(_message) {}

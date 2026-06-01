@@ -83,6 +83,11 @@ void Window::setupWindow() {
     if (!gladLoadGLLoader((GLADloadproc)  glfwGetProcAddress)) {
         throw std::runtime_error("Failed to initialize GLAD");
     }
+
+    if (!GL_ARB_bindless_texture) {
+        std::cerr << "Warning: bindless textures not supported" << std::endl;
+    }
+
     glViewport(0, 0, width, height);
 
     glfwSetWindowUserPointer(window, this);

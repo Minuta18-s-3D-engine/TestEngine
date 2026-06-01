@@ -4,7 +4,7 @@
 
 std::shared_ptr<Mesh> generateCubeMesh(
     glm::vec3 scale, glm::vec2 textureScale,
-    std::string textureKey, AssetManager& manager, Material mat
+    std::shared_ptr<MaterialInstance> mat
 ) {
     float data[24 * 14] = {
         // POS         NORMAL    TEX CORDS      TAN      BITAN
@@ -46,7 +46,7 @@ std::shared_ptr<Mesh> generateCubeMesh(
     int texInds[6] = { 0, 1, 3, 3, 1, 2 };
 
     std::vector<Vertex> cubeVertices;
-    for (int i = 0; i < 36; ++i) {
+    for (int i = 0; i < 24; ++i) {
         Vertex v;
         v.pos = glm::vec3(
             data[i * 14] * scale.x, 
@@ -80,11 +80,83 @@ std::shared_ptr<Mesh> generateCubeMesh(
         cubeIndices[i] = indices[i];
     }
 
-    std::vector<TextureMaterial> cubeTextures = { 
-        manager.require<TextureMaterial>(textureKey), 
-        manager.require<TextureMaterial>(textureKey + "Specular")
-    };
+    return std::make_shared<Mesh>(
+        std::move(cubeVertices), 
+        std::move(cubeIndices), 
+        mat
+    );
+}
+
+// Source: 
+
+std::shared_ptr<Mesh> generateSphereMesh(
+    float radius, uint32_t sectors, uint32_t stacks,
+    std::shared_ptr<MaterialInstance> material
+) {
+    std::vector<Vertex> vertices;
+    std::vector<uint> indices;
+
+    float x, y, z, xy;
+    float nx, ny, nz, lengthInv = 1.0f / radius;
+    float s, t;
+
+    const float PI = std::acos(-1.0f);
+    float sectorStep = 2 * PI / sectors;
+    float stackStep = PI / stacks;
+    float sectorAngle, stackAngle;
+
+    for (uint32_t i = 0; i <= stacks; ++i) {
+        stackAngle = PI / 2 - i * stackStep;
+        xy = radius * std::cos(stackAngle);
+        z = radius * std::sin(stackAngle);
+
+        for (uint32_t j = 0; j <= sectors; ++j) {
+            sectorAngle = j * sectorStep;
+
+            Vertex vertex;
+            x = xy * std::cos(sectorAngle);
+            y = xy * std::sin(sectorAngle);
+            vertex.pos = glm::vec3(x, y, z);
+
+            nx = x * lengthInv;
+            ny = y * lengthInv;
+            nz = z * lengthInv;
+            vertex.normal = glm::vec3(nx, ny, nz);
+
+            s = (float) j / sectors;
+            t = (float) i / stacks;
+            vertex.texCords = glm::vec2(s, t);
+
+            vertex.tangent = glm::vec3(
+                -std::sin(sectorAngle), std::cos(sectorAngle), 0.0f
+            );
+            vertex.bitangent = glm::cross(vertex.normal, vertex.tangent);
+
+            vertices.push_back(vertex);
+        }
+    }
+
+    uint32_t k1, k2;
+    for (uint32_t i = 0; i < stacks; ++i) {
+        k1 = i * (sectors + 1);
+        k2 = k1 + sectors + 1;
+
+        for (uint32_t j = 0; j < sectors; ++j, ++k1, ++k2) {
+            if (i != 0) {
+                indices.push_back(k1);
+                indices.push_back(k2);
+                indices.push_back(k1 + 1);
+            }
+
+            if (i != (stacks - 1)) {
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+                indices.push_back(k2 + 1);
+            }
+        }
+    }
 
     return std::make_shared<Mesh>(
-        cubeVertices, cubeIndices, cubeTextures, mat);
+        std::move(vertices), std::move(indices), material
+    );
 }

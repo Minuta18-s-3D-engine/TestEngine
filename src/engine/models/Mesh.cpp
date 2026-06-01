@@ -1,23 +1,9 @@
 #include "Mesh.hpp"
 
-Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
-    std::vector<TextureMaterial> _textures, Material _mainMaterial) {
-    vertices = _vertices;
-    indices = _indices;
-    textures = _textures;
-    mainMaterial = _mainMaterial;
-    hasMaterial = false;
-
-    setupMesh();
-}
-
-Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<uint> _indices, 
-    std::vector<TextureMaterial> _textures) {
-    vertices = _vertices;
-    indices = _indices;
-    textures = _textures;
-    hasMaterial = false;
-
+Mesh::Mesh(
+    std::vector<Vertex> _vertices, std::vector<uint> _indices, 
+    std::shared_ptr<MaterialInstance> _material
+) : vertices(_vertices), indices(_indices), material(_material) {
     setupMesh();
 }
 
@@ -25,6 +11,36 @@ Mesh::~Mesh() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
+}
+
+Mesh::Mesh(Mesh&& other) noexcept 
+    : VAO(other.VAO), VBO(other.VBO), EBO(other.EBO),
+    vertices(std::move(other.vertices)),
+    indices(std::move(other.indices)),
+    material(std::move(other.material)) {
+    other.VAO = 0;
+    other.VBO = 0;
+    other.EBO = 0;
+}
+
+Mesh& Mesh::operator=(Mesh&& other) noexcept {
+    if (this != &other) {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &EBO);
+
+        VAO = other.VAO;
+        VBO = other.VBO;
+        EBO = other.EBO;
+        vertices = std::move(other.vertices);
+        indices = std::move(other.indices);
+        material = std::move(other.material);
+
+        other.VAO = 0;
+        other.VBO = 0;
+        other.EBO = 0;
+    }
+    return *this;
 }
 
 void Mesh::setupMesh() {
@@ -53,40 +69,29 @@ void Mesh::setupMesh() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
         (void*) offsetof(Vertex, texCords));
 
-    // glEnableVertexAttribArray(3);
-    // glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
-    //     (void*) offsetof(Vertex, tangent));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
+        (void*) offsetof(Vertex, tangent));
 
-    // glEnableVertexAttribArray(4);
-    // glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
-    //     (void*) offsetof(Vertex, bitangent));
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
+        (void*) offsetof(Vertex, bitangent));
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Mesh::draw(Shader& shader) {
-    if (hasMaterial)
-        mainMaterial.passToShader(shader, "mainMaterial");
+void Mesh::draw() {
+    auto shader = material->getMaterial().getShader();
 
-    uint diffuseNr = 1;
-    uint specularNr = 1;
-    for (uint i = 0; i < textures.size(); ++i) {
-        std::string shaderName = "texture";
-
-        if (textures[i].type == TextureType::DIFFUSE) {
-            shaderName += "Diffuse" + std::to_string(diffuseNr);
-            diffuseNr += 1;
-        } else if (textures[i].type == TextureType::SPECULAR) {
-            shaderName += "Specular" + std::to_string(specularNr);
-            specularNr += 1;
-        }
-
-        textures[i].passToShader(shader, shaderName + "Mat");
-        textures[i].passTextureToShader(i, shader, shaderName);
+    if (material) {
+        shader->setUniform(
+            "u_CurrentMaterialStartId",
+            material->getProperties().getStartId() / 4
+        );
+        material->bindSamplers();
     }
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

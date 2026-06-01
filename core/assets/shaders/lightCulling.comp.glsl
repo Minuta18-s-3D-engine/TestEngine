@@ -1,61 +1,12 @@
-#version 430 core
-
 #define LOCAL_SIZE 128
 #define LIGHTS_PRE_CLUSTER_LIMIT 256
-#define BVH_STACK_SIZE 64
+#define BVH_STACK_SIZE 32
 
 layout(local_size_x = LOCAL_SIZE, local_size_y = 1, local_size_z = 1) in;
 
-struct PointLight {
-    vec3 position;
-    vec3 color;
-    
-    float linear;
-    float quadratic;
-    float radius;
-};
-
-struct Cluster {
-    vec4 minPoint;
-    vec4 maxPoint;
-    uint count;
-    uint lightStart;
-};
-
-struct BVHNode {
-    vec4 minPoint;
-    vec4 maxPoint;
-    uint first_child_or_primitive;
-    uint primitive_count;
-};
-
-layout (std430, binding = 0) restrict buffer clusterSSBO {
-    Cluster clusters[];
-};
-
-layout (std430, binding = 1) restrict buffer lightSSBO {
-    PointLight lights[];
-};
-
-layout(std430, binding = 2) restrict buffer lightIndicesSSBO {
-    uint pointLightIndicies[];
-};
-
-layout(std430, binding = 3) restrict buffer bvhNodesSSBO {
-    BVHNode bvhNodes[];
-};
-
-layout(std430, binding = 4) restrict buffer bvhIndicesSSBO {
-    uint bvhIndices[];
-};
-
-uniform mat4 viewMat;
-uniform uint numLights;
-uniform uvec3 gridSize;
-uniform int currentDispatch;
-
-bool sphereAABBIntersection(vec3, float, vec3, vec3);
-bool testSphereAABB(uint, Cluster);
+uniform uint u_NumLights;
+uniform uvec3 u_GridSize;
+uniform int u_CurrentDispatch;
 
 bool sphereAABBIntersection(
     vec3 center, 
@@ -81,8 +32,8 @@ bool AABBIntersection(
 }
 
 bool testSphereAABB(uint lightInd, Cluster currCluster) {
-    vec3 center = vec3(viewMat * vec4(lights[lightInd].position, 1.0));
-    float radius = lights[lightInd].radius;
+    vec3 center = vec3(u_View * vec4(b_Lights[lightInd].position, 1.0));
+    float radius = b_Lights[lightInd].radius;
 
     vec3 aabbMin = currCluster.minPoint.xyz;
     vec3 aabbMax = currCluster.maxPoint.xyz;
@@ -106,7 +57,7 @@ BVHNode transformBVHNodeToViewSpace(BVHNode node) {
     vec3 viewMax = vec3(-1e9);
     
     for (int i = 0; i < 8; i++) {
-        vec3 viewCorner = vec3(viewMat * vec4(worldCorners[i], 1.0));
+        vec3 viewCorner = vec3(u_View * vec4(worldCorners[i], 1.0));
         viewMin.x = min(viewMin.x, viewCorner.x);
         viewMin.y = min(viewMin.y, viewCorner.y);
         viewMin.z = min(viewMin.z, viewCorner.z);
@@ -124,25 +75,17 @@ BVHNode transformBVHNodeToViewSpace(BVHNode node) {
     return result;
 }
 
-bool isClusterInFrustum(Cluster cluster) {
-    return cluster.maxPoint.z < 0.0;
-}
-
-void main() {
+void compute() {
     uint clusterInd = gl_WorkGroupID.x * LOCAL_SIZE + gl_LocalInvocationID.x;
 
-    uint totalClusters = gridSize.x * gridSize.y * gridSize.z;
+    uint totalClusters = u_GridSize.x * u_GridSize.y * u_GridSize.z;
     if (clusterInd >= totalClusters) {
         return;
     }
 
-    Cluster currCluster = clusters[clusterInd];
+    Cluster currCluster = b_Clusters[clusterInd];
     currCluster.count = 0;
 
-    if (!isClusterInFrustum(currCluster)) {
-        clusters[clusterInd] = currCluster;
-        return;
-    }
 
     uint stack[BVH_STACK_SIZE];
     uint stackPtr = 0;
@@ -152,7 +95,7 @@ void main() {
 
     while (stackPtr > 0 && currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT) {
         uint nodeIndex = stack[--stackPtr];
-        BVHNode node = bvhNodes[nodeIndex];
+        BVHNode node = b_BvhNodes[nodeIndex];
         node = transformBVHNodeToViewSpace(node);
 
         if (!AABBIntersection(
@@ -164,9 +107,9 @@ void main() {
 
         if (node.primitive_count > 0) {
             for (uint i = 0; i < node.primitive_count && currCluster.count < LIGHTS_PRE_CLUSTER_LIMIT; ++i) {
-                uint lightIndex = bvhIndices[node.first_child_or_primitive + i];
+                uint lightIndex = b_BvhIndices[node.first_child_or_primitive + i];
                 if (testSphereAABB(lightIndex, currCluster)) {
-                    pointLightIndicies[currCluster.lightStart + currCluster.count] = lightIndex;
+                    b_PointLightIndicies[currCluster.lightStart + currCluster.count] = lightIndex;
                     currCluster.count++;
                 }
             }
@@ -178,7 +121,6 @@ void main() {
             }
         }
     }
-    
-    // currCluster.count = nodesSkipped;
-    clusters[clusterInd] = currCluster;
+
+    b_Clusters[clusterInd] = currCluster;
 }

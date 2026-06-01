@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "../materials/old/Light.hpp"
 #include "../assets/AssetManager.hpp"
 #include "ComputeShader.hpp"
 #include "Camera.hpp"
@@ -70,7 +69,6 @@ public:
     ClusteredRenderer(Window& _window, AssetManager& _assetManager);
     ~ClusteredRenderer() = default;
 
-    void updateLightData(const std::vector<std::shared_ptr<Light>>& lights);
     // Assume only dynamic lights are given
     void updateLightData(const std::vector<GameObject*>& lights);
     void updateClusters(const Camera* cam);

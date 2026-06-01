@@ -7,10 +7,12 @@
 
 class ComputeShader : public Shader {
 protected:
-    void compileComputeShader(const std::string& filename);
+    void compileComputeShader(const std::string& source);
 public:
-    ComputeShader(const VirtualPath& name);
-    virtual ~ComputeShader();
+    ComputeShader(const std::string& source);
+
+    ComputeShader(ComputeShader&&) noexcept = default;
+    ComputeShader& operator=(ComputeShader&&) noexcept = default;
 };
 
 #endif // ENGINE_GRAPHICS_COMPUTE_SHADER_H_

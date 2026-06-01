@@ -27,3 +27,4 @@ engineTests
 /src/libTestEngSrc.so
 .vscode
 /build
+.cache

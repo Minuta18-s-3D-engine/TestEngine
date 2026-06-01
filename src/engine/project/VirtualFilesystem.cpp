@@ -3,13 +3,11 @@
 VirtualFilesystem::VirtualFilesystem(
     std::unique_ptr<PathResolver> _pathResolver
 ) : pathResolver(std::move(_pathResolver)) {
-    VirtualPath::setResolverFunc([this](const std::string& p) {
-        return this->getResolver().resolve(p);
-    });
+    VirtualPath::setResolver(pathResolver);
 }
 
 VirtualFilesystem::~VirtualFilesystem() {
-    VirtualPath::setResolverFunc(nullptr);
+    VirtualPath::setResolver(nullptr);
 }
 
 bool VirtualFilesystem::exists(const VirtualPath& path) {
@@ -66,26 +64,40 @@ bool VirtualFilesystem::fileExists(const VirtualPath& path) {
     return true;
 }
 
-std::filesystem::file_time_type VirtualFilesystem::getLastEditedTime(
+FilesystemAbstraction::Timestamp VirtualFilesystem::getLastEditedTime(
     const VirtualPath& path
 ) {
-    return std::filesystem::last_write_time(path.resolve());
+    auto stdFormat = std::filesystem::last_write_time(path.resolve());
+    auto systemTime = std::chrono::clock_cast<std::chrono::system_clock>(
+        stdFormat
+    );
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(
+        systemTime.time_since_epoch()
+    ).count();
 }
 
-bool VirtualFilesystem::dirExists(const VirtualPath& path) {
+bool VirtualFilesystem::folderExists(const VirtualPath& path) {
     return std::filesystem::is_directory(path.resolve());
 }
 
-void VirtualFilesystem::createDir(const VirtualPath& path) {
+void VirtualFilesystem::createFolder(const VirtualPath& path) {
     std::filesystem::create_directories(path.resolve());
 }
 
-void VirtualFilesystem::removeDir(const VirtualPath& path, bool recursively) {
+void VirtualFilesystem::removeFolder(const VirtualPath& path, bool recursively) {
     if (recursively) {
         std::filesystem::remove_all(path.resolve());
     } else {
         std::filesystem::remove(path.resolve());
     }
+}
+
+VirtualPath VirtualFilesystem::getParent(const VirtualPath& path) {
+    auto fs_path = std::filesystem::path(path.resolve());
+    if (fs_path.has_parent_path()) {
+        return fs_path.parent_path();
+    }
+    return fs_path;
 }
 
 PathResolver& VirtualFilesystem::getResolver() {

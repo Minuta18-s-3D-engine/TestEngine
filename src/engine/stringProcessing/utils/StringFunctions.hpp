@@ -24,6 +24,8 @@ namespace StringFunctions {
 
     std::string unquote(const std::string& str);
     std::string unquote(const std::string_view& str);
+
+    std::string sanitizeFilename(const std::string& filename);
 }
 
 #endif // ENGINE_STRINGPROCESSING_UTILS_STRINGFUNCTIONS_HPP

@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include "PathResolver.hpp"
+#include "GeneralPathResolver.hpp"
 #include "../assets/AssetManager.hpp"
 #include "cmakeConfig.h"
 #include "VirtualPath.hpp"

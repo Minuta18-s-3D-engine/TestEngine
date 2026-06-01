@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 #include <format>
 #include <set>
 
@@ -13,6 +14,7 @@
 #include "../../utils/exc/GeneralExceptions.hpp"
 #include "../../utils/EnumMapper.hpp"
 #include "../../stringProcessing/utils/StringFunctions.hpp"
+#include "ShaderDiagnostic.hpp"
 
 class PreprocessorParser {
 public:
@@ -31,12 +33,12 @@ public:
 
     struct DirectiveArg {
         ArgType type;
-        std::string_view value;
+        std::string value;
         StringPos position;
     };
 
     struct Directive {
-        std::vector<std::string_view> name;
+        std::vector<std::string> name;
         std::vector<PreprocessorLexer::Token> tokens;
         std::vector<DirectiveArg> args;
         StringPos position;
@@ -52,7 +54,7 @@ public:
         std::string constructDirectiveName() const {
             if (name.size() < 1) return "";
             std::string directiveName = std::string(name[0]);
-            for (int i = 1; i < name.size(); ++i) {
+            for (size_t i = 1; i < name.size(); ++i) {
                 directiveName += "." + std::string(name[i]);
             }
 
@@ -68,6 +70,10 @@ public:
         ) : argTypes(_argTypes) {}
 
         DirectiveSpec(
+            const std::initializer_list<ArgType>& _argTypes
+        ) : argTypes(_argTypes) {}
+
+        DirectiveSpec(
             const ArgType& _argTypes
         ) : argTypes({_argTypes}) {}
 
@@ -79,19 +85,16 @@ public:
         StringPos position;
     };
 
-    struct SectionBlock {
-        std::string type;
-        std::string code;
-        std::vector<Directive> directives;
-    };
-
     struct ParseResult {
         std::string source;
         std::string code;
-        std::vector<SectionBlock> sections;
+        std::vector<Directive> directives;
         std::vector<Warning> warnings;
     };
 private:
+    ShaderDiagnostic& diagnostic;
+    
+    VirtualPath path;
     std::string source; 
 
     std::unordered_map<std::string, DirectiveSpec> validators;
@@ -123,12 +126,27 @@ private:
 
     Directive parseDirective(
         PreprocessorLexer& lexer,
-        const PreprocessorLexer::Token& directiveToken
+        const PreprocessorLexer::Token directiveToken,
+        PreprocessorLexer::Token& currentToken
     );
+
+    std::vector<PreprocessorLexer::Token> collectDirectiveTokens(
+        PreprocessorLexer& lexer,
+        const PreprocessorLexer::Token& directiveToken,
+        PreprocessorLexer::Token& currentToken
+    );
+
+    size_t parseDirectiveName(Directive& result) const;
+    DirectiveArg makeDirectiveArg(const PreprocessorLexer::Token& token) const;
+    void parseDirectiveArgs(Directive& result, size_t bracketIndex) const;
 
     std::optional<Warning> validateDirective(const Directive& d) const;
 public:
-    PreprocessorParser(const std::string& _source);
+    PreprocessorParser(
+        const std::string& _source, 
+        const VirtualPath& _filePath,
+        ShaderDiagnostic& _diagnostic
+    );
 
     ParseResult parse();
     void addDirectiveValidator(const std::string& name, DirectiveSpec spec);
