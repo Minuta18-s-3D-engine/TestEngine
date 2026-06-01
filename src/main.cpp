@@ -171,9 +171,6 @@ std::string processShaderSource(
         baseMaterial, source, callingFunc
     );
 
-    std::cout << path.resolve() << ":" << std::endl;
-    std::cout << generatedSource << std::endl << std::endl; 
-
     return generatedSource;
 } 
 
@@ -325,7 +322,6 @@ int main(int argc, char* argv[]) {
             prototypeGridMaterial,
             project
         );
-        std::cout << "prototype shader id: " << prototypeShader.glId << std::endl;;
         std::shared_ptr<Shader> prototypeShaderPtr = std::make_shared<Shader>(
             std::move(prototypeShader)
         );

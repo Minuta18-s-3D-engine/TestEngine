@@ -102,7 +102,6 @@ void Shader::compileShaders(
 }
 
 void Shader::use() {
-    std::cout << "Use: " << this->glId << std::endl;
     glUseProgram(glId);
 }
 
