@@ -317,8 +317,8 @@ int main(int argc, char* argv[]) {
         );
 
         Shader prototypeShader = compileShader(
-            "fs://assets/shaders/proto1/proto1.vert.glsl",
-            "fs://assets/shaders/proto1/proto1.frag.glsl",
+            "fs://assets/shaders/julia/julia.vert.glsl",
+            "fs://assets/shaders/julia/julia.frag.glsl",
             prototypeGridMaterial,
             project
         );
