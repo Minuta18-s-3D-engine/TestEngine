@@ -64,7 +64,7 @@ bool VirtualFilesystem::fileExists(const VirtualPath& path) {
     return true;
 }
 
-FilesystemAbstraction::Timestamp VirtualFilesystem::getLastEditedTime(
+Timestamp VirtualFilesystem::getLastEditedTime(
     const VirtualPath& path
 ) {
     auto stdFormat = std::filesystem::last_write_time(path.resolve());

@@ -5,9 +5,23 @@
 #include <format>
 
 #include "LogLevel.hpp"
+#include "../project/FilesystemAbstraction.hpp"
 
 class Logger {
+public:
+    struct Log {
+        std::string loggerName;
+        FilesystemAbstraction::Timestamp time;
+        LogLevel level;
+        std::string message;
+    };
+private:
     std::string loggerName;
+
+    template <typename... Args>
+    Log createLog(
+        LogLevel level, const std::string& userMessage, Args&&... args
+    );
 public:
     Logger(const std::string& _loggerName);
 
@@ -29,6 +43,20 @@ public:
     template <typename... Args>
     void fatal(const std::string& message, Args&&... args);
 };
+
+template <typename... Args>
+Logger::Log Logger::createLog(
+    LogLevel level, 
+    const std::string& userMessage, 
+    Args&&... args
+) {
+    return {
+        .loggerName = loggerName,
+        .level = level,
+        .time = 
+        .message = userMessage
+    }
+}
 
 template <typename... Args>
 void Logger::debug(const std::string& message, Args&&... args) {
