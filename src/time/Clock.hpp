@@ -7,14 +7,17 @@
 #include "./Timestamp.hpp"
 
 class Clock {
-    std::chrono::time_point<std::chrono::steady_clock> startTime;
+    inline static std::chrono::time_point<std::chrono::steady_clock> startTime;
 public:
-    Clock();
+    Clock() = delete;
+    ~Clock() = delete;
 
-    float getTimeSinceStart() const;
+    static void initialize();
+
+    static float getTimeSinceStart();
     
-    Timestamp getCurrentTime() const;
-    std::string getFormattedCurrentTime() const;
+    static Timestamp getCurrentTime();
+    static std::string getFormattedCurrentTime();
 };
 
 #endif // ENGINE_TIME_CLOCK_HPP_
