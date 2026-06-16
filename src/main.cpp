@@ -38,7 +38,7 @@
 #include "engine/project/Project.hpp"
 #include "engine/project/ProjectLoader.hpp"
 #include "engine/materials/preprocessor/Preprocessor.hpp"
-
+#include "engine/time/Clock.hpp"
 #include "engine/materials/Material.hpp"
 #include "engine/materials/MaterialBuilder.hpp"
 #include "engine/materials/MaterialDataBuffer.hpp"
@@ -233,6 +233,8 @@ std::unordered_map<std::string, std::string> parseArguments(
 }
 
 int main(int argc, char* argv[]) {
+    Clock::initialize();
+
     std::unordered_map<std::string, std::string> args = 
         parseArguments(argc, argv);
 

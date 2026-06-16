@@ -1,21 +1,14 @@
-#ifndef ENGINE_DEBUG_LOGGER_H_
-#define ENGINE_DEBUG_LOGGER_H_
+#ifndef ENGINE_DEBUG_LOGGING_LOGGER_HPP_
+#define ENGINE_DEBUG_LOGGING_LOGGER_HPP_
 
 #include <string>
 #include <format>
 
-#include "LogLevel.hpp"
+#include "Log.hpp"
 #include "../project/FilesystemAbstraction.hpp"
+#include "../../time/Clock.hpp"
 
 class Logger {
-public:
-    struct Log {
-        std::string loggerName;
-        FilesystemAbstraction::Timestamp time;
-        LogLevel level;
-        std::string message;
-    };
-private:
     std::string loggerName;
 
     template <typename... Args>
@@ -45,7 +38,7 @@ public:
 };
 
 template <typename... Args>
-Logger::Log Logger::createLog(
+Log Logger::createLog(
     LogLevel level, 
     const std::string& userMessage, 
     Args&&... args
@@ -53,7 +46,7 @@ Logger::Log Logger::createLog(
     return {
         .loggerName = loggerName,
         .level = level,
-        .time = 
+        .time = Clock::getFormattedCurrentTime(),
         .message = userMessage
     }
 }
@@ -90,4 +83,4 @@ void Logger::log(LogLevel level, const std::string& message, Args&&... args) {
     );  
 }
 
-#endif // ENGINE_DEBUG_LOGGER_H_
+#endif // ENGINE_DEBUG_LOGGING_LOGGER_HPP_
