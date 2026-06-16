@@ -5,7 +5,14 @@
 
 class LoggerMiddleware {
 public:
-    virtual ~LoggerMiddleware() = 0;
+    virtual ~LoggerMiddleware() = default;
+
+    LoggerMiddleware() = default;
+    LoggerMiddleware(LoggerMiddleware&&) = default;
+    LoggerMiddleware& operator=(LoggerMiddleware&&) = default;
+
+    LoggerMiddleware(const LoggerMiddleware&) = delete;
+    LoggerMiddleware& operator=(const LoggerMiddleware&) = delete;
 
     virtual void log(const Log& log) = 0;
 };

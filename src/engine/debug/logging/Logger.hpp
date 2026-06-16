@@ -86,6 +86,8 @@ void Logger::log(LogLevel level, const std::string& message, Args&&... args) {
     Log log = createLog(level, completedUserMessage);
 
     for (const auto& middleware : cfg.middlewares) {
+        if (!middleware) continue; 
+        
         middleware.log(log);
     }
 }
