@@ -6,11 +6,11 @@
 #include "../../utils/EnumMapper.hpp"
 
 enum class LogLevel {
-    DEBUG,
-    INFO,
-    WARNING,
-    ERROR,
-    FATAL
+    DEBUG = 0,
+    INFO = 1,
+    WARNING = 2,
+    ERROR = 3,
+    FATAL = 4
 };
 
 inline const EnumMapper<LogLevel> logLevelMapper = {

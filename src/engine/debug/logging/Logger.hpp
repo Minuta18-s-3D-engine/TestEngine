@@ -5,18 +5,19 @@
 #include <format>
 
 #include "Log.hpp"
+#include "LoggerConfig.hpp"
 #include "../project/FilesystemAbstraction.hpp"
 #include "../../time/Clock.hpp"
 
 class Logger {
     std::string loggerName;
+    LoggerConfig cfg;
 
-    template <typename... Args>
     Log createLog(
-        LogLevel level, const std::string& userMessage, Args&&... args
+        LogLevel level, const std::string& userMessage
     );
 public:
-    Logger(const std::string& _loggerName);
+    Logger(const std::string& _loggerName, LoggerConfig _cfg);
 
     template <typename... Args>
     void log(LogLevel level, const std::string& userMessage, Args&&... args);
@@ -37,18 +38,16 @@ public:
     void fatal(const std::string& message, Args&&... args);
 };
 
-template <typename... Args>
 Log Logger::createLog(
     LogLevel level, 
-    const std::string& userMessage, 
-    Args&&... args
+    const std::string& userMessage
 ) {
     return {
         .loggerName = loggerName,
         .level = level,
         .time = Clock::getFormattedCurrentTime(),
         .message = userMessage
-    }
+    };
 }
 
 template <typename... Args>
@@ -78,9 +77,17 @@ void Logger::fatal(const std::string& message, Args&&... args) {
 
 template <typename... Args>
 void Logger::log(LogLevel level, const std::string& message, Args&&... args) {
+    if (static_cast<int>(level) < static_cast<int>(cfg.level)) return;
+    
     std::string completedUserMessage = std::format(
         userMessage, std::forward<Args>(args)...
     );  
+
+    Log log = createLog(level, completedUserMessage);
+
+    for (const auto& middleware : cfg.middlewares) {
+        middleware.log(log);
+    }
 }
 
 #endif // ENGINE_DEBUG_LOGGING_LOGGER_HPP_
