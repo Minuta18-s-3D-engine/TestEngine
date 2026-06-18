@@ -84,7 +84,7 @@ void PreprocessorCache::store(const ProcessedShader& processedShader) {
 }
 
 bool PreprocessorCache::isUpToDate(const ProcessedShader& processedShader) {
-    FilesystemAbstraction::Timestamp sourceEditTime = \
+    Timestamp sourceEditTime = \
         filesystem.getLastEditedTime(processedShader.sourcePath);
     return sourceEditTime == processedShader.sourceEditTime;    
 }

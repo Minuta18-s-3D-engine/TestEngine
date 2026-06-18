@@ -17,7 +17,7 @@ public:
         VirtualPath sourcePath;
         std::string preprocessedCode;
         std::vector<VirtualPath> dependencies;
-        FilesystemAbstraction::Timestamp sourceEditTime;
+        Timestamp sourceEditTime;
     };
 private:
     FilesystemAbstraction& filesystem;

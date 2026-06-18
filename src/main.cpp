@@ -38,11 +38,14 @@
 #include "engine/project/Project.hpp"
 #include "engine/project/ProjectLoader.hpp"
 #include "engine/materials/preprocessor/Preprocessor.hpp"
-
+#include "engine/time/Clock.hpp"
 #include "engine/materials/Material.hpp"
 #include "engine/materials/MaterialBuilder.hpp"
 #include "engine/materials/MaterialDataBuffer.hpp"
 #include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
+#include "engine/debug/logging/Logging.hpp"
+#include "engine/debug/logging/ConsoleLoggerMiddleware.hpp"
+#include "engine/debug/logging/FileLoggerMiddleware.hpp"
 
 namespace fs = std::filesystem;
 
@@ -233,6 +236,15 @@ std::unordered_map<std::string, std::string> parseArguments(
 }
 
 int main(int argc, char* argv[]) {
+    Clock::initialize();
+
+    Logging::setDefaultConfig(LoggerConfig::create(
+        LogLevel::DEBUG,
+        ConsoleLoggerMiddleware(),
+        FileLoggerMiddleware("engine.log")
+    ));
+    Logger mainLogger = Logging::createLogger("engine.main");
+
     std::unordered_map<std::string, std::string> args = 
         parseArguments(argc, argv);
 

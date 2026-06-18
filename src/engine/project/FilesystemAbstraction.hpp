@@ -7,10 +7,10 @@
 #include "VirtualPath.hpp"
 #include "PathResolver.hpp"
 
+#include "../time/Timestamp.hpp"
+
 class FilesystemAbstraction {
 public:
-    using Timestamp = uint64_t;
-
     virtual ~FilesystemAbstraction() = default;
 
     virtual bool exists(const VirtualPath& path) = 0;

@@ -52,13 +52,11 @@ public:
 
     template <class T>
     void set(std::unique_ptr<T> asset, const std::string& name) {
-        std::cout << "AssetManager:set(): " << name << std::endl;
         assets[typeid(T)][name].reset(asset.release());
     }
 
     template <class T>
     void set(std::shared_ptr<T> asset, const std::string& name) {
-        std::cout << "AssetManager:set(): " << name << std::endl;
         assets[typeid(T)][name] = std::move(asset);
     }
 
