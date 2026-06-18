@@ -58,8 +58,8 @@ public:
     void seek(size_t offset, SeekDir dir = SeekDir::BEGIN);
     size_t getFileSize();
 
-    const VirtualPath& getPath() const;
-    const IOMode getIOMode() const;
+    const VirtualPath& getPath() const { return path; }
+    const IOMode getIOMode() const { return mode; }
 };
 
 inline File::IOMode operator|(File::IOMode l, File::IOMode r) {
