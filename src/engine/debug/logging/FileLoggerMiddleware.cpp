@@ -12,7 +12,7 @@ void FileLoggerMiddleware::log(const Log& log) {
 
     logFile->writeFormat("{} {} {} {}\n",
         log.time,
-        static_cast<int>(log.level),
+        logLevelMapper.toString(log.level),
         log.loggerName,
         log.message
     );

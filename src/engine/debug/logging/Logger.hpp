@@ -6,7 +6,7 @@
 
 #include "Log.hpp"
 #include "LoggerConfig.hpp"
-#include "../project/FilesystemAbstraction.hpp"
+#include "../../project/FilesystemAbstraction.hpp"
 #include "../../time/Clock.hpp"
 
 class Logger {
@@ -20,7 +20,11 @@ public:
     Logger(const std::string& _loggerName, LoggerConfig _cfg);
 
     template <typename... Args>
-    void log(LogLevel level, const std::string& userMessage, Args&&... args);
+    void log(
+        LogLevel level, 
+        const std::string& userMessage, 
+        Args&&... args
+    );
     
     template <typename... Args>
     void debug(const std::string& message, Args&&... args);
@@ -37,18 +41,6 @@ public:
     template <typename... Args>
     void fatal(const std::string& message, Args&&... args);
 };
-
-Log Logger::createLog(
-    LogLevel level, 
-    const std::string& userMessage
-) {
-    return {
-        .loggerName = loggerName,
-        .level = level,
-        .time = Clock::getFormattedCurrentTime(),
-        .message = userMessage
-    };
-}
 
 template <typename... Args>
 void Logger::debug(const std::string& message, Args&&... args) {
@@ -76,11 +68,13 @@ void Logger::fatal(const std::string& message, Args&&... args) {
 }
 
 template <typename... Args>
-void Logger::log(LogLevel level, const std::string& message, Args&&... args) {
+void Logger::log(
+    LogLevel level, const std::string& message, Args&&... args
+) {
     if (static_cast<int>(level) < static_cast<int>(cfg.level)) return;
     
-    std::string completedUserMessage = std::format(
-        userMessage, std::forward<Args>(args)...
+    std::string completedUserMessage = std::vformat(
+        message, std::make_format_args(args...)
     );  
 
     Log log = createLog(level, completedUserMessage);
@@ -88,7 +82,7 @@ void Logger::log(LogLevel level, const std::string& message, Args&&... args) {
     for (const auto& middleware : cfg.middlewares) {
         if (!middleware) continue; 
         
-        middleware.log(log);
+        middleware->log(log);
     }
 }
 

@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdint>
 #include <format>
+#include <iostream>
 #include <fstream>
 
 #include "VirtualPath.hpp"
@@ -44,8 +45,11 @@ public:
     std::string readAll();
 
     template <typename... Args>
-    void writeFormat(std::format_string<Args...> fmt, Args&&... args) {
-        write(std::format(fmt, std::forward<Args>(args)...));
+    void writeFormat(const std::string& fmt, Args&&... args) {
+        write(std::vformat(
+            fmt, 
+            std::make_format_args(args...)
+        ));
     }
 
     void writeBytes(const uint8_t* bytes, size_t size);
@@ -59,7 +63,7 @@ public:
     size_t getFileSize();
 
     const VirtualPath& getPath() const { return path; }
-    const IOMode getIOMode() const { return mode; }
+    IOMode getIOMode() const { return mode; }
 };
 
 inline File::IOMode operator|(File::IOMode l, File::IOMode r) {

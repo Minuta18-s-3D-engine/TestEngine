@@ -12,6 +12,7 @@
 #include "../events/EventManager.hpp"
 #include "InputController.hpp"
 #include "WindowEvents.hpp"
+#include "engine/debug/logging/Logging.hpp"
 
 class Window {
     std::string caption;
@@ -22,6 +23,7 @@ class Window {
 
     EventManager& eventManager;
     InputController inputController;
+    Logger windowLogger;
 
     void setupWindow();
     static void framebufferSizeCallback(GLFWwindow* _window, 

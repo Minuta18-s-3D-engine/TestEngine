@@ -11,14 +11,16 @@ Window::Window(
     uint32_t _width, uint32_t _height, const std::string& _caption, 
     EventManager& _eventManager
 ) : width(_width), height(_height), caption(_caption), 
-    eventManager(_eventManager), inputController(nullptr) {
+    eventManager(_eventManager), inputController(nullptr),
+    windowLogger(Logging::createLogger("engine.window")) {
     setupWindow();
     inputController.window = window;
 }
 
 Window::Window(EventManager& _eventManager)
     : width(DEFAULT_WIDTH), height(DEFAULT_HEIGHT), caption(DEFAULT_CAPTION), 
-    eventManager(_eventManager), inputController(nullptr) {
+    eventManager(_eventManager), inputController(nullptr),
+    windowLogger(Logging::createLogger("engine.window")) {
     setupWindow();
     inputController.window = window;
 }
@@ -76,16 +78,20 @@ void Window::setupWindow() {
     );
 
     if (window == nullptr) {
-        throw std::runtime_error("Failed to create GLFW Window");
+        std::string errorMsg = "Failed to create GLFW Window"; 
+        windowLogger.fatal(errorMsg);
+        throw std::runtime_error(errorMsg);
     }
     glfwMakeContextCurrent(window);
     
     if (!gladLoadGLLoader((GLADloadproc)  glfwGetProcAddress)) {
-        throw std::runtime_error("Failed to initialize GLAD");
+        std::string errorMsg = "Failed to initialize GLAD";
+        windowLogger.fatal(errorMsg);
+        throw std::runtime_error(errorMsg);
     }
 
     if (!GL_ARB_bindless_texture) {
-        std::cerr << "Warning: bindless textures not supported" << std::endl;
+        windowLogger.warning("Bindless textures are not supported");
     }
 
     glViewport(0, 0, width, height);
@@ -107,8 +113,8 @@ void Window::setupWindow() {
 
     const GLubyte* version = glGetString(GL_VERSION);
     const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
-    std::cout << "OpenGL Version: " << version << std::endl;
-    std::cout << "GLSL Version: " << glslVersion << std::endl;
+    windowLogger.info("OpenGL version: {}", (const char*) version);
+    windowLogger.info("GLSL version: {}", (const char*) glslVersion);
 }
 
 bool Window::isShouldClose() const {

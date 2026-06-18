@@ -5,14 +5,28 @@ File::File(const VirtualPath& _path)
 
 File::File(const VirtualPath& _path, IOMode _mode)
     : path(_path), mode(_mode) {
+    std::string physicalPath = path.resolve();
+
+    bool isWriteMode = (static_cast<int>(mode) & static_cast<int>(IOMode::WRITE)) != 0;
+    bool isAppendMode = (static_cast<int>(mode) & static_cast<int>(IOMode::APPEND)) != 0;
+
+    std::filesystem::path physicalPathFs(physicalPath);
+    if (isWriteMode || isAppendMode) {
+        if (physicalPathFs.has_parent_path()) {
+            std::filesystem::create_directories(physicalPathFs.parent_path());
+        }
+
+        if (!std::filesystem::exists(physicalPathFs)) {
+            std::ofstream touch(physicalPathFs); 
+        }
+    }
+
     std::ios_base::openmode stdMode{};
 
     if (mode & IOMode::READ)   stdMode |= std::ios::in;
     if (mode & IOMode::WRITE)  stdMode |= std::ios::out;
     if (mode & IOMode::APPEND) stdMode |= std::ios::app;
     if (mode & IOMode::BINARY) stdMode |= std::ios::binary;
-
-    std::string physicalPath = path.resolve();
     
     stream.open(physicalPath);
     if(!stream.is_open()) {
