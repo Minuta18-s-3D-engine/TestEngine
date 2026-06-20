@@ -208,21 +208,12 @@ void Application::loadProject(const std::string& projectPath) {
     std::string mainSceneName = "MainScene";
     project->createEmptyScene(mainSceneName);
     project->setActiveScene(mainSceneName);
-
-    renderingSystem = std::make_unique<RenderingSystem>(
-        project->getAssetManager(),
-        project->getActiveScene().getGameObjectManager(),
-        *eventManager,
-        *window,
-        *globalMaterialBuffer
-    );
 }
 
 void Application::setupPlayerCamera() {
     player = std::make_unique<Player>(glm::vec3(0.0f, 2.0f, -1.0f));
     player->setPos(glm::vec3(37.153, 4.260, 3.347));
     player->getCamera()->setRotation(198.795, 4.165);
-    renderingSystem->bindCamera(player->getCamera().get()); 
 }
 
 void Application::loadTextures() {
@@ -343,37 +334,42 @@ void Application::spawnSceneObjects() {
     auto matInstance = std::make_shared<MaterialInstance>(
         prototypeGrid->getName() + "Instance",
         assetManager.require<Material>("materials/prototypeGrid"),
-        globalMaterialBuffer
+        *globalMaterialBuffer
     );
     matInstance->setProperty("baseColor", glm::vec3(0.4, 0.8, 0.4));
 
-    const glm::vec3 scale(2.0f, 2.0f, 2.0f);
-    const glm::vec2 textureScale(1.0f, 1.0f);
-    const glm::vec3 pos(10.0f, 3.0f, 2.0f);
+    {
+        const glm::vec3 scale(2.0f, 2.0f, 2.0f);
+        const glm::vec2 textureScale(1.0f, 1.0f);
+        const glm::vec3 pos(10.0f, 3.0f, 2.0f);
 
-    std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(
-        scale, textureScale, matInstance
-    );
+        std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(
+            scale, textureScale, matInstance
+        );
 
-    std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
-    cubeMeshArray.push_back(cubeMesh);
-    std::unique_ptr<Model> cubeModel = std::make_unique<Model>(cubeMeshArray);
-    cubeModel->material = prototypeGrid;
-    
-    std::string modelName = "checkerCube";
+        std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
+        cubeMeshArray.push_back(cubeMesh);
+        std::unique_ptr<Model> cubeModel = std::make_unique<Model>(
+            cubeMeshArray
+        );
+        cubeModel->material = prototypeGrid;
+        
+        std::string modelName = "checkerCube";
 
-    std::unique_ptr<GameObject> cubeObject = GameObject::createGameObject();
-    auto transformComponent = cubeObject->getComponent<Transform>();
-    transformComponent->position = pos;
-    transformComponent->scale = scale;
-    auto behaviorComponent = cubeObject->getComponent<Behavior>();
-    behaviorComponent->type = BehaviorType::STATIC;
-    auto modelComponent = std::make_unique<ModelComponent>();
-    modelComponent->managerId = modelName;
-    cubeObject->addComponent<ModelComponent>(modelComponent);
+        std::unique_ptr<GameObject> cubeObject = 
+            GameObject::createGameObject();
+        auto transformComponent = cubeObject->getComponent<Transform>();
+        transformComponent->position = pos;
+        transformComponent->scale = scale;
+        auto behaviorComponent = cubeObject->getComponent<Behavior>();
+        behaviorComponent->type = BehaviorType::STATIC;
+        auto modelComponent = std::make_unique<ModelComponent>();
+        modelComponent->managerId = modelName;
+        cubeObject->addComponent<ModelComponent>(modelComponent);
 
-    objectManager.addObject(cubeObject);
-    assetManager.set<Model>(std::move(cubeModel), modelName);
+        objectManager.addObject(cubeObject);
+        assetManager.set<Model>(std::move(cubeModel), modelName);
+    }
 
     createRect(
         glm::vec3(2.0, 2.0, 5.0), glm::vec3(1.0, 1.0, 1.0), 
@@ -384,25 +380,28 @@ void Application::spawnSceneObjects() {
 
     ModelLoader modelLoader;
 
-    auto baseMaterial = assetManager.getShared<Material>(
-        "materials/standardMaterial");
-    auto sponzaModel = modelLoader.loadModel(
-        "fs://assets/models/sponza_low_res.glb", baseMaterial, assetManager
-    );
-    auto modelName = "sponza_model";
+    {
+        auto baseMaterial = assetManager.getShared<Material>(
+            "materials/standardMaterial");
+        auto sponzaModel = modelLoader.loadModel(
+            "fs://assets/models/sponza_low_res.glb", baseMaterial, assetManager
+        );
+        auto modelName = "sponza_model";
 
-    std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
-    auto transformComponent = sponzaObject->getComponent<Transform>();
-    transformComponent->position = glm::vec3(0.0f, 1.0f, 0.0f);
-    transformComponent->scale = glm::vec3(1.0f, 1.0f, 1.0f);
-    auto behaviorComponent = sponzaObject->getComponent<Behavior>();
-    behaviorComponent->type = BehaviorType::STATIC;
-    auto modelComponent = std::make_unique<ModelComponent>();
-    modelComponent->managerId = modelName;
-    sponzaObject->addComponent<ModelComponent>(modelComponent);
+        std::unique_ptr<GameObject> sponzaObject =
+            GameObject::createGameObject();
+        auto transformComponent = sponzaObject->getComponent<Transform>();
+        transformComponent->position = glm::vec3(0.0f, 1.0f, 0.0f);
+        transformComponent->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        auto behaviorComponent = sponzaObject->getComponent<Behavior>();
+        behaviorComponent->type = BehaviorType::STATIC;
+        auto modelComponent = std::make_unique<ModelComponent>();
+        modelComponent->managerId = modelName;
+        sponzaObject->addComponent<ModelComponent>(modelComponent);
 
-    objectManager.addObject(sponzaObject);
-    assetManager.set<Model>(std::move(sponzaModel), modelName);
+        objectManager.addObject(sponzaObject);
+        assetManager.set<Model>(std::move(sponzaModel), modelName);
+    }
 }
 
 void Application::loadLights() {
@@ -431,6 +430,15 @@ void Application::createTestScene() {
     compileShadersAndMaterials();
     spawnSceneObjects();
     loadLights();
+
+    renderingSystem = std::make_unique<RenderingSystem>(
+        project->getAssetManager(),
+        project->getActiveScene().getGameObjectManager(),
+        *eventManager,
+        *window,
+        *globalMaterialBuffer
+    );
+    renderingSystem->bindCamera(player->getCamera().get()); 
 }
 
 void Application::processGameInput(float delta) {

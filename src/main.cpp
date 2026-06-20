@@ -7,11 +7,11 @@
 
 #include <uuid.h>
 
-#include "debug/logging/Logging.hpp"
-#include "debug/logging/ConsoleLoggerMiddleware.hpp"
-#include "debug/logging/FileLoggerMiddleware.hpp"
-#include "core/Application.hpp"
-#include "core/CommandLineArgs.hpp"
+#include "engine/debug/logging/Logging.hpp"
+#include "engine/debug/logging/ConsoleLoggerMiddleware.hpp"
+#include "engine/debug/logging/FileLoggerMiddleware.hpp"
+#include "engine/core/Application.hpp"
+#include "engine/core/CommandLineArgs.hpp"
 
 int main(int argc, char* argv[]) {
     try {
