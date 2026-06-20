@@ -10,8 +10,19 @@
 #include "engine/graphics/RenderingSystem.hpp"
 #include "engine/project/Project.hpp"
 #include "engine/player/Player.hpp"
+#include "engine/project/ProjectLoader.hpp"
+#include "engine/assets/utils/MeshGen.hpp"
+#include "engine/assets/utils/Files.hpp"
+#include "engine/assets/coders/images/PngCoder.hpp"
+#include "engine/assets/coders/images/JpgCoder.hpp"
+#include "engine/materials/preprocessor/Preprocessor.hpp"
+#include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
+#include "engine/materials/MaterialBuilder.hpp"
+#include "engine/models/ModelLoader.hpp"
 
 class Application {
+    const std::string cmdProjectKey = "--project";
+
     bool isRunning = true;
     Logger applicationLogger;
     CommandLineArgs args;
@@ -23,15 +34,19 @@ class Application {
     std::unique_ptr<Project> project;
 
     void initEngineSystems();
-    void destructEngineSystems();
 
-    void loadProject(const VirtualPath& projectPath);
+    void loadProject(const std::string& projectPath);
 
     // TODO: move this somewhere
     std::unique_ptr<Player> player;
     bool isInGame = true;
 
     void createTestScene();
+    void setupPlayerCamera();
+    void loadTextures();
+    void compileShadersAndMaterials();
+    void spawnSceneObjects();
+    void loadLights();
     void processGameInput(float deltaTime);
 public:
     Application(const CommandLineArgs& _args);
