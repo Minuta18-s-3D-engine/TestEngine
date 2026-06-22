@@ -6,10 +6,12 @@
 using HandleID = uint32_t;
 
 template <typename T>
-struct ResourceHandle {
+struct ResourceHandle final {
     static const uint32_t NULL_RESOURCE = 0;
 
     uint32_t id = NULL_RESOURCE;
+
+    ResourceHandle(uint32_t _id) : id(_id) {}
     
     bool isValid() { return (id != NULL_RESOURCE); }
 
