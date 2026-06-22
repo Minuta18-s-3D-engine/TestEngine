@@ -1,5 +1,5 @@
-#ifndef ENGINE_ASSETS_RESOURCEMANAGER_HPP_
-#define ENGINE_ASSETS_RESOURCEMANAGER_HPP_
+#ifndef ENGINE_RESOURCE_RESOURCEMANAGER_HPP_
+#define ENGINE_RESOURCE_RESOURCEMANAGER_HPP_
 
 #include <unordered_map>
 #include <typeindex>
@@ -99,4 +99,4 @@ T& ResourceManager::require(ResourceHandle<T> handle) {
     return *resource;
 }
 
-#endif // ENGINE_ASSETS_RESOURCEMANAGER_HPP_
+#endif // ENGINE_RESOURCE_RESOURCEMANAGER_HPP_
