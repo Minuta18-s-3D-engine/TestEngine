@@ -1,3 +1,5 @@
+include(FetchContent)
+
 project(TestEngSrc)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -7,8 +9,6 @@ configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmakeConfig.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmakeConfig.h"
 )
-
-include(FetchContent)
 
 FetchContent_Declare(
   stduuid
@@ -30,6 +30,16 @@ FetchContent_MakeAvailable(json)
 
 add_library(nlohmann_json INTERFACE)
 target_include_directories(nlohmann_json INTERFACE ${json_SOURCE_DIR}/include)
+
+add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
+
+FetchContent_Declare(
+    json-schema-validator
+    GIT_REPOSITORY https://github.com/pboettch/json-schema-validator.git
+    GIT_TAG        2.4.0
+)
+
+FetchContent_MakeAvailable(json-schema-validator)
 
 set(ASSIMP_SOURCE_DIR ${CMAKE_SOURCE_DIR}/lib/assimp)
 set(ASSIMP_BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/assimp-build)
@@ -78,4 +88,5 @@ if (UNIX AND NOT APPLE)
 endif()
 
 target_link_libraries(TestEngSrc ${OPENGL_LIBRARIES} glfw glad glm::glm 
-    ${PNG_LIBRARY} assimp::assimp bvh stduuid ${JPEG_LIBRARIES} nlohmann_json)
+    ${PNG_LIBRARY} assimp::assimp bvh stduuid ${JPEG_LIBRARIES} nlohmann_json 
+    nlohmann_json_schema_validator)

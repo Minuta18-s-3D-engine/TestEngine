@@ -7,6 +7,7 @@ class Resource {
 protected:
     VirtualPath path;
 public:
+    Resource(const VirtualPath& _path) : path(_path) {}
     virtual ~Resource() = default;
 
     [[nodiscard]] const VirtualPath& getPath() const { return path; }
