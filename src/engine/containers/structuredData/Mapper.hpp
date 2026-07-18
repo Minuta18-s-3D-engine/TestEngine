@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <vector>
 #include <string>
+#include <variant>
 
 namespace StructuredData {
 
@@ -18,6 +19,12 @@ template <typename T>
 inline constexpr bool is_primitive_v = 
     std::is_arithmetic_v<T> || std::is_same_v<T, std::string>;
 
+template <typename... Ts> struct is_variant : std::false_type {};
+template <typename... Ts> struct is_variant<std::variant<Ts...>> : 
+    std::true_type {};
+template <typename T> inline constexpr bool is_variant_v = 
+    is_variant<T>::value;
+
 class Mapper {
 public:
     template <typename T> static DataNode write(const T& value);
@@ -27,11 +34,13 @@ private:
     template <typename T> static DataNode writeArray(const T& value);
     template <typename T> static DataNode writeEnum(const T& value);
     template <typename T> static DataNode writeObject(const T& value);
+    template <typename T> static DataNode writeVariant(const T& value);
 
     template <typename T> static bool readPrimitive(const DataNode& node, T& out);
     template <typename T> static bool readArray(const DataNode& node, T& out);
     template <typename T> static bool readEnum(const DataNode& node, T& out);
     template <typename T> static bool readObject(const DataNode& node, T& out);
+    template <typename T> static bool readVariant(const DataNode& node, T& out);
 };
 
 template <typename T>
@@ -43,6 +52,7 @@ inline DataNode Mapper::write(const T& value) {
     else if constexpr (std::is_enum_v<DecayT>) return writeEnum(value);
     else if constexpr (Reflection::Meta<DecayT>::isMapped)
         return writeObject(value);
+    else if constexpr (is_variant_v<DecayT>) return writeVariant(value);
     else static_assert(false, "Unsupported type");
 }
 
@@ -55,6 +65,7 @@ inline bool Mapper::read(const DataNode& node, T& out) {
     else if constexpr (std::is_enum_v<DecayT>) return readEnum(node, out);
     else if constexpr (Reflection::Meta<DecayT>::isMapped)
         return readObject(node, out);
+    else if constexpr (is_variant_v<DecayT>) return readVariant(node, out);
     else static_assert(false, "Unsupported type");
 }
 
@@ -120,6 +131,11 @@ inline DataNode Mapper::writeObject(const T& value) {
     }, Reflection::Meta<T>::fields());
     
     return DataNode(std::move(obj));
+}
+
+template <typename T>
+inline DataNode Mapper::writeVariant(const T& value) {
+    return std::visit([](const auto& v) { return write(v); }, value);
 }
 
 template <typename T>
@@ -216,6 +232,26 @@ inline bool Mapper::readObject(const DataNode& node, T& out) {
         (processField(fields), ...);
     }, Reflection::Meta<T>::fields());
     
+    return success;
+}
+
+template <typename T>
+inline bool Mapper::readVariant(const DataNode& node, T& out) {
+    bool success = false;
+    
+    auto tryRead = [&]<std::size_t... I>(std::index_sequence<I...>) {
+        (..., [&]() {
+            if (success) return;
+            
+            std::variant_alternative_t<I, T> temp{};
+            if (read(node, temp)) {
+                out = std::move(temp);
+                success = true;
+            }
+        }());
+    };
+
+    tryRead(std::make_index_sequence<std::variant_size_v<T>>{});
     return success;
 }
 
