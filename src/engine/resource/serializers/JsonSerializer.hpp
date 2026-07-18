@@ -4,7 +4,7 @@
 #include "Serializer.hpp"
 #include <nlohmann/json_fwd.hpp>
 
-class JsonSerializer : public Serializer {
+class JsonSerializer final : public Serializer {
 public:
     struct Options {
         bool minimize = false;

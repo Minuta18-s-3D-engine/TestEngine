@@ -11,13 +11,17 @@ class Serializer {
 public:
     virtual ~Serializer() = default;
 
-    virtual StructuredData::DataNode fromFile(const VirtualPath& path) = 0;
+    [[nodiscard]] virtual StructuredData::DataNode fromFile(
+        const VirtualPath& path
+    ) = 0;
     virtual void toFile(
         const VirtualPath& path, const StructuredData::DataNode& node
     ) = 0;
 
-    virtual StructuredData::DataNode fromString(const std::string& str) = 0;
-    virtual std::string toString(const StructuredData::DataNode& node) = 0;
+    [[nodiscard]] virtual StructuredData::DataNode fromString(
+        const std::string& str) = 0;
+    [[nodiscard]] virtual std::string toString(
+        const StructuredData::DataNode& node) = 0;
 };
 
 #endif // ENGINE_RESOURCE_SERIALIZER_HPP_

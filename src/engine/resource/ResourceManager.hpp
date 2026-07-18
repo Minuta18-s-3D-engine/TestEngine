@@ -9,6 +9,7 @@
 #include "engine/project/VirtualPath.hpp"
 #include "engine/debug/logging/Logging.hpp"
 #include "engine/utils/exc/GeneralExceptions.hpp"
+#include "ResourceImporter.hpp"
 
 class IResourceStorage {
 public:
@@ -26,6 +27,9 @@ class ResourceManager final {
         std::type_index, std::unique_ptr<IResourceStorage>
     > storages;
     std::unordered_map<std::string, HandleID> fileID;
+    std::unordered_map<
+        std::type_index, std::unique_ptr<IResourceImporter>
+    > importers;
 
     Logger logger;
 
@@ -51,6 +55,9 @@ public:
 
     template <typename T>
     [[nodiscard]] T& require(ResourceHandle<T> handle);
+
+    template <typename T>
+    void registerImporter(std::unique_ptr<ResourceImporter<T>> importer);
 };
 
 template <typename T>
@@ -68,8 +75,38 @@ ResourceStorage<T>& ResourceManager::getOrCreateStorage() {
 
 template <typename T>
 ResourceHandle<T> ResourceManager::load(const VirtualPath& path) {
-    // TODO
-    return ResourceHandle<T>();
+    std::string strID = path.resolve();
+
+    if (fileID.contains(strID)) {
+        return ResourceHandle<T>(fileID[strID]);
+    }
+
+    auto tid = std::type_index(typeid(T));
+    auto it = importers.find(tid);
+    if (it == importers.end()) {
+        logger.error(
+            "No importer registered for type: " + std::string(typeid(T).name())
+        );
+        throw exc::invalid_argument(
+            "No importer registered for this resource type"
+        );
+    }
+
+    auto* typedImporter = static_cast<ResourceImporter<T>*>(it->second.get());
+
+    T resource = typedImporter->import(path, *this);
+
+    HandleID id = ++nextID;
+    auto& s = getOrCreateStorage<T>();
+    
+    s.storage.emplace(id, std::move(resource));
+    fileID[strID] = id;
+
+    logger.info(
+        "Loaded resource: " + strID + " with ID " + std::to_string(id)
+    );
+
+    return ResourceHandle<T>(id);
 }
 
 template <typename T>
@@ -101,6 +138,14 @@ T& ResourceManager::require(ResourceHandle<T> handle) {
     if (resource == nullptr) throw exc::invalid_argument("Invalid handle");
 
     return *resource;
+}
+
+template <typename T>
+void ResourceManager::registerImporter(
+    std::unique_ptr<ResourceImporter<T>> importer
+) {
+    auto tid = std::type_index(typeid(T));
+    importers[tid] = std::move(importer);
 }
 
 #endif // ENGINE_RESOURCE_RESOURCEMANAGER_HPP_

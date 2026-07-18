@@ -3,17 +3,20 @@
 
 #include <memory>
 
-#include "Resource.hpp"
-
 class ResourceManager;
 
-class ResourceImporter {
+class IResourceImporter {
+public:
+    virtual ~IResourceImporter() = default;
+};
+
+template <typename T>
+class ResourceImporter : public IResourceImporter {
 public:
     virtual ~ResourceImporter() = default;
 
-    virtual std::unique_ptr<Resource> importResource(
-        const VirtualPath& path,
-        const ResourceManager& manager
+    virtual T importResource(
+        const VirtualPath& path, const ResourceManager& manager
     ) = 0;
 };
 
