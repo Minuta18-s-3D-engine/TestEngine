@@ -62,6 +62,34 @@ Texture::~Texture() {
     glDeleteTextures(1, &id);
 }
 
+Texture::Texture(Texture&& other) noexcept
+    : width(other.width), height(other.height),
+      format(other.format), type(other.type),
+      id(other.id), bindlessHandle(other.bindlessHandle) 
+{
+    other.id = 0;
+    other.bindlessHandle = NO_HANDLE;
+}
+
+Texture& Texture::operator=(Texture&& other) noexcept {
+    if (this != &other) {
+        if (id != 0) {
+            glDeleteTextures(1, &id);
+        }
+
+        width = other.width;
+        height = other.height;
+        format = other.format;
+        type = other.type;
+        id = other.id;
+        bindlessHandle = other.bindlessHandle;
+
+        other.id = 0;
+        other.bindlessHandle = NO_HANDLE;
+    }
+    return *this;
+}
+
 void Texture::bind() {
     glBindTexture(getGLTarget(), id);
 }

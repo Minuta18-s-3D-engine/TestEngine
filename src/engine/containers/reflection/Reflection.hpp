@@ -43,4 +43,26 @@ struct EnumMeta {
 
 } // namespace Reflection
 
+#define STRUCT_SCHEMA(Type, ...) \
+    namespace Reflection { \
+        template <> \
+        struct Meta<Type> { \
+            static constexpr bool isMapped = true; \
+            static constexpr auto fields() { \
+                return std::make_tuple(__VA_ARGS__); \
+            } \
+        }; \
+    }
+
+#define ENUM_SCHEMA(Type, ...) \
+    namespace Reflection { \
+        template <> \
+        struct EnumMeta<Type> { \
+            static constexpr bool isMapped = true; \
+            static constexpr auto values() { \
+                return std::make_tuple(__VA_ARGS__); \
+            } \
+        }; \
+    }
+
 #endif // ENGINE_CONTAINERS_REFLECTION_REFLECTION_HPP_

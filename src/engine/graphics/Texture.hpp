@@ -34,7 +34,8 @@ public:
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
 
-    Texture(Texture&& other) noexcept = delete; // TODO
+    Texture(Texture&& other) noexcept;
+    Texture& operator=(Texture&& other) noexcept;
 
     void bind();
     void unbind();
