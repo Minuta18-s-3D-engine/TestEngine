@@ -27,6 +27,11 @@ constexpr auto Field(
 }
 
 template <typename T>
+constexpr std::pair<const char*, T> EnumField(const char* name, T value) {
+    return {name, value};
+}
+
+template <typename T>
 struct Meta {
     static constexpr bool isMapped = true;
 };

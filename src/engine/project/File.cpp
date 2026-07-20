@@ -30,7 +30,7 @@ File::File(const VirtualPath& _path, IOMode _mode)
     
     stream.open(physicalPath);
     if(!stream.is_open()) {
-        throw std::runtime_error("Failed to open file: " + physicalPath);
+        throw exc::file_not_found("Failed to open file: " + physicalPath);
     }
 }
 

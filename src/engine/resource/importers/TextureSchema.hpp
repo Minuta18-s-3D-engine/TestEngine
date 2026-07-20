@@ -35,19 +35,19 @@ struct TextureSchema {
 };
 
 ENUM_SCHEMA(TextureSchema::FilterMode,
-    std::pair{"nearest", TextureSchema::FilterMode::Nearest},
-    std::pair{"linear", TextureSchema::FilterMode::Linear}
+    EnumField("nearest", TextureSchema::FilterMode::Nearest),
+    EnumField("linear", TextureSchema::FilterMode::Linear)
 )
 
 ENUM_SCHEMA(TextureSchema::WrapMode,
-    std::pair{"repeat", TextureSchema::WrapMode::Repeat},
-    std::pair{"clampToEdge", TextureSchema::WrapMode::ClampToEdge},
-    std::pair{"mirroredRepeat", TextureSchema::WrapMode::MirroredRepeat}
+    EnumField("repeat", TextureSchema::WrapMode::Repeat),
+    EnumField("clampToEdge", TextureSchema::WrapMode::ClampToEdge),
+    EnumField("mirroredRepeat", TextureSchema::WrapMode::MirroredRepeat)
 )
 
 ENUM_SCHEMA(TextureSchema::ColorSpace,
-    std::pair{"sRGB",   TextureSchema::ColorSpace::sRGB},
-    std::pair{"linear", TextureSchema::ColorSpace::Linear}
+    EnumField("sRGB",   TextureSchema::ColorSpace::sRGB),
+    EnumField("linear", TextureSchema::ColorSpace::Linear)
 )
 
 STRUCT_SCHEMA(TextureSchema::TextureFiltering,

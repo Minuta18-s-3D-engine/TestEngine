@@ -9,6 +9,7 @@
 #include <fstream>
 
 #include "VirtualPath.hpp"
+#include "engine/utils/exc/GeneralExceptions.hpp"
 
 class File {
 public:
