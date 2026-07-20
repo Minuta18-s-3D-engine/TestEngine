@@ -46,12 +46,3 @@ std::shared_ptr<ImageData> JpgCoder::load_image(
 
     return image;
 }
-
-std::shared_ptr<Texture> JpgCoder::load_texture(
-    const uint8_t* bytes, size_t size, std::string name
-) {
-    std::shared_ptr<ImageData> image = JpgCoder::load_image(bytes, size, name);
-    auto texture = Texture::create(image.get());
-
-    return texture;
-}

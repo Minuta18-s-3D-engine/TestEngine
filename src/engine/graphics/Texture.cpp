@@ -9,44 +9,93 @@ GLenum Texture::getGLTarget() const {
 }
 
 Texture::Texture(
-    uint width, uint height, ImageFormat format, 
-    const uint8_t* image_data, SamplerType _type
-) : width(width), height(height), format(format), type(_type) {
+    const ImageData& image, 
+    const TextureSchema& schema,
+    SamplerType _type
+) : width(image.getWidth()), 
+    height(image.getHeight()), 
+    format(image.getFormat()), 
+    type(SamplerType::Texture2D), // type temporary disabled
+    id(0),
+    bindlessHandle(NO_HANDLE)
+{
+    if (!image.getData()) {
+        throw exc::invalid_argument(
+            "Cannot create texture from empty image data");
+    }
+
     glGenTextures(1, &id);
     this->bind();
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    GLenum fmt = GL_RGB;
-    if (format == ImageFormat::rgba) fmt = GL_RGBA;
+    GLuint wrapParam = GL_REPEAT;
+    switch (schema.wrapMode) {
+        case TextureSchema::WrapMode::ClampToEdge: 
+            wrapParam = GL_CLAMP_TO_EDGE;
+            break;
+        case TextureSchema::WrapMode::MirroredRepeat:
+            wrapParam = GL_MIRRORED_REPEAT;
+            break;
+        default:
+            wrapParam = GL_REPEAT;
+            break;
+    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapParam);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapParam);
 
-    GLenum target = getGLTarget();
+    GLint magFilter = GL_LINEAR;
+    GLint minFilter = GL_LINEAR;
 
-    if (type == SamplerType::Texture2D) {
-        glTexImage2D(
-            GL_TEXTURE_2D, 0, fmt, width, height, 0, 
-            fmt, GL_UNSIGNED_BYTE, image_data
-        );
-    } else if (type == SamplerType::CubeMap2D) {
-        for (uint i = 0; i < 6; ++i) {
-            glTexImage2D(
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, fmt, 
-                width, height, 0, fmt, GL_UNSIGNED_BYTE, image_data
-            );
-        }
+    if (std::holds_alternative<TextureSchema::FilterMode>(schema.filtering)) {
+        auto mode = std::get<TextureSchema::FilterMode>(schema.filtering);
+        magFilter = minFilter = (mode == TextureSchema::FilterMode::Linear) ? 
+            GL_LINEAR : GL_NEAREST;
+    } else {
+        auto tf = std::get<TextureSchema::TextureFiltering>(schema.filtering);
+        magFilter = (tf.mag == TextureSchema::FilterMode::Linear) ? 
+            GL_LINEAR : GL_NEAREST;
+        minFilter = (tf.min == TextureSchema::FilterMode::Linear) ? 
+            GL_LINEAR : GL_NEAREST;
     }
 
-    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    if (type == SamplerType::CubeMap2D) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+    if (schema.generateMipmaps) {
+        minFilter = (minFilter == GL_LINEAR) ? 
+            GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST;
     }
 
-    glTexParameteri(target, 
-        GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(target, 
-        GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 
-    glGenerateMipmap(target);
+    GLenum dataFormat;
+    switch (image.getFormat()) {
+        case ImageFormat::rgba: dataFormat = GL_RGBA; break;
+        case ImageFormat::rgb: dataFormat = GL_RGB; break;
+        case ImageFormat::grayscale: dataFormat = GL_RED; break;
+        default:
+            dataFormat = GL_RGBA;
+    }
+
+    GLint internalFormat = dataFormat;
+    if (schema.colorSpace == TextureSchema::ColorSpace::sRGB) {
+        if (dataFormat == GL_RGB) internalFormat = GL_SRGB;
+        else if (dataFormat == GL_RGBA) internalFormat = GL_SRGB_ALPHA;
+    }
+
+    glTexImage2D(
+        GL_TEXTURE_2D, 
+        0, 
+        internalFormat, 
+        width, 
+        height, 
+        0, 
+        dataFormat, 
+        GL_UNSIGNED_BYTE, 
+        image.getData()
+    );
+
+    if (schema.generateMipmaps) {
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
     this->unbind();
 
     if (GL_ARB_bindless_texture) {
@@ -73,6 +122,9 @@ Texture::Texture(Texture&& other) noexcept
 
 Texture& Texture::operator=(Texture&& other) noexcept {
     if (this != &other) {
+        if (bindlessHandle != NO_HANDLE) {
+            glMakeTextureHandleNonResidentARB(bindlessHandle);
+        }
         if (id != 0) {
             glDeleteTextures(1, &id);
         }
@@ -117,14 +169,3 @@ uint64_t Texture::getHandle() const {
 SamplerType Texture::getType() const {
     return type;
 }
-
-std::shared_ptr<Texture> Texture::create(const ImageData* img) {
-    uint width = img->getWidth();
-    uint height = img->getHeight();
-    void* data = img->getData();
-    std::shared_ptr<Texture> result = std::make_shared<Texture>(
-        width, height, img->getFormat(), static_cast<uint8_t*>(data) 
-    );
-    return result;
-}
-

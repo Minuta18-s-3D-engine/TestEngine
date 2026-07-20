@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "TextureSchema.hpp"
+#include "engine/graphics/TextureSchema.hpp"
 #include "engine/resource/ResourceImporter.hpp"
 #include "engine/graphics/Texture.hpp"
 #include "engine/debug/logging/Logging.hpp"

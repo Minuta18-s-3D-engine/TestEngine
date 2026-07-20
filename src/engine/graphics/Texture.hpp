@@ -2,8 +2,10 @@
 #define ENGINE_GRAPHICS_TEXTURE_H_
 
 #include "../utils/EngineTypes.h"
+#include "engine/utils/exc/GeneralExceptions.hpp"
 #include "engine/resource/utils/ImageData.hpp"
 #include "SamplerType.hpp"
+#include "TextureSchema.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -24,9 +26,8 @@ class Texture {
     GLenum getGLTarget() const;
 public:
     Texture(
-        uint width, uint height, 
-        ImageFormat format, 
-        const uint8_t* image_data,
+        const ImageData& image, 
+        const TextureSchema& schema,
         SamplerType _type = SamplerType::Texture2D
     );
     ~Texture();
@@ -45,8 +46,6 @@ public:
     uint getId();
     uint64_t getHandle() const;
     SamplerType getType() const;
-
-    static std::shared_ptr<Texture> create(const ImageData* img);
 };
 
 #endif // ENGINE_GRAPHICS_TEXTURE_H_

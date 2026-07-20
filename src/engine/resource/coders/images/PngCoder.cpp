@@ -138,12 +138,3 @@ std::shared_ptr<ImageData> PngCoder::load_image(
     png_destroy_read_struct(&pngPtr, &infoPtr, nullptr);
     return image;
 }
-
-std::shared_ptr<Texture> PngCoder::load_texture(
-    const uint8_t* bytes, size_t size, std::string name
-) {
-    std::shared_ptr<ImageData> image = PngCoder::load_image(bytes, size, name);
-    auto texture = Texture::create(image.get());
-    
-    return texture;
-}
