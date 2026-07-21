@@ -28,5 +28,6 @@ engineTests
 .vscode
 /build
 .cache
+.idea
 
 engine.log
