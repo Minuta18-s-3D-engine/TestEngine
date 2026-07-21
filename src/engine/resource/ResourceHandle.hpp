@@ -5,15 +5,15 @@
 
 using HandleID = uint32_t;
 
+constexpr uint32_t NULL_RESOURCE = 0;
+
 template <typename T>
 struct ResourceHandle final {
-    static const uint32_t NULL_RESOURCE = 0;
-
     uint32_t id = NULL_RESOURCE;
 
-    ResourceHandle(uint32_t _id) : id(_id) {}
+    explicit ResourceHandle(const uint32_t _id) : id(_id) {}
     
-    bool isValid() { return (id != NULL_RESOURCE); }
+    [[nodiscard]] bool isValid() const { return (id != NULL_RESOURCE); }
 
     bool operator==(const ResourceHandle& other) const {
         return (id == other.id);

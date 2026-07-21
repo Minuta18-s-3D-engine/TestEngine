@@ -33,7 +33,7 @@ class ResourceManager final {
 
     Logger logger;
 
-    HandleID nextID = ResourceHandle::NULL_RESOURCE + 1;
+    HandleID nextID = NULL_RESOURCE + 1;
 
     template <typename T>
     ResourceStorage<T>& getOrCreateStorage();
@@ -62,8 +62,8 @@ public:
 
 template <typename T>
 ResourceStorage<T>& ResourceManager::getOrCreateStorage() {
-    auto tid = std::type_index(typeid(T));
-    auto it = storages.find(tid);
+    const auto tid = std::type_index(typeid(T));
+    const auto it = storages.find(tid);
     if (it == storages.end()) {
         auto newStorage = std::make_unique<ResourceStorage<T>>();
         auto* storagePtr = newStorage.get();
@@ -75,14 +75,14 @@ ResourceStorage<T>& ResourceManager::getOrCreateStorage() {
 
 template <typename T>
 ResourceHandle<T> ResourceManager::load(const VirtualPath& path) {
-    std::string strID = path.resolve();
+    const std::string strID = path.resolve();
 
     if (fileID.contains(strID)) {
         return ResourceHandle<T>(fileID[strID]);
     }
 
-    auto tid = std::type_index(typeid(T));
-    auto it = importers.find(tid);
+    const auto tid = std::type_index(typeid(T));
+    const auto it = importers.find(tid);
     if (it == importers.end()) {
         logger.error(
             "No importer registered for type: " + std::string(typeid(T).name())
@@ -111,7 +111,7 @@ ResourceHandle<T> ResourceManager::load(const VirtualPath& path) {
 
 template <typename T>
 ResourceHandle<T> ResourceManager::getByPath(const VirtualPath& path) {
-    std::string strID = path.resolve();
+    const std::string strID = path.resolve();
     if (!fileID.contains(strID)) {
         throw exc::invalid_argument("No such resource: " + strID);
     }
@@ -144,7 +144,7 @@ template <typename T>
 void ResourceManager::registerImporter(
     std::unique_ptr<ResourceImporter<T>> importer
 ) {
-    auto tid = std::type_index(typeid(T));
+    const auto tid = std::type_index(typeid(T));
     importers[tid] = std::move(importer);
 }
 
