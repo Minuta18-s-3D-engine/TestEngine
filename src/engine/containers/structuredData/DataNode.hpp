@@ -69,18 +69,18 @@ class DataNode {
         Object value_object;
     };
 public:
-    DataNode() : type(Type::Null) {}
-    DataNode(bool value) : value_boolean(value), type(Type::Boolean) {}
-    DataNode(int64_t value) : value_integer(value), type(Type::Integer) {}
-    DataNode(double value) : value_number(value), type(Type::Number) {}
+    DataNode() : type(Type::Null), value_boolean(false) {}
+    explicit DataNode(bool value) : type(Type::Boolean), value_boolean(value) {}
+    explicit DataNode(int64_t value) : type(Type::Integer), value_integer(value) {}
+    explicit DataNode(double value) : type(Type::Number), value_number(value) {}
 
-    DataNode(const std::string& value);
-    DataNode(std::string&& value) noexcept;
-    DataNode(const char* value);
-    DataNode(const Array& value);
-    DataNode(Array&& value) noexcept;
-    DataNode(const Object& value);
-    DataNode(Object&& value) noexcept;
+    explicit DataNode(const std::string& value);
+    explicit DataNode(std::string&& value) noexcept;
+    explicit DataNode(const char* value);
+    explicit DataNode(const Array& value);
+    explicit DataNode(Array&& value) noexcept;
+    explicit DataNode(const Object& value);
+    explicit DataNode(Object&& value) noexcept;
     
     ~DataNode() noexcept;
     DataNode(const DataNode& other);
@@ -88,28 +88,28 @@ public:
     DataNode& operator=(const DataNode& other);
     DataNode& operator=(DataNode&& other) noexcept;
 
-    Type getType()   const noexcept { return type; } 
-    bool isNull()    const noexcept { return type == Type::Null; }
-    bool isBoolean() const noexcept { return type == Type::Boolean; }
-    bool isInteger() const noexcept { return type == Type::Integer; }
-    bool isNumber()  const noexcept { return type == Type::Integer || type == Type::Number; }
-    bool isString()  const noexcept { return type == Type::String; }
-    bool isArray()   const noexcept { return type == Type::Array; }
-    bool isObject()  const noexcept { return type == Type::Object; }
+    [[nodiscard]] Type getType()   const noexcept { return type; }
+    [[nodiscard]] bool isNull()    const noexcept { return type == Type::Null; }
+    [[nodiscard]] bool isBoolean() const noexcept { return type == Type::Boolean; }
+    [[nodiscard]] bool isInteger() const noexcept { return type == Type::Integer; }
+    [[nodiscard]] bool isNumber()  const noexcept { return type == Type::Integer || type == Type::Number; }
+    [[nodiscard]] bool isString()  const noexcept { return type == Type::String; }
+    [[nodiscard]] bool isArray()   const noexcept { return type == Type::Array; }
+    [[nodiscard]] bool isObject()  const noexcept { return type == Type::Object; }
 
-    bool asBoolean() const;
-    int64_t asInteger() const;
-    double asNumber() const;
-    const std::string& asString() const;
-    const Array& asArray() const;
-    const Object& asObject() const;
+    [[nodiscard]] bool asBoolean() const;
+    [[nodiscard]] int64_t asInteger() const;
+    [[nodiscard]] double asNumber() const;
+    [[nodiscard]] const std::string& asString() const;
+    [[nodiscard]] const Array& asArray() const;
+    [[nodiscard]] const Object& asObject() const;
 
-    bool asBoolean(bool default) const;
-    int64_t asInteger(int64_t default) const;
-    double asNumber(double default) const;
-    const std::string& asString(const std::string& default) const;
-    const Array& asArray(const Array& default) const;
-    const Object& asObject(const Object& default) const;
+    [[nodiscard]] bool asBoolean(bool defaultValue) const;
+    [[nodiscard]] int64_t asInteger(int64_t defaultValue) const;
+    [[nodiscard]] double asNumber(double defaultValue) const;
+    [[nodiscard]] const std::string& asString(const std::string& defaultValue) const;
+    [[nodiscard]] const Array& asArray(const Array& defaultValue) const;
+    [[nodiscard]] const Object& asObject(const Object& defaultValue) const;
 
     Array& asArray();
     Object& asObject();
