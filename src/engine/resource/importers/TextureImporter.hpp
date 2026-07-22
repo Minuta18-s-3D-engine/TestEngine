@@ -21,7 +21,7 @@ class TextureImporter : public ResourceImporter<Texture> {
 
     Texture loadTexture(const VirtualPath& path, ResourceManager& manager);
 public:
-    TextureImporter(Serializer* _serializer);
+    explicit TextureImporter(Serializer* _serializer);
 
     Texture import(const VirtualPath& path, ResourceManager& manager) override;
 };

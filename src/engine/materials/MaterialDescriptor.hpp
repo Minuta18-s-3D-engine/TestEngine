@@ -3,15 +3,17 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "MaterialGraphicsConfig.hpp"
 #include "MaterialLayout.hpp"
-#include "../graphics/SamplerDefinition.hpp"
-#include "../graphics/Texture.hpp"
+#include "engine/graphics/SamplerDefinition.hpp"
+#include "engine/graphics/Texture.hpp"
+#include "engine/resource/ResourceManager.hpp"
 
 struct MaterialDescriptor {
     using SamplerMap = std::unordered_map<
-        std::string, std::shared_ptr<Texture>>;
+        std::string, ResourceHandle<Texture>>;
     using SamplerIndexesMap = std::unordered_map<std::string, size_t>;
 
     std::string name;

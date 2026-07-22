@@ -3,54 +3,56 @@
 namespace {
 
 void createRect(
-    glm::vec3 pos, glm::vec3 scale, glm::vec2 textureScale, 
-    std::string baseMaterialKey,
-    std::string diffuseTexKey,
-    std::string specularTexKey,
-    AssetManager& manager,
+    const glm::vec3 pos,
+    const glm::vec3 scale,
+    const glm::vec2 textureScale,
+    ResourceHandle<Material> baseMaterialHandle,
+    ResourceHandle<Texture> diffuseTexHandle,
+    ResourceHandle<Texture> specularTexHandle,
+    ResourceManager& resManager,
     GameObjectManager& objectManager,
     MaterialDataBuffer& buffer
 ) {
-    const Material& baseMaterial = manager.require<Material>(baseMaterialKey);
+    const Material& baseMaterial = resManager.require<Material>(baseMaterialHandle);
     auto matInstance = std::make_shared<MaterialInstance>(
         baseMaterial.getName() + "Instance",
         baseMaterial,
         buffer
     );
 
-    matInstance->setSampler(
-        "diffuseMap", manager.getShared<Texture>(diffuseTexKey));
-    matInstance->setSampler(
-        "specularMap", manager.getShared<Texture>(specularTexKey));
+    matInstance->setSampler("diffuseMap", diffuseTexHandle);
+    matInstance->setSampler("specularMap", specularTexHandle);
 
-    std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(
-        scale, textureScale, matInstance
-    );
+    const std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(scale, textureScale, matInstance);
+    std::vector<std::shared_ptr<Mesh>> cubeMeshArray{cubeMesh};
 
-    std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
-    cubeMeshArray.push_back(cubeMesh);
-    std::unique_ptr<Model> cubeModel = std::make_unique<Model>(cubeMeshArray);
-    cubeModel->material = manager.getShared<Material>("materials/standardMaterial");
-    
-    uuids::uuid modelId = uuids::uuid_system_generator{}();
-    std::string modelName = uuids::to_string(modelId);
+    auto cubeModel = std::make_unique<Model>(cubeMeshArray);
+    cubeModel->material = baseMaterialHandle;
+
+    const uuids::uuid modelId = uuids::uuid_system_generator{}();
+    VirtualPath modelPath("memory://models/" + uuids::to_string(modelId));
+    ResourceHandle<Model> modelHandle =
+        resManager.addManually<Model>(*cubeModel);
 
     std::unique_ptr<GameObject> cubeObject = GameObject::createGameObject();
-    auto transformComponent = cubeObject->getComponent<Transform>();
+    const auto transformComponent = cubeObject->getComponent<Transform>();
     transformComponent->position = pos;
     transformComponent->scale = scale;
-    auto behaviorComponent = cubeObject->getComponent<Behavior>();
+
+    const auto behaviorComponent = cubeObject->getComponent<Behavior>();
     behaviorComponent->type = BehaviorType::STATIC;
-    auto modelComponent = std::make_unique<ModelComponent>();
-    modelComponent->managerId = modelName;
+
+    const ModelComponent modelComponent(modelHandle);
     cubeObject->addComponent<ModelComponent>(modelComponent);
 
     objectManager.addObject(cubeObject);
-    manager.set<Model>(std::move(cubeModel), modelName);
 }
 
 void createPointLight(
-    glm::vec3 pos, glm::vec3 color, float linear, float quadratic,
+    const glm::vec3 pos,
+    const glm::vec3 color,
+    const float linear,
+    const float quadratic,
     GameObjectManager& objectManager
 ) {
     std::unique_ptr<GameObject> lightObject = GameObject::createGameObject();
@@ -58,6 +60,7 @@ void createPointLight(
     transformComponent->position = pos;
     auto behaviorComponent = lightObject->getComponent<Behavior>();
     behaviorComponent->type = BehaviorType::STATIC;
+
     auto pointLightComponent = std::make_unique<PointLight>();
     pointLightComponent->color = color;
     pointLightComponent->linear = linear;
@@ -67,42 +70,21 @@ void createPointLight(
     objectManager.addObject(lightObject);
 }
 
-void loadTexture(
-    const VirtualPath& path, std::string key, AssetManager& manager
-) {
-    size_t len = 0;
-    auto texture_content = read_bytes(path.resolve(), len);
-    std::shared_ptr<Texture> texture = nullptr;
-    ImageType imgFormat = getImageType(texture_content.get(), len);
-    
-    if (imgFormat == ImageType::PNG) {
-        texture = PngCoder::load_texture(texture_content.get(), len, key);
-    } else if (imgFormat == ImageType::JPG) {
-        texture = JpgCoder::load_texture(texture_content.get(), len, key);
-    } else {
-        throw std::runtime_error("Unsupported image type for texture: " + key);
-    }
-
-    manager.set<Texture>(texture, key);
-}
-
 enum class ShaderPreprocessingType {
     VERTEX,
     FRAGMENT,
-    COMPUTATIONAL,
-    OTHER
+    COMPUTATIONAL
 };
 
 std::string processShaderSource(
-    const VirtualPath& path, const Material& baseMaterial, 
+    const VirtualPath& path, const Material& baseMaterial,
     ShaderPreprocessingType type, Project& proj
 ) {
     Preprocessor preprocessor(proj.getFilesystem());
-
     std::string source;
+
     try {
         auto result = preprocessor.preprocess(path);
-
         source = result.first;
         if (!result.second.isEmpty()) {
             result.second.dumpToLogs();
@@ -112,46 +94,36 @@ std::string processShaderSource(
     }
 
     std::string callingFunc = "userFunc";
-    if (type == ShaderPreprocessingType::VERTEX)
-        callingFunc = "vertex";
-    else if (type == ShaderPreprocessingType::FRAGMENT)
-        callingFunc = "fragment";
-    else if (type == ShaderPreprocessingType::COMPUTATIONAL)
-        callingFunc = "comp";
+    if (type == ShaderPreprocessingType::VERTEX) callingFunc = "vertex";
+    else if (type == ShaderPreprocessingType::FRAGMENT) callingFunc = "fragment";
+    else if (type == ShaderPreprocessingType::COMPUTATIONAL) callingFunc = "comp";
 
     ShaderCodeGenerator generator;
-    std::string generatedSource = generator.generateShader(
-        baseMaterial, source, callingFunc
-    );
-
-    return generatedSource;
-} 
+    return generator.generateShader(baseMaterial, source, callingFunc);
+}
 
 Shader compileShader(
     const VirtualPath& vertex, const VirtualPath& frag,
     const Material& baseMaterial, Project& proj
 ) {
-    std::string vertexSource = processShaderSource(
+    const std::string vertexSource = processShaderSource(
         vertex, baseMaterial, ShaderPreprocessingType::VERTEX, proj
     );
-
-    std::string fragmentSource = processShaderSource(
+    const std::string fragmentSource = processShaderSource(
         frag, baseMaterial, ShaderPreprocessingType::FRAGMENT, proj
     );
 
-    return Shader(vertexSource, fragmentSource);
+    return { vertexSource, fragmentSource };
 }
 
 ComputeShader compileComputeShader(
-    const VirtualPath& sourcePath, 
-    Project& proj
+    const VirtualPath& sourcePath, Project& proj
 ) {
     Preprocessor preprocessor(proj.getFilesystem());
-
     std::string source;
+
     try {
         auto result = preprocessor.preprocess(sourcePath);
-
         source = result.first;
         if (!result.second.isEmpty()) {
             result.second.dumpToLogs();
@@ -161,14 +133,10 @@ ComputeShader compileComputeShader(
     }
 
     ShaderCodeGenerator generator;
-    std::string generatedSource = generator.generateCompShader(
-        source, "compute"
-    );
-
-    return ComputeShader(generatedSource);
+    return { generator.generateCompShader(source, "compute") };
 }
 
-}
+} // namespace
 
 Application::Application(const CommandLineArgs& _args)
   : args(_args),
@@ -190,22 +158,28 @@ Application::~Application() {
 
 void Application::initEngineSystems() {
     applicationLogger.info("Beginning system initialization...");
-    
+
     eventManager = std::make_unique<EventManager>();
     window = std::make_unique<Window>(*eventManager);
     globalMaterialBuffer = std::make_unique<MaterialDataBuffer>();
 }
 
 void Application::loadProject(const std::string& projectPath) {
-    applicationLogger.info(
-        "Loading project from {}...", projectPath
-    );
+    applicationLogger.info("Loading project from {}...", projectPath);
 
     std::filesystem::path projectFolder(args.get(cmdProjectKey));
     ProjectLoader projectLoader;
     project = projectLoader.loadProject(projectFolder, "./core");
 
-    std::string mainSceneName = "MainScene";
+    resourceManager = std::make_unique<ResourceManager>();
+
+    std::unique_ptr<JsonSerializer> serializer = std::make_unique<JsonSerializer>();
+    auto textureImporter = std::make_unique<TextureImporter>(
+        serializer.get()
+    );
+    resourceManager->registerImporter<Texture>(std::move(textureImporter));
+
+    const std::string mainSceneName = "MainScene";
     project->createEmptyScene(mainSceneName);
     project->setActiveScene(mainSceneName);
 }
@@ -217,195 +191,168 @@ void Application::setupPlayerCamera() {
 }
 
 void Application::loadTextures() {
-    AssetManager& assetManager = project->getAssetManager();
     VirtualPath path = "fs://assets/textures";
 
-    for (const auto & entry : fs::directory_iterator(path.resolve())) {
+    for (const auto& entry : fs::directory_iterator(project->resolve(path.resolve()))) {
         fs::path p = entry.path();
-        std::string stem = p.stem().string();
-        std::string ending = "Specular";
+        if (p.extension() == ".meta") continue;
 
-        loadTexture(
-            "fs://assets/textures/" + p.filename().string(), 
-            "textures/" + stem, 
-            assetManager
-        );
+        VirtualPath texturePath("fs://assets/textures/" + p.filename().string());
+        resourceManager->load<Texture>(texturePath);
     }
 
-    loadTexture(
-        "core://assets/textures/missing.png",
-        "textures/missing",
-        assetManager 
-    );
+    resourceManager->load<Texture>(VirtualPath("core://assets/textures/missing.png"));
 }
 
 void Application::compileShadersAndMaterials() {
-    AssetManager& assetManager = project->getAssetManager();
-
-    MaterialGraphicsConfig standardMaterialConfig;
-
-    std::shared_ptr<Material> standardMaterial = std::make_shared<Material>(
-        MaterialBuilder(
-            "StandardMaterial", standardMaterialConfig, assetManager
-        )
+    auto standardMaterial = MaterialBuilder("StandardMaterial", MaterialGraphicsConfig(), *resourceManager)
         .addSampler("diffuseMap")
         .addSampler("specularMap")
-        .finalize(*globalMaterialBuffer));
-    assetManager.set<Material>(standardMaterial, "materials/standardMaterial");
+        .finalize(*globalMaterialBuffer);
+    ResourceHandle<Material> stdMatHandle = resourceManager->addManually<Material>(
+        "core://materials/standardMaterial", std::move(standardMaterial)
+    );
 
-    std::shared_ptr<Material> prototypeGrid = std::make_shared<Material>(
-        MaterialBuilder(
-            "PrototypeGrid", MaterialGraphicsConfig(), assetManager
-        )
+    auto prototypeGrid = MaterialBuilder("PrototypeGrid", MaterialGraphicsConfig(), *resourceManager)
         .addProperty<glm::vec3>("baseColor", glm::vec3(0.8, 0.8, 0.8))
         .addProperty<float>("tilingScale", 1.0f)
-        .finalize(*globalMaterialBuffer)
+        .finalize(*globalMaterialBuffer);
+    ResourceHandle<Material> protoGridMatHandle = resourceManager->addManually<Material>(
+        "fs://materials/prototypeGrid", std::move(prototypeGrid)
     );
-    assetManager.set<Material>(prototypeGrid, "materials/prototypeGrid");
 
-    auto& prototypeGridMaterial = assetManager.require<Material>(
-        "materials/prototypeGrid"
-    );
     Shader prototypeShader = compileShader(
-        "fs://assets/shaders/julia/julia.vert.glsl",
-        "fs://assets/shaders/julia/julia.frag.glsl",
-        prototypeGridMaterial,
+        VirtualPath("fs://assets/shaders/julia/julia.vert.glsl"),
+        VirtualPath("fs://assets/shaders/julia/julia.frag.glsl"),
+        resourceManager->require(protoGridMatHandle),
         *project
     );
-    std::shared_ptr<Shader> prototypeShaderPtr = std::make_shared<Shader>(
+    ResourceHandle<Shader> protoShaderHandle = resourceManager->addManually<Shader>(
+        "fs://assets/shaders/julia/julia.vert.glsl",
         std::move(prototypeShader)
     );
-    assetManager.set<Shader>(
-        prototypeShaderPtr, "shaders/prototypeGridShader"
-    );
-
-    prototypeGridMaterial.bindShader(
-        assetManager.getShared<Shader>("shaders/prototypeGridShader")
-    );
+    resourceManager->get(protoGridMatHandle).bindShader(protoShaderHandle);
 
     Shader geomShader = compileShader(
-        "core://assets/shaders/geom.vert.glsl",
-        "core://assets/shaders/geom.frag.glsl",
-        assetManager.require<Material>("materials/standardMaterial"),
+        VirtualPath("core://assets/shaders/geom.vert.glsl"),
+        VirtualPath("core://assets/shaders/geom.frag.glsl"),
+        resourceManager->require(stdMatHandle),
         *project
     );
-    
+
     Shader lightingShader = compileShader(
-        "core://assets/shaders/light.vert.glsl",
-        "core://assets/shaders/light.frag.glsl",
-        assetManager.require<Material>("materials/standardMaterial"),
+        VirtualPath("core://assets/shaders/light.vert.glsl"),
+        VirtualPath("core://assets/shaders/light.frag.glsl"),
+        resourceManager->require(stdMatHandle),
         *project
     );
-    std::shared_ptr<Shader> geomShaderPtr = std::make_shared<Shader>(
-        std::move(geomShader));
 
-    assetManager.require<Material>("materials/standardMaterial")
-        .bindShader(geomShaderPtr);
-
-    assetManager.set<Shader>(geomShaderPtr, "shaders/geomShader");
-    assetManager.set<Shader>(std::make_shared<Shader>(
-        std::move(lightingShader)), "shaders/lightingShader"
+    ResourceHandle<Shader> geomShaderHandle = resourceManager->addManually<Shader>(
+        "core://assets/shaders/geom.vert.glsl",
+        std::move(geomShader)
+    );
+    resourceManager->get(stdMatHandle).bindShader(geomShaderHandle);
+    resourceManager->addManually<Shader>(
+        "core://assets/shaders/light.vert.glsl",
+        std::move(lightingShader)
     );
 
     ComputeShader buildClustersShader = compileComputeShader(
-        "core://assets/shaders/buildClusters.comp.glsl", 
-        *project
-    ); 
+        "core://assets/shaders/buildClusters.comp.glsl", *project
+    );
     ComputeShader lightCullingShader = compileComputeShader(
-        "core://assets/shaders/lightCulling.comp.glsl",
-        *project
+        "core://assets/shaders/lightCulling.comp.glsl", *project
     );
 
-    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(
-        std::move(buildClustersShader)), "shaders/buildClusters");
-    assetManager.set<ComputeShader>(std::make_shared<ComputeShader>(
-        std::move(lightCullingShader)), "shaders/lightCulling");
+    resourceManager->addManually<ComputeShader>(
+        "core://assets/shaders/buildClusters.comp.glsl",
+        std::move(buildClustersShader)
+    );
+    resourceManager->addManually<ComputeShader>(
+        "core://assets/shaders/lightCulling.comp.glsl",
+        std::move(lightCullingShader)
+    );
 }
 
 void Application::spawnSceneObjects() {
-    AssetManager& assetManager = project->getAssetManager();
-    GameObjectManager& objectManager = project->getActiveScene()
-        .getGameObjectManager();
+    GameObjectManager& objectManager = project->getActiveScene().getGameObjectManager();
 
-    auto prototypeGrid = assetManager.getShared<Material>(
-        "materials/prototypeGrid"
+    ResourceHandle<Material> protoGridMatHandle = resourceManager->getByPath<Material>(
+        "fs://materials/prototypeGrid"
     );
-
-    auto matInstance = std::make_shared<MaterialInstance>(
-        prototypeGrid->getName() + "Instance",
-        assetManager.require<Material>("materials/prototypeGrid"),
-        *globalMaterialBuffer
+    ResourceHandle<Material> stdMatHandle = resourceManager->getByPath<Material>(
+        "core://materials/standardMaterial"
     );
-    matInstance->setProperty("baseColor", glm::vec3(0.4, 0.8, 0.4));
 
     {
+        auto matInstance = std::make_shared<MaterialInstance>(
+            "PrototypeGridInstance",
+            resourceManager->require(protoGridMatHandle),
+            *globalMaterialBuffer
+        );
+        matInstance->setProperty("baseColor", glm::vec3(0.4, 0.8, 0.4));
+
         const glm::vec3 scale(2.0f, 2.0f, 2.0f);
         const glm::vec2 textureScale(1.0f, 1.0f);
         const glm::vec3 pos(10.0f, 3.0f, 2.0f);
 
-        std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(
-            scale, textureScale, matInstance
+        std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(scale, textureScale, matInstance);
+        Model cubeModel(
+            std::vector<std::shared_ptr<Mesh>>{cubeMesh}
+        );
+        cubeModel->material = protoGridMatHandle;
+
+        ResourceHandle<Model> checkerCubeHandle = resourceManager->addManually<Model>(
+            "memory://models/checkerCube",
+            std::move(cubeModel)
         );
 
-        std::vector<std::shared_ptr<Mesh>> cubeMeshArray;
-        cubeMeshArray.push_back(cubeMesh);
-        std::unique_ptr<Model> cubeModel = std::make_unique<Model>(
-            cubeMeshArray
-        );
-        cubeModel->material = prototypeGrid;
-        
-        std::string modelName = "checkerCube";
+        std::unique_ptr<GameObject> cubeObject = GameObject::createGameObject();
+        cubeObject->getComponent<Transform>()->position = pos;
+        cubeObject->getComponent<Transform>()->scale = scale;
+        cubeObject->getComponent<Behavior>()->type = BehaviorType::STATIC;
 
-        std::unique_ptr<GameObject> cubeObject = 
-            GameObject::createGameObject();
-        auto transformComponent = cubeObject->getComponent<Transform>();
-        transformComponent->position = pos;
-        transformComponent->scale = scale;
-        auto behaviorComponent = cubeObject->getComponent<Behavior>();
-        behaviorComponent->type = BehaviorType::STATIC;
-        auto modelComponent = std::make_unique<ModelComponent>();
-        modelComponent->managerId = modelName;
+        auto modelComponent = std::make_unique<ModelComponent>(checkerCubeHandle);
         cubeObject->addComponent<ModelComponent>(modelComponent);
 
         objectManager.addObject(cubeObject);
-        assetManager.set<Model>(std::move(cubeModel), modelName);
     }
 
     createRect(
-        glm::vec3(2.0, 2.0, 5.0), glm::vec3(1.0, 1.0, 1.0), 
-        glm::vec2(1.0, 1.0), "materials/standardMaterial", 
-        "textures/container", "textures/containerSpecular",
-        assetManager, objectManager, *globalMaterialBuffer
+        glm::vec3(2.0, 2.0, 5.0), glm::vec3(1.0, 1.0, 1.0), glm::vec2(1.0, 1.0),
+        stdMatHandle,
+        resourceManager->getByPath<Texture>(VirtualPath("fs://assets/textures/container.png")),
+        resourceManager->getByPath<Texture>(VirtualPath("fs://assets/textures/containerSpecular.png")),
+        *resourceManager, objectManager, *globalMaterialBuffer
     );
 
-    ModelLoader modelLoader;
-
+    // Sponza
     {
-        auto baseMaterial = assetManager.getShared<Material>(
-            "materials/standardMaterial");
+        ModelLoader modelLoader;
         auto sponzaModel = modelLoader.loadModel(
-            "fs://assets/models/sponza_low_res.glb", baseMaterial, assetManager
+            "fs://assets/models/sponza_low_res.glb",
+            stdMatHandle, *resourceManager
         );
-        auto modelName = "sponza_model";
 
-        std::unique_ptr<GameObject> sponzaObject =
-            GameObject::createGameObject();
-        auto transformComponent = sponzaObject->getComponent<Transform>();
-        transformComponent->position = glm::vec3(0.0f, 1.0f, 0.0f);
-        transformComponent->scale = glm::vec3(1.0f, 1.0f, 1.0f);
-        auto behaviorComponent = sponzaObject->getComponent<Behavior>();
-        behaviorComponent->type = BehaviorType::STATIC;
-        auto modelComponent = std::make_unique<ModelComponent>();
-        modelComponent->managerId = modelName;
+        ResourceHandle<Model> sponzaHandle = resourceManager->addManually<Model>(
+            VirtualPath("fs://assets/models/sponza_low_res.glb"),
+            std::move(sponzaModel)
+        );
+
+        std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();
+        sponzaObject->getComponent<Transform>()->position = glm::vec3(0.0f, 1.0f, 0.0f);
+        sponzaObject->getComponent<Transform>()->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        sponzaObject->getComponent<Behavior>()->type = BehaviorType::STATIC;
+
+        auto modelComponent = std::make_unique<ModelComponent>(sponzaHandle);
         sponzaObject->addComponent<ModelComponent>(modelComponent);
 
         objectManager.addObject(sponzaObject);
-        assetManager.set<Model>(std::move(sponzaModel), modelName);
     }
 }
 
 void Application::loadLights() {
-    std::ifstream lightsFile(VirtualPath("fs://lights.txt").resolve());
+    std::ifstream lightsFile(project->resolve("fs://lights.txt"));
     std::string line;
     while (getline(lightsFile, line)) {
         std::stringstream parseLine(line);
@@ -423,7 +370,7 @@ void Application::loadLights() {
 }
 
 void Application::createTestScene() {
-    applicationLogger.info("Createing test scene...");
+    applicationLogger.info("Creating test scene...");
 
     setupPlayerCamera();
     loadTextures();
@@ -432,24 +379,23 @@ void Application::createTestScene() {
     loadLights();
 
     renderingSystem = std::make_unique<RenderingSystem>(
-        project->getAssetManager(),
+        *resourceManager,
         project->getActiveScene().getGameObjectManager(),
         *eventManager,
         *window,
         *globalMaterialBuffer
     );
-    renderingSystem->bindCamera(player->getCamera().get()); 
+    renderingSystem->bindCamera(player->getCamera().get());
 }
 
 void Application::processGameInput(float delta) {
     const float MOUSE_SENSITIVITY = 0.1f;
-
     InputController& input = window->getInputController();
 
     if (input.isKeyJustPressed(GLFW_KEY_ESCAPE)) {
         window->setCursorInputMode(
             window->getCursorInputMode() == GLFW_CURSOR_NORMAL ?
-            GLFW_CURSOR_DISABLED : 
+            GLFW_CURSOR_DISABLED :
             GLFW_CURSOR_NORMAL
         );
         isInGame = !isInGame;
@@ -462,52 +408,34 @@ void Application::processGameInput(float delta) {
         );
     }
 
-    glm::vec3 frontVec = glm::normalize(player->getCamera()->front); 
+    glm::vec3 frontVec = glm::normalize(player->getCamera()->front);
     glm::vec3 rightVec = glm::normalize(player->getCamera()->right);
     glm::vec3 newPos = player->getPos();
-    if (input.isKeyPressed(GLFW_KEY_W)) 
-        newPos += (frontVec * delta * player->getSpeed());
-    if (input.isKeyPressed(GLFW_KEY_S))
-        newPos -= (frontVec * delta * player->getSpeed());
-    if (input.isKeyPressed(GLFW_KEY_A))
-        newPos -= (rightVec * delta * player->getSpeed());
-    if (input.isKeyPressed(GLFW_KEY_D))
-        newPos += (rightVec * delta * player->getSpeed());
-    if (input.isKeyPressed(GLFW_KEY_SPACE))
-        newPos.y += delta * player->getSpeed();
-    if (input.isKeyPressed(GLFW_KEY_LEFT_SHIFT))
-        newPos.y -= delta * player->getSpeed();
-    if (input.isKeyJustPressed(GLFW_KEY_P)) {
-        std::cout << "Player position: ";
-        std::cout << player->getCamera()->pos.x << " " 
-                    << player->getCamera()->pos.y << " " 
-                    << player->getCamera()->pos.z << std::endl;
-        std::cout << "Player camera angle: ";
-        std::cout << player->getCamera()->getYaw() << " "
-                    << player->getCamera()->getPitch() << std::endl;
-    }
+    if (input.isKeyPressed(GLFW_KEY_W)) newPos += (frontVec * delta * player->getSpeed());
+    if (input.isKeyPressed(GLFW_KEY_S)) newPos -= (frontVec * delta * player->getSpeed());
+    if (input.isKeyPressed(GLFW_KEY_A)) newPos -= (rightVec * delta * player->getSpeed());
+    if (input.isKeyPressed(GLFW_KEY_D)) newPos += (rightVec * delta * player->getSpeed());
+    if (input.isKeyPressed(GLFW_KEY_SPACE)) newPos.y += delta * player->getSpeed();
+    if (input.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) newPos.y -= delta * player->getSpeed();
 
     player->setPos(newPos);
     player->update(delta);
 
-    if (input.isKeyPressed(GLFW_KEY_F1)) 
-        renderingSystem->setDrawMode(0);
-    if (input.isKeyPressed(GLFW_KEY_F2)) 
-        renderingSystem->setDrawMode(1);
-    if (input.isKeyPressed(GLFW_KEY_F3)) 
-        renderingSystem->setDrawMode(2);
+    if (input.isKeyPressed(GLFW_KEY_F1)) renderingSystem->setDrawMode(0);
+    if (input.isKeyPressed(GLFW_KEY_F2)) renderingSystem->setDrawMode(1);
+    if (input.isKeyPressed(GLFW_KEY_F3)) renderingSystem->setDrawMode(2);
 }
 
 void Application::run() {
     renderingSystem->updateCache();
-    
-    float lastFrame = glfwGetTime();
+
+    auto lastFrame = static_cast<float>(glfwGetTime());
     float lastFPSDisplay = lastFrame;
     int framesCount = 0;
 
     while (!window->isShouldClose()) {
-        float currentFrame = glfwGetTime();
-        float delta = currentFrame - lastFrame;
+        const auto currentFrame = static_cast<float>(glfwGetTime());
+        const float delta = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         window->getInputController().updateEvents();
@@ -518,7 +446,7 @@ void Application::run() {
         framesCount++;
         if (currentFrame - lastFPSDisplay >= 1.0f) {
             window->setCaption(
-                project->getName() + " (fps = " + 
+                project->getName() + " (fps = " +
                 std::to_string(framesCount) + ")"
             );
             framesCount = 0;

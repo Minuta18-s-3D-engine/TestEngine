@@ -1,7 +1,8 @@
 #include "Project.hpp"
 
 Project::Project(
-    std::string name, std::string projectVersion, std::string engineVersion,
+    const std::string& name, const std::string& projectVersion,
+    const std::string& engineVersion,
     const std::filesystem::path& rootPath,
     const std::filesystem::path& coreRootPath
 ) : name(name), projectVersion(projectVersion), engineVersion(engineVersion) {
@@ -10,7 +11,6 @@ Project::Project(
     pathResolver->addPrefix("core://", coreRootPath);
 
     filesystem = std::make_unique<VirtualFilesystem>(std::move(pathResolver));
-    assetManager = std::make_unique<AssetManager>();
 
     if (!checkEngineVersion()) {
         std::cerr 
@@ -19,7 +19,7 @@ Project::Project(
     }
 }
 
-bool Project::checkEngineVersion() {
+bool Project::checkEngineVersion() const {
     return engineVersion == PROJECT_VERSION;
 }
 
@@ -39,7 +39,7 @@ void Project::setActiveScene(const std::string& sceneName) {
     activeScene = sceneName;
 }
 
-bool Project::hasActiveScene() {
+bool Project::hasActiveScene() const {
     return isHasActiveScene;
 }
 
@@ -67,12 +67,11 @@ Scene& Project::getScene(const std::string& sceneName) {
     return *(scenes[sceneName]);
 }
 
-bool Project::hasScene(const std::string& sceneName) {
+bool Project::hasScene(const std::string& sceneName) const {
     return (scenes.contains(sceneName));
 }
 
-AssetManager& Project::getAssetManager() { return *assetManager; };
-FilesystemAbstraction& Project::getFilesystem() { return *filesystem; }
+FilesystemAbstraction& Project::getFilesystem() const { return *filesystem; }
 
 const std::string& Project::getName() const { return name; }
 const std::string& Project::getProjectVersion() const { return projectVersion; }

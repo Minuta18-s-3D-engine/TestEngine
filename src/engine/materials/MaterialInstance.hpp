@@ -7,7 +7,8 @@
 #include "Material.hpp"
 #include "MaterialDataBuffer.hpp"
 #include "MaterialDescriptor.hpp"
-#include "../graphics/Texture.hpp"
+#include "engine/graphics/Texture.hpp"
+#include "engine/resource/ResourceManager.hpp"
 
 class MaterialInstance {
     std::string name;
@@ -15,6 +16,7 @@ class MaterialInstance {
     const Material* baseMaterial;
     const MaterialDescriptor* descriptor;
     MaterialDataBuffer* buffer;
+    ResourceManager* resourceManager;
 
     PropertyDataStorage properties;
 
@@ -24,30 +26,31 @@ class MaterialInstance {
     void throwIfNoProperty(const std::string& propertyName) const;
 public:
     MaterialInstance(
-        const std::string& _name, 
+        std::string _name,
         const Material& _material, 
-        MaterialDataBuffer& _buffer
+        MaterialDataBuffer& _buffer,
+        ResourceManager& _resourceManager
     );
 
     ~MaterialInstance() = default;
     
-    MaterialInstance(const MaterialInstance& other);
-    MaterialInstance& operator=(const MaterialInstance& other);
+    MaterialInstance(const MaterialInstance& other) = default;
+    MaterialInstance& operator=(const MaterialInstance& other) = default;
 
     MaterialInstance(MaterialInstance&& other) noexcept;
     MaterialInstance& operator=(MaterialInstance&& other) noexcept;
 
-    bool hasProperty(const std::string& name) const;
+    bool hasProperty(const std::string& propertyName) const;
 
     template <typename T>
-    void setProperty(const std::string& name, const T& value);
+    void setProperty(const std::string& propertyName, const T& value);
 
     template <typename T>
-    const T getProperty(const std::string& name) const;
+    T getProperty(const std::string& propertyName) const;
 
-    bool hasSampler(const std::string& name) const;
-    void setSampler(const std::string& name, std::shared_ptr<Texture> texture);
-    std::shared_ptr<Texture> getSampler(const std::string& name) const;
+    bool hasSampler(const std::string& samplerName) const;
+    void setSampler(const std::string& samplerName, ResourceHandle<Texture> texture);
+    ResourceHandle<Texture> getSampler(const std::string& samplerName) const;
 
     void bindSamplers(uint32_t startSlot = 0) const;
     void unbindSamplers() const;
@@ -57,15 +60,15 @@ public:
 };
 
 template <typename T>
-void MaterialInstance::setProperty(const std::string& name, const T& value) {
-    throwIfNoProperty(name);
-    properties.setProperty<T>(name, value);
+void MaterialInstance::setProperty(const std::string& propertyName, const T& value) {
+    throwIfNoProperty(propertyName);
+    properties.setProperty<T>(propertyName, value);
 }
 
 template <typename T>
-const T MaterialInstance::getProperty(const std::string& name) const {
-    throwIfNoProperty(name);
-    return properties.getProperty<T>(name);
+T MaterialInstance::getProperty(const std::string& propertyName) const {
+    throwIfNoProperty(propertyName);
+    return properties.getProperty<T>(propertyName);
 }
 
 #endif // ENGINE_MATERIALS_MATERIALINSTANCE_H_

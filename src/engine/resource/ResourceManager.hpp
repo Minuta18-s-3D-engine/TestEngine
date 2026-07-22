@@ -37,6 +37,9 @@ class ResourceManager final {
 
     template <typename T>
     ResourceStorage<T>& getOrCreateStorage();
+
+    template <typename T>
+    ResourceImporter<T>* getImporter();
 public:
     ResourceManager();
     ~ResourceManager() = default;
@@ -48,6 +51,12 @@ public:
     ResourceHandle<T> load(const VirtualPath& path);
 
     template <typename T>
+    [[deprecated]] ResourceHandle<T> addManually(T resource);
+
+    template <typename T>
+    [[deprecated]] ResourceHandle<T> addManually(const VirtualPath& path, T resource);
+
+    template <typename T>
     [[nodiscard]] ResourceHandle<T> getByPath(const VirtualPath& path);
 
     template <typename T>
@@ -55,6 +64,9 @@ public:
 
     template <typename T>
     [[nodiscard]] T& require(ResourceHandle<T> handle);
+
+    template <typename T>
+    [[nodiscard]] bool exists(ResourceHandle<T> handle) const;
 
     template <typename T>
     void registerImporter(std::unique_ptr<ResourceImporter<T>> importer);
@@ -74,13 +86,7 @@ ResourceStorage<T>& ResourceManager::getOrCreateStorage() {
 }
 
 template <typename T>
-ResourceHandle<T> ResourceManager::load(const VirtualPath& path) {
-    const std::string strID = path.resolve();
-
-    if (fileID.contains(strID)) {
-        return ResourceHandle<T>(fileID[strID]);
-    }
-
+ResourceImporter<T>* ResourceManager::getImporter() {
     const auto tid = std::type_index(typeid(T));
     const auto it = importers.find(tid);
     if (it == importers.end()) {
@@ -92,9 +98,19 @@ ResourceHandle<T> ResourceManager::load(const VirtualPath& path) {
         );
     }
 
-    auto* typedImporter = static_cast<ResourceImporter<T>*>(it->second.get());
+    return static_cast<ResourceImporter<T>*>(it->second.get());
+}
 
-    T resource = typedImporter->import(path, *this);
+template <typename T>
+ResourceHandle<T> ResourceManager::load(const VirtualPath& path) {
+    const std::string strID = path.resolve();
+
+    if (fileID.contains(strID)) {
+        return ResourceHandle<T>(fileID[strID]);
+    }
+    auto* importer = getImporter<T>();
+
+    T resource = importer->import(path, *this);
 
     HandleID id = ++nextID;
     auto& s = getOrCreateStorage<T>();
@@ -104,6 +120,40 @@ ResourceHandle<T> ResourceManager::load(const VirtualPath& path) {
 
     logger.info(
         "Loaded resource: " + strID + " with ID " + std::to_string(id)
+    );
+
+    return ResourceHandle<T>(id);
+}
+
+template <typename T>
+ResourceHandle<T> ResourceManager::addManually(T resource) {
+    HandleID id = ++nextID;
+    auto& s = getOrCreateStorage<T>();
+    s.storage.emplace(id, std::move(resource));
+
+    logger.info(
+        "Added resource manually: " + std::to_string(id)
+    );
+
+    return ResourceHandle<T>(id);
+}
+
+template <typename T>
+ResourceHandle<T> ResourceManager::addManually(
+    const VirtualPath& path, T resource
+) {
+    const std::string strID = path.resolve();
+    if (fileID.contains(strID)) {
+        return ResourceHandle<T>(fileID[strID]);
+    }
+
+    HandleID id = ++nextID;
+    auto& s = getOrCreateStorage<T>();
+    s.storage.emplace(id, std::move(resource));
+    fileID[strID] = id;
+
+    logger.info(
+        "Added resource manually: " + std::to_string(id)
     );
 
     return ResourceHandle<T>(id);
@@ -138,6 +188,20 @@ T& ResourceManager::require(ResourceHandle<T> handle) {
     if (resource == nullptr) throw exc::invalid_argument("Invalid handle");
 
     return *resource;
+}
+
+template <typename T>
+bool ResourceManager::exists(ResourceHandle<T> handle) const {
+    if (!handle.isValid()) return false;
+
+    const auto tid = std::type_index(typeid(T));
+    const auto it = storages.find(tid);
+
+    if (it == storages.end()) return false;
+    auto& s = *static_cast<ResourceStorage<T>*>(it->second.get());
+
+    auto it2 = s.storage.find(handle.id);
+    return it2 != s.storage.end();
 }
 
 template <typename T>

@@ -1,44 +1,28 @@
 #include "MaterialInstance.hpp"
 
 MaterialInstance::MaterialInstance(
-    const std::string& _name, 
+    std::string _name,
     const Material& _material, 
-    MaterialDataBuffer& _buffer
-) : name(_name), baseMaterial(&_material), buffer(&_buffer), 
+    MaterialDataBuffer& _buffer,
+    ResourceManager& _resourceManager
+) : name(std::move(_name)), baseMaterial(&_material),
+    descriptor(&baseMaterial->getDescriptor()),
+    buffer(&_buffer),
+    resourceManager(&_resourceManager),
     properties(baseMaterial->getDefaultValues(), _buffer),
-    samplers(baseMaterial->getSamplerDefaults()),
-    descriptor(&baseMaterial->getDescriptor()) 
+    samplers(baseMaterial->getSamplerDefaults())
 {
     properties.bindLayout(&baseMaterial->getLayout());
-}
-
-MaterialInstance::MaterialInstance(const MaterialInstance& other)
-  : name(other.name),
-    baseMaterial(other.baseMaterial),
-    buffer(other.buffer),
-    properties(other.properties),
-    samplers(other.samplers),
-    descriptor(other.descriptor) {}
-
-MaterialInstance& MaterialInstance::operator=(const MaterialInstance& other) {
-    if (this != &other) {
-        name = other.name;
-        baseMaterial = other.baseMaterial;
-        buffer = other.buffer;
-        properties = other.properties;
-        samplers = other.samplers;
-        descriptor = other.descriptor;
-    }
-    return *this;
 }
 
 MaterialInstance::MaterialInstance(MaterialInstance&& other) noexcept
   : name(std::move(other.name)),
     baseMaterial(other.baseMaterial),
+    descriptor(other.descriptor),
     buffer(other.buffer),
+    resourceManager(other.resourceManager),
     properties(std::move(other.properties)),
-    samplers(std::move(other.samplers)),
-    descriptor(other.descriptor) 
+    samplers(std::move(other.samplers))
 {
     other.baseMaterial = nullptr;
     other.buffer = nullptr;
@@ -51,6 +35,7 @@ MaterialInstance& MaterialInstance::operator=(
         name = std::move(other.name);
         baseMaterial = other.baseMaterial;
         buffer = other.buffer;
+        resourceManager = other.resourceManager;
         descriptor = other.descriptor;
         properties = std::move(other.properties);
         samplers = std::move(other.samplers);
@@ -80,32 +65,33 @@ void MaterialInstance::throwIfNoProperty(
     }
 }
 
-bool MaterialInstance::hasProperty(const std::string& name) const {
-    return baseMaterial->hasProperty(name);
+bool MaterialInstance::hasProperty(const std::string& propertyName) const {
+    return baseMaterial->hasProperty(propertyName);
 }
 
-bool MaterialInstance::hasSampler(const std::string& name) const {
-    return baseMaterial->hasSampler(name);
+bool MaterialInstance::hasSampler(const std::string& propertyName) const {
+    return baseMaterial->hasSampler(propertyName);
 }
 
 void MaterialInstance::setSampler(
     const std::string& _name,
-    std::shared_ptr<Texture> _texture
+    ResourceHandle<Texture> _texture
 ) {
     throwIfNoSampler(_name);
-    if (_texture == nullptr) {
+    if (!resourceManager->exists(_texture)) {
         return;
     }
-    
+
+    const Texture& textureResource = resourceManager->require(_texture);
     samplers[_name] = _texture;
 
-    uint64_t handle = _texture ? _texture->getHandle() : 0ULL;
-    uint32_t lowerBits = static_cast<uint32_t>(handle);
-    uint32_t upperBits = static_cast<uint32_t>(handle >> 32);   
+    const uint64_t handle = textureResource.getHandle();
+    const auto lowerBits = static_cast<uint32_t>(handle);
+    const auto upperBits = static_cast<uint32_t>(handle >> 32);
     properties.setProperty<glm::uvec2>(_name, glm::uvec2(lowerBits, upperBits));
 }
 
-std::shared_ptr<Texture> MaterialInstance::getSampler(
+ResourceHandle<Texture> MaterialInstance::getSampler(
     const std::string& samplerName
 ) const {
     throwIfNoSampler(samplerName);
@@ -113,7 +99,7 @@ std::shared_ptr<Texture> MaterialInstance::getSampler(
     if (it != samplers.end()) {
         return it->second;
     }
-    return nullptr;
+    return ResourceHandle<Texture>::createNullHandle();
 }
 
 void MaterialInstance::bindSamplers(uint32_t startSlot) const {
@@ -122,9 +108,10 @@ void MaterialInstance::bindSamplers(uint32_t startSlot) const {
     for (const auto& samplerDef : baseMaterial->getSamplerDefinitions()) {
         auto it = samplers.find(samplerDef.name);
 
-        if (it != samplers.end() && it->second) {
+        if (it != samplers.end() && resourceManager->exists(it->second)) {
+            Texture& texture = resourceManager->require(it->second);
             glBindTextureUnit(
-                samplerDef.slot + startSlot, it->second->getId()
+                samplerDef.slot + startSlot, texture.getId()
             );
         } else {
             glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
@@ -133,8 +120,8 @@ void MaterialInstance::bindSamplers(uint32_t startSlot) const {
 }
 
 void MaterialInstance::unbindSamplers() const {
-    const GLuint GL_NO_BIND = 0;
     for (const auto& samplerDef : baseMaterial->getSamplerDefinitions()) {
+        constexpr GLuint GL_NO_BIND = 0;
         glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
     }
 }

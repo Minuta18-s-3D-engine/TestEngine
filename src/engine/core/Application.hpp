@@ -6,17 +6,15 @@
 #include "engine/debug/logging/Logging.hpp"
 #include "engine/events/EventManager.hpp"
 #include "engine/window/Window.hpp"
-#include "engine/materials/Material.hpp"
 #include "engine/graphics/RenderingSystem.hpp"
 #include "engine/project/Project.hpp"
 #include "engine/player/Player.hpp"
-#include "engine/project/ProjectLoader.hpp"
-#include "engine/assets/utils/MeshGen.hpp"
-#include "engine/assets/utils/Files.hpp"
-#include "engine/assets/coders/images/PngCoder.hpp"
-#include "engine/assets/coders/images/JpgCoder.hpp"
+#include "engine/resource/ResourceManager.hpp"
+#include "engine/resource/importers/TextureImporter.hpp"
 #include "engine/materials/preprocessor/Preprocessor.hpp"
 #include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
+#include "engine/project/ProjectLoader.hpp"
+#include "engine/resource/serializers/JsonSerializer.hpp"
 #include "engine/materials/MaterialBuilder.hpp"
 #include "engine/models/ModelLoader.hpp"
 
@@ -32,6 +30,7 @@ class Application {
     std::unique_ptr<MaterialDataBuffer> globalMaterialBuffer;
     std::unique_ptr<RenderingSystem> renderingSystem;
     std::unique_ptr<Project> project;
+    std::unique_ptr<ResourceManager> resourceManager;
 
     void initEngineSystems();
 

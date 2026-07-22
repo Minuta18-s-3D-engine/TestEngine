@@ -10,31 +10,30 @@
 
 #include "PathResolver.hpp"
 #include "GeneralPathResolver.hpp"
-#include "../assets/AssetManager.hpp"
 #include "cmakeConfig.h"
 #include "VirtualPath.hpp"
 #include "../scene/Scene.hpp"
 #include "../utils/exc/GeneralExceptions.hpp"
 #include "FilesystemAbstraction.hpp"
 #include "VirtualFilesystem.hpp"
+#include "engine/resource/utils/MeshGen.hpp"
 
 class Project {
     std::string name;
     std::string projectVersion;
     std::string engineVersion;
 
-    std::unique_ptr<AssetManager> assetManager;
     std::unique_ptr<FilesystemAbstraction> filesystem;
 
     std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
     std::string activeScene;
     bool isHasActiveScene = false;
 
-    bool checkEngineVersion();
+    bool checkEngineVersion() const;
 public:
     Project(
-        std::string name, std::string projectVersion, 
-        std::string engineVersion, const std::filesystem::path& rootPath,
+        const std::string& name, const std::string& projectVersion,
+        const std::string& engineVersion, const std::filesystem::path& rootPath,
         const std::filesystem::path& coreRootPath
     );
 
@@ -45,16 +44,15 @@ public:
 
     Scene& getActiveScene();
     void setActiveScene(const std::string& sceneName);
-    bool hasActiveScene();
+    bool hasActiveScene() const;
     void unloadScene();
 
     void addScene(std::unique_ptr<Scene> scene);
     void createEmptyScene(const std::string& sceneName);
     Scene& getScene(const std::string& sceneName);
-    bool hasScene(const std::string& sceneName);
+    bool hasScene(const std::string& sceneName) const;
 
-    AssetManager& getAssetManager();
-    FilesystemAbstraction& getFilesystem();
+    FilesystemAbstraction& getFilesystem() const;
 
     const std::string& getName() const;
     const std::string& getProjectVersion() const;
