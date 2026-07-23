@@ -2,23 +2,22 @@
 #define ENGINE_MATERIALS_MATERIAL_H_
 
 #include <string>
-#include <memory>
 
 #include "MaterialLayout.hpp"
 #include "MaterialGraphicsConfig.hpp"
 #include "PropertyDataStorage.hpp"
 #include "../graphics/SamplerDefinition.hpp"
 #include "MaterialDescriptor.hpp"
+#include "engine/resource/ResourceHandle.hpp"
 
 class Shader;
-class Texture;
 
 class Material {
     friend class MaterialBuilder;
 
     MaterialDescriptor descriptor;
 
-    std::shared_ptr<Shader> shader;
+    ResourceHandle<Shader> shaderHandle;
     PropertyDataStorage defaultValues;
     MaterialDescriptor::SamplerMap samplerDefaults;
 
@@ -34,7 +33,7 @@ public:
     Material(Material&& other) noexcept;
     Material& operator=(Material&& other) noexcept;
 
-    std::string getName() const;
+    const std::string& getName() const;
     const MaterialGraphicsConfig& getConfig() const;
     const MaterialLayout& getLayout() const;
     const PropertyDataStorage& getDefaultValues() const;
@@ -52,14 +51,14 @@ public:
     const SamplerDefinition& getSampler(const std::string& name) const;
 
     template <typename T>
-    const T& getPropertyDefaultValue(const std::string& name);
+    T getPropertyDefaultValue(const std::string& name);
 
-    void bindShader(std::shared_ptr<Shader> _shader) { shader = _shader; }
-    std::shared_ptr<Shader> getShader() const { return shader; }
+    void bindShader(ResourceHandle<Shader> _shader) { shaderHandle = _shader; }
+    ResourceHandle<Shader> getShader() const { return shaderHandle; }
 };
 
 template <typename T>
-const T& Material::getPropertyDefaultValue(const std::string& name) {
+T Material::getPropertyDefaultValue(const std::string& name) {
     return defaultValues.getProperty<T>(name); 
 }
 

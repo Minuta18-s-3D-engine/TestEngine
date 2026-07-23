@@ -2,12 +2,13 @@
 #define ENGINE_MATERIALS_MATERIALGRAPHICSCONFIG_H_
 
 #include <string>
+#include "engine/project/VirtualPath.hpp"
 
 enum class RenderingType { Deferred, Forward };
 
 struct MaterialGraphicsConfig {
     RenderingType renderingType = RenderingType::Deferred;
-    std::string missingTextureKey = "textures/missing";
+    VirtualPath missingTextureKey = "core://assets/textures/missing.png";
 };
 
 #endif // ENGINE_MATERIALS_MATERIALGRAPHICSCONFIG_H_

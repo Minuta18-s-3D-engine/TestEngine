@@ -4,14 +4,16 @@ Material::Material(
     MaterialDescriptor&& _descriptor,
     MaterialDescriptor::SamplerMap&& _samplerDefaults,
     PropertyDataStorage&& _storage
-) : descriptor(_descriptor), samplerDefaults(_samplerDefaults), 
-    shader(nullptr), defaultValues(std::move(_storage)) {
+) : descriptor(std::move(_descriptor)),
+    shaderHandle(ResourceHandle<Shader>::createNullHandle()),
+    defaultValues(std::move(_storage)),
+    samplerDefaults(_samplerDefaults) {
     defaultValues.bindLayout(&this->descriptor.layout);
 }
 
 Material::Material(Material&& other) noexcept
   : descriptor(std::move(other.descriptor)),
-    shader(std::move(other.shader)),
+    shaderHandle(other.shaderHandle),
     defaultValues(std::move(other.defaultValues)),
     samplerDefaults(std::move(other.samplerDefaults)) {
     defaultValues.bindLayout(&this->descriptor.layout);
@@ -20,7 +22,7 @@ Material::Material(Material&& other) noexcept
 Material& Material::operator=(Material&& other) noexcept {
     if (this != &other) {
         descriptor = std::move(other.descriptor);
-        shader = std::move(other.shader);
+        shaderHandle = other.shaderHandle;
         defaultValues = std::move(other.defaultValues);
         samplerDefaults = std::move(other.samplerDefaults);
         defaultValues.bindLayout(&this->descriptor.layout);
@@ -51,7 +53,7 @@ MaterialLayout::PropertyType Material::getPropertyType(
     return descriptor.layout.getPropertyInfo(name).type;
 }
 
-std::string Material::getName() const { 
+const std::string& Material::getName() const {
     return descriptor.name; 
 }
 

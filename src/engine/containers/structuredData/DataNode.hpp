@@ -21,16 +21,16 @@ public:
     using Entry = std::pair<key_t, DataNode>;
 
     DataNode& operator[](const key_t& key);
-    const DataNode* find(const key_t& key) const noexcept;
-    DataNode* find(const key_t& key) noexcept;
+    [[nodiscard]] const DataNode* find(const key_t& key) const noexcept;
+    [[nodiscard]] DataNode* find(const key_t& key) noexcept;
     bool erase(const key_t& key) noexcept;
 
-    std::vector<Entry>::iterator begin() noexcept { return entries.begin(); } 
-    std::vector<Entry>::iterator end() noexcept { return entries.end(); } 
-    std::vector<Entry>::const_iterator begin() const noexcept { 
+    [[nodiscard]] std::vector<Entry>::iterator begin() noexcept { return entries.begin(); }
+    [[nodiscard]] std::vector<Entry>::iterator end() noexcept { return entries.end(); }
+    [[nodiscard]] std::vector<Entry>::const_iterator begin() const noexcept {
         return entries.begin(); 
     } 
-    std::vector<Entry>::const_iterator end() const noexcept { 
+    [[nodiscard]] std::vector<Entry>::const_iterator end() const noexcept {
         return entries.end(); 
     } 
 private:

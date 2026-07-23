@@ -88,7 +88,7 @@ private:
     std::vector<std::string> propsOrder;
 
     size_t materialSize = 0;
-    size_t maxAlignment;  
+    size_t maxAlignment = 0;
     bool finalized = false;
 
     void repackData();

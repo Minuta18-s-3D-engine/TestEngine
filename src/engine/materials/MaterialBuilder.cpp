@@ -2,13 +2,13 @@
 
 MaterialBuilder::MaterialBuilder(
     const std::string& _name, MaterialGraphicsConfig _cfg,
-    const AssetManager& _assetManager
-) : assetManager(_assetManager) {
+    ResourceManager& _resourceManager
+) : resourceManager(&_resourceManager) {
     resultDescriptor.name = _name;
     resultDescriptor.config = _cfg;
 
-    missingTexture = _assetManager.getShared<Texture>(_cfg.missingTextureKey);
-    if (missingTexture == nullptr) {
+    missingTexture = resourceManager->load<Texture>(_cfg.missingTextureKey);
+    if (!missingTexture.isValid()) {
         throw std::invalid_argument("Invalid missingTexture key");
     }
 }
@@ -24,14 +24,14 @@ MaterialBuilder& MaterialBuilder::addSampler(
 }
 
 MaterialBuilder& MaterialBuilder::addSampler(
-    const std::string& name, SamplerType type, 
-    std::shared_ptr<Texture> defaultTexture
+    const std::string& name, const SamplerType type,
+    ResourceHandle<Texture> defaultTexture
 ) {
     if (resultDescriptor.samplerIndexes.contains(name)) {
         return *this;
     }
 
-    if (!defaultTexture) {
+    if (!defaultTexture.isValid()) {
         return *this;
     }
 
@@ -49,10 +49,11 @@ MaterialBuilder& MaterialBuilder::addSampler(
     // to segmentation fault.
     resultDescriptor.layout.addProperty<glm::uvec2>(name);
 
-    uint64_t handle = defaultTexture->getHandle();
-    propertyBinders.push_back([handle, name](PropertyDataStorage& storage) {
-        uint32_t lowerBits = static_cast<uint32_t>(handle);
-        uint32_t upperBits = static_cast<uint32_t>(handle >> 32);   
+    const Texture& texture = resourceManager->require(defaultTexture);
+    uint64_t handle = texture.getHandle();
+    propertyBinders.emplace_back([handle, name](PropertyDataStorage& storage) {
+        auto lowerBits = static_cast<uint32_t>(handle);
+        auto upperBits = static_cast<uint32_t>(handle >> 32);
         storage.setProperty<glm::uvec2>(name, {lowerBits, upperBits});
     });
 
@@ -68,9 +69,9 @@ Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
         binder(tempStorage);
     }
 
-    return Material(
+    return {
         std::move(resultDescriptor),
         std::move(samplerDefaults),
         std::move(tempStorage)
-    );
+    };
 }

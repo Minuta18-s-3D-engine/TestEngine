@@ -13,10 +13,10 @@
 #include "MaterialLayout.hpp"
 #include "MaterialDataBuffer.hpp"
 #include "../graphics/SamplerType.hpp"
-#include "../graphics/SamplerDefinition.hpp"
-#include "../assets/AssetManager.hpp"
 #include "../graphics/Texture.hpp"
 #include "MaterialDescriptor.hpp"
+#include "engine/resource/ResourceManager.hpp"
+#include "engine/resource/ResourceHandle.hpp"
 
 class Shader;
 
@@ -25,8 +25,8 @@ class MaterialBuilder {
 
     MaterialDescriptor::SamplerMap samplerDefaults;
 
-    const AssetManager& assetManager;
-    std::shared_ptr<Texture> missingTexture;
+    ResourceManager* resourceManager;
+    ResourceHandle<Texture> missingTexture;
 
     using BinderFunc = std::function<void(PropertyDataStorage&)>;
     std::vector<BinderFunc> propertyBinders;
@@ -34,7 +34,7 @@ public:
     MaterialBuilder(
         const std::string& _name, 
         MaterialGraphicsConfig _cfg,
-        const AssetManager& _assetManager
+        ResourceManager& _resourceManager
     );
 
     template <typename T>
@@ -49,7 +49,7 @@ public:
     MaterialBuilder& addSampler(const std::string& name, SamplerType type);
     MaterialBuilder& addSampler(
         const std::string& name, SamplerType type, 
-        std::shared_ptr<Texture> defaultTexture
+        ResourceHandle<Texture> defaultTexture
     );
 
     Material finalize(MaterialDataBuffer& buffer);
