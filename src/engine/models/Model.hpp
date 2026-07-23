@@ -2,25 +2,31 @@
 #define ENGINE_MODELS_MODEL_H_
 
 #include <vector>
-#include <string>
 #include <memory>
-#include <iostream>
 
 #include "Mesh.hpp"
 #include "../materials/Material.hpp"
+#include "engine/resource/ResourceHandle.hpp"
+#include "engine/resource/ResourceManager.hpp"
 
 class ModelLoader;
 
 class Model {
+    ResourceManager* resourceManager;
 public:
-    std::shared_ptr<Material> material;
-    std::vector<std::shared_ptr<Mesh>> meshes;
-    Model(std::vector<std::shared_ptr<Mesh>>& meshes);
-    Model() = default;
-
-    void draw();
-
     friend class ModelLoader;
+
+    using MeshArray = std::vector<ResourceHandle<Mesh>>;
+
+    ResourceHandle<Material> material;
+    MeshArray meshes;
+
+    Model(
+        ResourceManager& resourceManager_,
+        MeshArray meshes_
+    );
+
+    void draw() const;
 };
 
 #endif // ENGINE_MODELS_MODEL_H_

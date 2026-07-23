@@ -14,10 +14,11 @@ void createRect(
     MaterialDataBuffer& buffer
 ) {
     const Material& baseMaterial = resManager.require<Material>(baseMaterialHandle);
-    auto matInstance = std::make_shared<MaterialInstance>(
+    const auto matInstance = std::make_shared<MaterialInstance>(
         baseMaterial.getName() + "Instance",
         baseMaterial,
-        buffer
+        buffer,
+        resManager
     );
 
     matInstance->setSampler("diffuseMap", diffuseTexHandle);
@@ -26,12 +27,12 @@ void createRect(
     const std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(scale, textureScale, matInstance);
     std::vector<std::shared_ptr<Mesh>> cubeMeshArray{cubeMesh};
 
-    auto cubeModel = std::make_unique<Model>(cubeMeshArray);
+    const auto cubeModel = std::make_unique<Model>(cubeMeshArray);
     cubeModel->material = baseMaterialHandle;
 
     const uuids::uuid modelId = uuids::uuid_system_generator{}();
     VirtualPath modelPath("memory://models/" + uuids::to_string(modelId));
-    ResourceHandle<Model> modelHandle =
+    const ResourceHandle<Model> modelHandle =
         resManager.addManually<Model>(*cubeModel);
 
     std::unique_ptr<GameObject> cubeObject = GameObject::createGameObject();

@@ -1,11 +1,12 @@
 #include "Model.hpp"
 
-Model::Model(std::vector<std::shared_ptr<Mesh>>& meshes) {
-    this->meshes = meshes;
-}
+Model::Model(ResourceManager &resourceManager_, MeshArray meshes_)
+    : resourceManager(&resourceManager_), meshes(std::move(meshes_)) {}
 
-void Model::draw() {
-    for (size_t mesh = 0; mesh < meshes.size(); ++mesh) {
-        meshes[mesh]->draw();
+
+void Model::draw() const {
+    for (auto& meshHandle : meshes) {
+        Mesh& mesh = resourceManager->require(meshHandle);
+        mesh.draw();
     }
 }
