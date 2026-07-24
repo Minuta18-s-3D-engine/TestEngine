@@ -25,9 +25,11 @@ void createRect(
     matInstance->setSampler("specularMap", specularTexHandle);
 
     const std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(scale, textureScale, matInstance);
-    std::vector<std::shared_ptr<Mesh>> cubeMeshArray{cubeMesh};
+    auto cubeMeshHandle = resManager.addManually<Mesh>(*cubeMesh);
 
-    const auto cubeModel = std::make_unique<Model>(cubeMeshArray);
+    std::vector<ResourceHandle<Mesh>> cubeMeshArray{cubeMeshHandle};
+
+    const auto cubeModel = std::make_unique<Model>(resManager, cubeMeshArray);
     cubeModel->material = baseMaterialHandle;
 
     const uuids::uuid modelId = uuids::uuid_system_generator{}();
@@ -43,7 +45,7 @@ void createRect(
     const auto behaviorComponent = cubeObject->getComponent<Behavior>();
     behaviorComponent->type = BehaviorType::STATIC;
 
-    const ModelComponent modelComponent(modelHandle);
+    auto modelComponent = std::make_unique<ModelComponent>(modelHandle);
     cubeObject->addComponent<ModelComponent>(modelComponent);
 
     objectManager.addObject(cubeObject);
@@ -232,7 +234,7 @@ void Application::compileShadersAndMaterials() {
         "fs://assets/shaders/julia/julia.vert.glsl",
         std::move(prototypeShader)
     );
-    resourceManager->get(protoGridMatHandle).bindShader(protoShaderHandle);
+    resourceManager->require(protoGridMatHandle).bindShader(protoShaderHandle);
 
     Shader geomShader = compileShader(
         VirtualPath("core://assets/shaders/geom.vert.glsl"),
@@ -252,7 +254,7 @@ void Application::compileShadersAndMaterials() {
         "core://assets/shaders/geom.vert.glsl",
         std::move(geomShader)
     );
-    resourceManager->get(stdMatHandle).bindShader(geomShaderHandle);
+    resourceManager->require(stdMatHandle).bindShader(geomShaderHandle);
     resourceManager->addManually<Shader>(
         "core://assets/shaders/light.vert.glsl",
         std::move(lightingShader)
@@ -289,7 +291,8 @@ void Application::spawnSceneObjects() {
         auto matInstance = std::make_shared<MaterialInstance>(
             "PrototypeGridInstance",
             resourceManager->require(protoGridMatHandle),
-            *globalMaterialBuffer
+            *globalMaterialBuffer,
+            *resourceManager
         );
         matInstance->setProperty("baseColor", glm::vec3(0.4, 0.8, 0.4));
 
@@ -298,10 +301,12 @@ void Application::spawnSceneObjects() {
         const glm::vec3 pos(10.0f, 3.0f, 2.0f);
 
         std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(scale, textureScale, matInstance);
+        auto cubeMeshHandle = resourceManager->addManually<Mesh>(*cubeMesh);
         Model cubeModel(
-            std::vector<std::shared_ptr<Mesh>>{cubeMesh}
+            *resourceManager,
+            std::vector<ResourceHandle<Mesh>>{cubeMeshHandle}
         );
-        cubeModel->material = protoGridMatHandle;
+        cubeModel.material = protoGridMatHandle;
 
         ResourceHandle<Model> checkerCubeHandle = resourceManager->addManually<Model>(
             "memory://models/checkerCube",
@@ -337,7 +342,7 @@ void Application::spawnSceneObjects() {
 
         ResourceHandle<Model> sponzaHandle = resourceManager->addManually<Model>(
             VirtualPath("fs://assets/models/sponza_low_res.glb"),
-            std::move(sponzaModel)
+            std::move(*sponzaModel)
         );
 
         std::unique_ptr<GameObject> sponzaObject = GameObject::createGameObject();

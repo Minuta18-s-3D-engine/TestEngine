@@ -2,6 +2,7 @@
 #define ENGINE_GAMEOBJECT_SYSTEM_H_
 
 class System {
+public:
     virtual void update() = 0;
 };
 

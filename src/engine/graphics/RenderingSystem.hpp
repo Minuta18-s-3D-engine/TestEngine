@@ -14,7 +14,6 @@
 #include "components/PointLight.hpp"
 #include "../models/Model.hpp"
 
-#include "../assets/AssetManager.hpp"
 #include "../graphics/ClusteredRenderer.hpp"
 #include "../graphics/GBuffer.hpp"
 #include "../graphics/Camera.hpp"
@@ -22,9 +21,11 @@
 #include "../window/WindowEvents.hpp"
 #include "../events/EventManager.hpp"
 #include "../materials/MaterialDataBuffer.hpp"
+#include "engine/resource/ResourceManager.hpp"
+#include "engine/resource/ResourceHandle.hpp"
 
 class RenderingSystem : public System {
-    AssetManager& assetManager;
+    ResourceManager* resourceManager;
     GameObjectManager& gameObjectManager;
     Window& window;
     EventManager& eventManager;
@@ -33,6 +34,8 @@ class RenderingSystem : public System {
     ClusteredRenderer* renderer;
     GBuffer* gBuffer;
     Camera* camera = nullptr;
+
+    ResourceHandle<Shader> lightingShaderHandle;
 
     std::vector<GameObject*> lightCache, objectsCache;
 
@@ -46,11 +49,11 @@ class RenderingSystem : public System {
     int currentFrame = 0;
 public:
     RenderingSystem(
-        AssetManager& _assetManager, 
-        GameObjectManager& _gameObjectManager,
-        EventManager& _eventManager,
-        Window& _window,
-        MaterialDataBuffer& _globalMaterialBuffer
+        ResourceManager& resourceManager_,
+        GameObjectManager& gameObjectManager_,
+        EventManager& eventManager_,
+        Window& window_,
+        MaterialDataBuffer& globalMaterialBuffer_
     );
     ~RenderingSystem();
 

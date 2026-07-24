@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "../assets/AssetManager.hpp"
 #include "ComputeShader.hpp"
 #include "Camera.hpp"
 #include "ShaderStorageBuffer.hpp"
@@ -18,6 +17,8 @@
 #include "../gameObject/components/Transform.hpp"
 #include "../gameObject/components/Behavior.hpp"
 #include "components/PointLight.hpp"
+#include "engine/resource/ResourceManager.hpp"
+#include "engine/resource/ResourceHandle.hpp"
 
 struct alignas(16) CompCluster {
     glm::vec4 minPoint;
@@ -46,8 +47,9 @@ class ClusteredRenderer {
 
     const uint MAX_LIGHTS_PER_CLUSTER = 256;
 
-    ComputeShader *buildClustersShader, *lightCullingShader;
-    AssetManager& assetManager;
+    ResourceHandle<ComputeShader> buildClustersShaderHandle;
+    ResourceHandle<ComputeShader> lightCullingShaderHandle;
+    ResourceManager* resourceManager;
     Window& window;
     
     std::vector<CompLight> gpuLightCache;
@@ -66,7 +68,7 @@ class ClusteredRenderer {
 
     void createSSBOs();
 public:
-    ClusteredRenderer(Window& _window, AssetManager& _assetManager);
+    ClusteredRenderer(Window& window_, ResourceManager& resourceManager_);
     ~ClusteredRenderer() = default;
 
     // Assume only dynamic lights are given

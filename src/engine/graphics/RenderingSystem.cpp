@@ -1,19 +1,23 @@
 #include "RenderingSystem.hpp"
 
 RenderingSystem::RenderingSystem(
-    AssetManager& _assetManager,
-    GameObjectManager& _gameObjectManager, 
-    EventManager& _eventManager,
-    Window& _window,
-    MaterialDataBuffer& _globalMaterialBuffer
-): assetManager(_assetManager), gameObjectManager(_gameObjectManager),
-    window(_window), eventManager(_eventManager),
-    globalMaterialBuffer(_globalMaterialBuffer) {
-    renderer = new ClusteredRenderer(window, _assetManager);
+    ResourceManager& resourceManager_,
+    GameObjectManager& gameObjectManager_,
+    EventManager& eventManager_,
+    Window& window_,
+    MaterialDataBuffer& globalMaterialBuffer_
+): resourceManager(&resourceManager_), gameObjectManager(gameObjectManager_),
+    window(window_), eventManager(eventManager_),
+    globalMaterialBuffer(globalMaterialBuffer_) {
+    renderer = new ClusteredRenderer(window, resourceManager);
     gBuffer = new GBuffer(window.getWidth(), window.getHeight());
 
     eventManager.subscribe<WindowResizeEvent>(
         this, &RenderingSystem::onWindowResize);
+
+    lightingShaderHandle = resourceManager->getByPath<Shader>(
+        "core://assets/shaders/light.vert.glsl"
+    );
 }
 
 RenderingSystem::~RenderingSystem() {
@@ -74,8 +78,7 @@ void RenderingSystem::render(float deltaTime) {
     renderer->updateLightData(lightCache);
     renderer->updateClusters(camera);
     
-    Shader& lightingShader = assetManager.require<Shader>("shaders/lightingShader");
-
+    Shader& lightingShader = resourceManager->require(lightingShaderHandle);
     gBuffer->bind();
     
     glm::mat4 proj = glm::mat4(1.0f);
@@ -95,41 +98,43 @@ void RenderingSystem::render(float deltaTime) {
         glm::mat4 model = glm::translate(
             worldModel, transformComponent->position);
 
-        auto objModel = assetManager.get<Model>(modelComponent->managerId);
-        if (!objModel) {
+        if (!modelComponent->modelHandle.isValid()) {
             continue;
         }
+        auto& objModel = resourceManager->require(modelComponent->modelHandle);
 
-        std::shared_ptr<Shader> geomShader = objModel->material->getShader();
+        auto& objMaterial = resourceManager->require(objModel.material);
+        auto geomShaderHandle = objMaterial.getShader();
+        auto& geomShader = resourceManager->require(geomShaderHandle);
 
-        geomShader->use();
+        geomShader.use();
 
         globalMaterialBuffer.bind();
         renderer->bindClusterData();
 
-        geomShader->setUniform("u_Time", time);
-        geomShader->setUniform("u_DeltaTime", deltaTime);
-        geomShader->setUniform("u_Frame", currentFrame);
+        geomShader.setUniform("u_Time", time);
+        geomShader.setUniform("u_DeltaTime", deltaTime);
+        geomShader.setUniform("u_Frame", currentFrame);
 
-        geomShader->setUniform("u_Resolution", resolution);
-        geomShader->setUniform("u_TexelSize", 
+        geomShader.setUniform("u_Resolution", resolution);
+        geomShader.setUniform("u_TexelSize",
             glm::vec2(1.0f / resolution.x, 1.0f / resolution.y));
         
-        geomShader->setUniform("u_CameraPosition", camera->pos);
-        geomShader->setUniform("u_CameraDirection", camera->front);
+        geomShader.setUniform("u_CameraPosition", camera->pos);
+        geomShader.setUniform("u_CameraDirection", camera->front);
 
-        geomShader->setUniform("u_View", viewMat);
-        geomShader->setUniform("u_Projection", proj);
-        geomShader->setUniform("u_InvView", glm::inverse(viewMat));
-        geomShader->setUniform("u_InvProjection", glm::inverse(proj));
+        geomShader.setUniform("u_View", viewMat);
+        geomShader.setUniform("u_Projection", proj);
+        geomShader.setUniform("u_InvView", glm::inverse(viewMat));
+        geomShader.setUniform("u_InvProjection", glm::inverse(proj));
 
-        geomShader->setUniform("u_ZNear", camera->zNear);
-        geomShader->setUniform("u_ZFar", camera->zFar);  
+        geomShader.setUniform("u_ZNear", camera->zNear);
+        geomShader.setUniform("u_ZFar", camera->zFar);
 
-        geomShader->setUniform("u_Model", model);
-        geomShader->setUniform("u_InvModel", glm::inverse(model));
+        geomShader.setUniform("u_Model", model);
+        geomShader.setUniform("u_InvModel", glm::inverse(model));
         
-        objModel->draw(); 
+        objModel.draw();
     }
 
     gBuffer->unbind();

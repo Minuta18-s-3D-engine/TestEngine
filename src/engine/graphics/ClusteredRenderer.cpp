@@ -1,13 +1,14 @@
 #include "ClusteredRenderer.hpp"
 
 ClusteredRenderer::ClusteredRenderer(
-    Window& _window, AssetManager& _assetManager
-) : assetManager(_assetManager), window(_window) {
+    Window& _window, ResourceManager& resourceManager_
+) : resourceManager(&resourceManager_), window(_window) {
     this->createSSBOs();
-    this->buildClustersShader = 
-        &(_assetManager.require<ComputeShader>("shaders/buildClusters"));
-    this->lightCullingShader = 
-        &(_assetManager.require<ComputeShader>("shaders/lightCulling"));
+
+    buildClustersShaderHandle = resourceManager->getByPath<ComputeShader>(
+        "core://assets/shaders/buildClusters.comp.glsl");
+    lightCullingShaderHandle = resourceManager->getByPath<ComputeShader>(
+        "core://assets/shaders/lightCulling.comp.glsl");
 }
 
 void ClusteredRenderer::createSSBOs() {
@@ -98,11 +99,13 @@ void ClusteredRenderer::updateLightData(const std::vector<GameObject*>& lights) 
 }
 
 void ClusteredRenderer::updateClusters(const Camera* cam) {
-    buildClustersShader->use();
+    auto& buildClustersShader = resourceManager->require(buildClustersShaderHandle);
 
-    buildClustersShader->setUniform("u_ZNear", cam->zNear);
-    buildClustersShader->setUniform("u_ZFar", cam->zFar);
-    buildClustersShader->setUniform("u_CurrentDispatch", 1);
+    buildClustersShader.use();
+
+    buildClustersShader.setUniform("u_ZFar", cam->zFar);
+    buildClustersShader.setUniform("u_CurrentDispatch", 1);
+    buildClustersShader.setUniform("u_ZNear", cam->zNear);
 
     glm::mat4 proj = glm::perspective(
         cam->getZoom(), 
@@ -111,22 +114,24 @@ void ClusteredRenderer::updateClusters(const Camera* cam) {
     );
     glm::mat4 invProj = glm::inverse(proj);
 
-    buildClustersShader->setUniform("u_InvProjection", invProj);
-    buildClustersShader->setUniform("u_GridSize", 
+    buildClustersShader.setUniform("u_InvProjection", invProj);
+    buildClustersShader.setUniform("u_GridSize",
         glm::uvec3(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z));
-    buildClustersShader->setUniform("u_Resolution", 
+    buildClustersShader.setUniform("u_Resolution",
         glm::ivec2(window.getWidth(), window.getHeight()));
     
     glDispatchCompute(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-    lightCullingShader->use();
+    auto& lightCullingShader = resourceManager->require(lightCullingShaderHandle);
 
-    lightCullingShader->setUniform("u_View", cam->getViewMat());
-    lightCullingShader->setUniform("u_GridSize",
+    lightCullingShader.use();
+
+    lightCullingShader.setUniform("u_View", cam->getViewMat());
+    lightCullingShader.setUniform("u_GridSize",
         glm::uvec3(GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z));
-    lightCullingShader->setUniform("u_CurrentDispatch", 2);
-    lightCullingShader->setUniform("u_NumLights", 
+    lightCullingShader.setUniform("u_CurrentDispatch", 2);
+    lightCullingShader.setUniform("u_NumLights",
         (uint32_t) this->gpuLightCache.size());
     // lightCullingShader->setUniform1ui("numLights", 2);
 
