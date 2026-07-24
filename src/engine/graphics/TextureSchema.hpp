@@ -28,7 +28,7 @@ struct TextureSchema {
         FilterMode mag = FilterMode::Linear;
     };
 
-    ColorSpace colorSpace = ColorSpace::sRGB;
+    ColorSpace colorSpace = ColorSpace::Linear;
     WrapMode wrapMode = WrapMode::Repeat;
     bool generateMipmaps = false; 
     std::variant<FilterMode, TextureFiltering> filtering = FilterMode::Linear; 
@@ -59,7 +59,7 @@ STRUCT_SCHEMA(TextureSchema::TextureFiltering,
 
 STRUCT_SCHEMA(TextureSchema,
     Field("colorSpace", 
-        &TextureSchema::colorSpace, TextureSchema::ColorSpace::sRGB),
+        &TextureSchema::colorSpace, TextureSchema::ColorSpace::Linear),
     Field("wrapMode", 
         &TextureSchema::wrapMode, TextureSchema::WrapMode::Repeat),
     Field("generateMipmaps", &TextureSchema::generateMipmaps, false),

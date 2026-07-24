@@ -1,5 +1,19 @@
 #include "Application.hpp"
 
+#include "engine/resource/importers/TextureImporter.hpp"
+#include "engine/materials/preprocessor/Preprocessor.hpp"
+#include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
+#include "engine/project/ProjectLoader.hpp"
+#include "engine/materials/MaterialBuilder.hpp"
+#include "engine/models/ModelLoader.hpp"
+#include "engine/events/EventManager.hpp"
+#include "engine/window/Window.hpp"
+#include "engine/graphics/RenderingSystem.hpp"
+#include "engine/project/Project.hpp"
+#include "engine/player/Player.hpp"
+#include "engine/resource/ResourceManager.hpp"
+#include "engine/resource/serializers/JsonSerializer.hpp"
+
 namespace {
 
 void createRect(
@@ -143,10 +157,12 @@ ComputeShader compileComputeShader(
 
 } // namespace
 
-Application::Application(const CommandLineArgs& _args)
-  : args(_args),
+Application::Application(const CommandLineArgs& args_)
+  : args(args_),
     applicationLogger(Logging::createLogger("engine.application")) {
     initEngineSystems();
+
+    serializer = std::make_unique<JsonSerializer>();
 
     if (!args.has(cmdProjectKey)) {
         applicationLogger.fatal("No project set. Use --project <path>");
@@ -178,7 +194,6 @@ void Application::loadProject(const std::string& projectPath) {
 
     resourceManager = std::make_unique<ResourceManager>();
 
-    std::unique_ptr<JsonSerializer> serializer = std::make_unique<JsonSerializer>();
     auto textureImporter = std::make_unique<TextureImporter>(
         serializer.get()
     );

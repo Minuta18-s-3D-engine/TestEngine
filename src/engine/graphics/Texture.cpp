@@ -15,9 +15,8 @@ Texture::Texture(
 ) : width(image.getWidth()), 
     height(image.getHeight()), 
     format(image.getFormat()), 
-    type(SamplerType::Texture2D), // type temporary disabled
-    id(0),
-    bindlessHandle(NO_HANDLE)
+    type(_type),
+    id(0)
 {
     if (!image.getData()) {
         throw exc::invalid_argument(
@@ -39,8 +38,11 @@ Texture::Texture(
             wrapParam = GL_REPEAT;
             break;
     }
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapParam);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapParam);
+
+    GLenum target = getGLTarget();
+
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapParam);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapParam);
 
     GLint magFilter = GL_LINEAR;
     GLint minFilter = GL_LINEAR;
@@ -62,8 +64,8 @@ Texture::Texture(
             GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST;
     }
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
 
     GLenum dataFormat;
     switch (image.getFormat()) {
@@ -81,7 +83,7 @@ Texture::Texture(
     }
 
     glTexImage2D(
-        GL_TEXTURE_2D, 
+        target,
         0, 
         internalFormat, 
         width, 
@@ -93,7 +95,7 @@ Texture::Texture(
     );
 
     if (schema.generateMipmaps) {
-        glGenerateMipmap(GL_TEXTURE_2D);
+        glGenerateMipmap(target);
     }
 
     this->unbind();

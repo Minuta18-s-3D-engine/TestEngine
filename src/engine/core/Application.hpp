@@ -4,19 +4,18 @@
 #include "CommandLineArgs.hpp"
 #include "engine/project/VirtualPath.hpp"
 #include "engine/debug/logging/Logging.hpp"
-#include "engine/events/EventManager.hpp"
-#include "engine/window/Window.hpp"
-#include "engine/graphics/RenderingSystem.hpp"
-#include "engine/project/Project.hpp"
-#include "engine/player/Player.hpp"
-#include "engine/resource/ResourceManager.hpp"
-#include "engine/resource/importers/TextureImporter.hpp"
-#include "engine/materials/preprocessor/Preprocessor.hpp"
-#include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
-#include "engine/project/ProjectLoader.hpp"
-#include "engine/resource/serializers/JsonSerializer.hpp"
-#include "engine/materials/MaterialBuilder.hpp"
-#include "engine/models/ModelLoader.hpp"
+
+#define UUID_SYSTEM_GENERATOR
+#include <uuid.h>
+
+class EventManager;
+class Window;
+class MaterialDataBuffer;
+class RenderingSystem;
+class Project;
+class ResourceManager;
+class JsonSerializer;
+class Player;
 
 class Application {
     const std::string cmdProjectKey = "--project";
@@ -31,6 +30,7 @@ class Application {
     std::unique_ptr<RenderingSystem> renderingSystem;
     std::unique_ptr<Project> project;
     std::unique_ptr<ResourceManager> resourceManager;
+    std::unique_ptr<JsonSerializer> serializer;
 
     void initEngineSystems();
 
@@ -48,7 +48,7 @@ class Application {
     void loadLights();
     void processGameInput(float deltaTime);
 public:
-    Application(const CommandLineArgs& _args);
+    explicit Application(const CommandLineArgs& args_);
     ~Application();
 
     Application(const Application&) = delete;

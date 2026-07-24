@@ -110,19 +110,27 @@ ResourceHandle<T> ResourceManager::load(const VirtualPath& path) {
     }
     auto* importer = getImporter<T>();
 
-    T resource = importer->import(path, *this);
+    try {
+        T resource = importer->import(path, *this);
 
-    HandleID id = ++nextID;
-    auto& s = getOrCreateStorage<T>();
-    
-    s.storage.emplace(id, std::move(resource));
-    fileID[strID] = id;
+        HandleID id = ++nextID;
+        auto& s = getOrCreateStorage<T>();
 
-    logger.info(
-        "Loaded resource: " + strID + " with ID " + std::to_string(id)
-    );
+        s.storage.emplace(id, std::move(resource));
+        fileID[strID] = id;
 
-    return ResourceHandle<T>(id);
+        logger.info(
+            "Loaded resource: " + strID + " with ID " + std::to_string(id)
+        );
+
+        return ResourceHandle<T>(id);
+    } catch (exc::importer_exceptions::importer_exception& e) {
+        logger.error("Failed to import resource {}: {}", strID, e.what());
+    } catch (std::exception& e) {
+        logger.error("Unexcepted error while importing {}: {}", strID, e.what());
+    }
+
+    return ResourceHandle<T>::createNullHandle();
 }
 
 template <typename T>
