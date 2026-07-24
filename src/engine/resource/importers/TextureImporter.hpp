@@ -15,6 +15,7 @@
 #include "engine/resource/utils/Files.hpp"
 #include "engine/resource/coders/images/PngCoder.hpp"
 #include "engine/resource/coders/images/JpgCoder.hpp"
+#include "engine/graphics/Texture.hpp"
 
 class TextureImporter : public ResourceImporter<Texture> {
     Logger logger;

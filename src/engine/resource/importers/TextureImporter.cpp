@@ -37,7 +37,7 @@ Texture TextureImporter::loadTexture(
         );
     }
 
-    return ...; // TODO: need update Texture constructor
+    return {*image, schema, SamplerType::Texture2D};
 }
 
 Texture TextureImporter::import(

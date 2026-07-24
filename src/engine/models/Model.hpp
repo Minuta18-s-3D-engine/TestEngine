@@ -26,6 +26,8 @@ public:
         MeshArray meshes_
     );
 
+    explicit Model(ResourceManager& resourceManager_);
+
     void draw() const;
 };
 

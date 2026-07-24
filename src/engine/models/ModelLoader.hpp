@@ -14,47 +14,51 @@
 #include "Model.hpp"
 #include "Mesh.hpp"
 #include "../materials/Material.hpp"
-#include "../assets/coders/images/PngCoder.hpp"
-#include "../assets/coders/images/JpgCoder.hpp"
-#include "../assets/utils/Files.hpp"
-#include "../assets/utils/ImageData.hpp"
+#include "../resource/coders/images/PngCoder.hpp"
+#include "../resource/coders/images/JpgCoder.hpp"
+#include "../resource/utils/Files.hpp"
+#include "../resource/utils/ImageData.hpp"
 #include "../project/VirtualPath.hpp"
-#include "../assets/AssetManager.hpp"
+#include "../resource/ResourceManager.hpp"
 
 class ModelLoader {
     std::unique_ptr<Model> createdModel;
-    std::shared_ptr<Material> baseMaterial;
-    std::unordered_map<std::string, std::shared_ptr<Texture>> loadedTextures;
-    std::unordered_map<int, std::shared_ptr<MaterialInstance>> loadedMaterials;
+    ResourceHandle<Material> baseMaterialHandle;
+    ResourceManager* resourceManager = nullptr;
+
+    std::unordered_map<std::string, ResourceHandle<Texture>> loadedTextures;
+    std::unordered_map<int, ResourceHandle<MaterialInstance>> loadedMaterials;
 
     std::string directory;
-    
+
     void processNode(aiNode* node, const aiScene* scene);
-    std::shared_ptr<Mesh> processMesh(aiMesh* mesh, const aiScene* scene);
-    std::shared_ptr<MaterialInstance> loadMaterial(
-        aiMaterial* mat, 
+    ResourceHandle<Mesh> processMesh(aiMesh* mesh, const aiScene* scene);
+    ResourceHandle<MaterialInstance> loadMaterial(
+        aiMaterial* mat,
         uint32_t matIndex,
         const aiScene* scene
     );
 
-    std::shared_ptr<Texture> loadExternalTexture(
+    ResourceHandle<Texture> loadExternalTexture(
         const std::string& path
     );
-    
-    std::shared_ptr<Texture> loadEmbeddedTexture(
-        const aiTexture* embeddedTexture, const std::string& embeddedId
+
+    ResourceHandle<Texture> loadEmbeddedTexture(
+        const aiTexture* embeddedTexture,
+        const std::string& embeddedId
     );
 
-    std::shared_ptr<Texture> loadTexture(
+    ResourceHandle<Texture> loadTexture(
         const uint8_t* imgData,
         size_t imgSize,
-        std::string name
+        const std::string& name
     );
+
 public:
     std::unique_ptr<Model> loadModel(
         const VirtualPath& filename,
-        std::shared_ptr<Material> baseMaterial,
-        const AssetManager& _assetManager
+        ResourceHandle<Material> baseMaterial,
+        ResourceManager& resourceManager
     );
 };
 
