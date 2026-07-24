@@ -33,7 +33,7 @@ constexpr std::pair<const char*, T> EnumField(const char* name, T value) {
 
 template <typename T>
 struct Meta {
-    static constexpr bool isMapped = true;
+    static constexpr bool isMapped = false;
 };
 
 template <typename E>
@@ -43,7 +43,7 @@ constexpr auto EnumVal(std::string_view name, E val) {
 
 template <typename T>
 struct EnumMeta {
-    static constexpr bool isMapped = true;  
+    static constexpr bool isMapped = false;
 };
 
 } // namespace Reflection

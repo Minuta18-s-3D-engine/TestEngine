@@ -2,9 +2,9 @@
 
 // Source: https://pastebin.com/DXKEmvap
 
-std::shared_ptr<Mesh> generateCubeMesh(
+ResourceHandle<Mesh> generateCubeMesh(
     glm::vec3 scale, glm::vec2 textureScale,
-    std::shared_ptr<MaterialInstance> mat
+    ResourceHandle<MaterialInstance> mat, ResourceManager &resourceManager
 ) {
     float data[24 * 14] = {
         // POS         NORMAL    TEX CORDS      TAN      BITAN
@@ -80,18 +80,21 @@ std::shared_ptr<Mesh> generateCubeMesh(
         cubeIndices[i] = indices[i];
     }
 
-    return std::make_shared<Mesh>(
+    Mesh createdMesh(
         std::move(cubeVertices), 
         std::move(cubeIndices), 
-        mat
+        mat,
+        resourceManager
     );
+    auto createdMeshHandle = resourceManager.addManually<Mesh>(std::move(createdMesh));
+    return createdMeshHandle;
 }
 
 // Source: 
 
-std::shared_ptr<Mesh> generateSphereMesh(
+ResourceHandle<Mesh> generateSphereMesh(
     float radius, uint32_t sectors, uint32_t stacks,
-    std::shared_ptr<MaterialInstance> material
+    ResourceHandle<MaterialInstance> material, ResourceManager &resourceManager
 ) {
     std::vector<Vertex> vertices;
     std::vector<uint> indices;
@@ -156,7 +159,12 @@ std::shared_ptr<Mesh> generateSphereMesh(
         }
     }
 
-    return std::make_shared<Mesh>(
-        std::move(vertices), std::move(indices), material
+    Mesh createdMesh(
+        std::move(vertices),
+        std::move(indices),
+        material,
+        resourceManager
     );
+    auto createdMeshHandle = resourceManager.addManually<Mesh>(std::move(createdMesh));
+    return createdMeshHandle;
 }

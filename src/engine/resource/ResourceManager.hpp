@@ -153,7 +153,7 @@ ResourceHandle<T> ResourceManager::addManually(
     fileID[strID] = id;
 
     logger.info(
-        "Added resource manually: " + std::to_string(id)
+        "Added resource manually: " + path.resolve()
     );
 
     return ResourceHandle<T>(id);
@@ -161,6 +161,7 @@ ResourceHandle<T> ResourceManager::addManually(
 
 template <typename T>
 ResourceHandle<T> ResourceManager::getByPath(const VirtualPath& path) {
+    logger.debug("Virtual path: {}, resolved path: {}", path.getVirtual(), path.resolve());
     const std::string strID = path.resolve();
     if (!fileID.contains(strID)) {
         throw exc::invalid_argument("No such resource: " + strID);

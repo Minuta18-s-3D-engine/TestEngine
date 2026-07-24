@@ -95,21 +95,21 @@ template <typename T>
 inline DataNode Mapper::writeEnum(const T& value) {
     if constexpr (!Reflection::EnumMeta<T>::isMapped) {
         return writePrimitive(static_cast<std::underlying_type_t<T>>(value));
+    } else {
+        std::string result = "unknown";
+    
+        auto checkPair = [&result, &value](const auto& pair) {
+            if (value == pair.second) {
+                result = pair.first;
+            }
+        };
+
+        std::apply([&](const auto&... pairs) {
+            (checkPair(pairs), ...);
+        }, Reflection::EnumMeta<T>::values());
+
+        return DataNode(std::move(result));
     }
-
-    std::string result = "unknown";
-    
-    auto checkPair = [&result, &value](const auto& pair) {
-        if (value == pair.second) {
-            result = pair.first;
-        }
-    };
-
-    std::apply([&](const auto&... pairs) {
-        (checkPair(pairs), ...);
-    }, Reflection::EnumMeta<T>::values());
-    
-    return DataNode(std::move(result));
 }
 
 template <typename T>
@@ -187,25 +187,25 @@ inline bool Mapper::readEnum(const DataNode& node, T& out) {
             return true;
         }
         return false;
+    } else {
+        if (!node.isString()) return false;
+    
+        std::string s = node.asString();
+        bool found = false;
+
+        auto checkPair = [&s, &out, &found](const auto& pair) {
+            if (!found && s == pair.first) {
+                out = pair.second;
+                found = true;
+            }
+        };
+
+        std::apply([&](const auto&... pairs) {
+            (checkPair(pairs), ...);
+        }, Reflection::EnumMeta<T>::values());
+
+        return found;
     }
-
-    if (!node.isString()) return false;
-    
-    std::string s = node.asString();
-    bool found = false;
-    
-    auto checkPair = [&s, &out, &found](const auto& pair) {
-        if (!found && s == pair.first) {
-            out = pair.second;
-            found = true;
-        }
-    };
-
-    std::apply([&](const auto&... pairs) {
-        (checkPair(pairs), ...);
-    }, Reflection::EnumMeta<T>::values());
-    
-    return found;
 }
 
 template <typename T>

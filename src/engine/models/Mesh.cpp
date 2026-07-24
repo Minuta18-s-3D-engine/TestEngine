@@ -17,6 +17,41 @@ Mesh::~Mesh() {
     glDeleteBuffers(1, &EBO);
 }
 
+Mesh::Mesh(Mesh&& other) noexcept
+  : VAO(other.VAO), VBO(other.VBO), EBO(other.EBO),
+    vertices(std::move(other.vertices)),
+    indices(std::move(other.indices)),
+    materialInstanceHandle(other.materialInstanceHandle),
+    resourceManager(other.resourceManager) {
+    other.VAO = 0;
+    other.VBO = 0;
+    other.EBO = 0;
+    other.resourceManager = nullptr;
+}
+
+Mesh& Mesh::operator=(Mesh&& other) noexcept {
+    if (this != &other) {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &EBO);
+
+        vertices = std::move(other.vertices);
+        indices = std::move(other.indices);
+        materialInstanceHandle = other.materialInstanceHandle;
+        resourceManager = other.resourceManager;
+
+        VAO = other.VAO;
+        VBO = other.VBO;
+        EBO = other.EBO;
+
+        other.VAO = 0;
+        other.VBO = 0;
+        other.EBO = 0;
+        other.resourceManager = nullptr;
+    }
+    return *this;
+}
+
 void Mesh::setupMesh() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

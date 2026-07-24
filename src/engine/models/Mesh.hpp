@@ -35,6 +35,12 @@ public:
     );
     ~Mesh();
 
+    Mesh(const Mesh&) = delete;
+    Mesh& operator=(const Mesh&) = delete;
+
+    Mesh(Mesh&& other) noexcept;
+    Mesh& operator=(Mesh&& other) noexcept;
+
     void draw() const;
 };
 

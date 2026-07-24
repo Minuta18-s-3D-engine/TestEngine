@@ -9,7 +9,7 @@ RenderingSystem::RenderingSystem(
 ): resourceManager(&resourceManager_), gameObjectManager(gameObjectManager_),
     window(window_), eventManager(eventManager_),
     globalMaterialBuffer(globalMaterialBuffer_) {
-    renderer = new ClusteredRenderer(window, resourceManager);
+    renderer = new ClusteredRenderer(window, *resourceManager);
     gBuffer = new GBuffer(window.getWidth(), window.getHeight());
 
     eventManager.subscribe<WindowResizeEvent>(

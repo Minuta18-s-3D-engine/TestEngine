@@ -47,7 +47,7 @@ template <typename T>
 StructuredData::DataNode ResourceImporter<T>::parseMetaFile(
     const VirtualPath& basePath, bool isMetaRequired
 ) {
-    StructuredData::DataNode emptyNode(StructuredData::Object());
+    StructuredData::DataNode emptyNode{StructuredData::Object()};
 
     VirtualPath metaPath = constructMetaPath(basePath);
 

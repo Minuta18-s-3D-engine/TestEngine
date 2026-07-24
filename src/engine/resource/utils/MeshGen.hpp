@@ -2,16 +2,18 @@
 #define ENGINE_ASSETS_UTILS_MESHGEN_H_
 
 #include "../../models/Mesh.hpp"
-#include "engine/assets/AssetManager.hpp"
+#include "engine/resource/ResourceManager.hpp"
 
-std::shared_ptr<Mesh> generateCubeMesh(
+ResourceHandle<Mesh> generateCubeMesh(
     glm::vec3 scale, glm::vec2 textureScale,
-    std::shared_ptr<MaterialInstance> mat
+    ResourceHandle<MaterialInstance> mat,
+    ResourceManager& resourceManager
 );
 
-std::shared_ptr<Mesh> generateSphereMesh(
+ResourceHandle<Mesh> generateSphereMesh(
     float radius, uint32_t sectors, uint32_t stacks,
-    std::shared_ptr<MaterialInstance> material
+    ResourceHandle<MaterialInstance> material,
+    ResourceManager& resourceManager
 );
 
 #endif // ENGINE_ASSETS_UTILS_MESHGEN_H_

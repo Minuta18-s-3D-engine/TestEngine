@@ -24,8 +24,10 @@ void createRect(
     matInstance->setSampler("diffuseMap", diffuseTexHandle);
     matInstance->setSampler("specularMap", specularTexHandle);
 
-    const std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(scale, textureScale, matInstance);
-    auto cubeMeshHandle = resManager.addManually<Mesh>(*cubeMesh);
+    auto matInstanceHandle = resManager.addManually(*matInstance);
+
+    const ResourceHandle<Mesh> cubeMeshHandle = generateCubeMesh(
+        scale, textureScale, matInstanceHandle, resManager);
 
     std::vector<ResourceHandle<Mesh>> cubeMeshArray{cubeMeshHandle};
 
@@ -295,13 +297,15 @@ void Application::spawnSceneObjects() {
             *resourceManager
         );
         matInstance->setProperty("baseColor", glm::vec3(0.4, 0.8, 0.4));
+        auto matInstanceHandle = resourceManager->addManually<MaterialInstance>(*matInstance);
 
         const glm::vec3 scale(2.0f, 2.0f, 2.0f);
         const glm::vec2 textureScale(1.0f, 1.0f);
         const glm::vec3 pos(10.0f, 3.0f, 2.0f);
 
-        std::shared_ptr<Mesh> cubeMesh = generateCubeMesh(scale, textureScale, matInstance);
-        auto cubeMeshHandle = resourceManager->addManually<Mesh>(*cubeMesh);
+        ResourceHandle<Mesh> cubeMeshHandle = generateCubeMesh(
+            scale, textureScale, matInstanceHandle, *resourceManager
+        );
         Model cubeModel(
             *resourceManager,
             std::vector<ResourceHandle<Mesh>>{cubeMeshHandle}
