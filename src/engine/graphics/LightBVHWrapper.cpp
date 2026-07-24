@@ -1,11 +1,11 @@
 #include "LightBVHWrapper.hpp"
 
+bvh::v2::ThreadPool LightBVHWrapper::thread_pool{};
+bvh::v2::ParallelExecutor LightBVHWrapper::executor{thread_pool};
+
 void LightBVHWrapper::initBVH(const LightBVHWrapper::LightArray& lights) {
     std::vector<BBox> bboxes(lights.size());
     std::vector<Vec3> centers(lights.size());
-
-    bvh::v2::ThreadPool thread_pool;
-    bvh::v2::ParallelExecutor executor(thread_pool);
 
     executor.for_each(0, lights.size(), [&] (size_t begin, size_t end) {
         for (size_t i = begin; i < end; ++i) {

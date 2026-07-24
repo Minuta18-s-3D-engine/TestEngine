@@ -41,6 +41,9 @@ private:
     std::unique_ptr<Bvh> bvhTree;
     std::unique_ptr<Config> bvhConfig;
 
+    static bvh::v2::ThreadPool thread_pool;
+    static bvh::v2::ParallelExecutor executor;
+
     void initBVH(const LightArray& lights);
 public:
     LightBVHWrapper() = delete; // yet
