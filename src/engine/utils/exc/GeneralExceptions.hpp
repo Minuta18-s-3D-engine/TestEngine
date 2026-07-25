@@ -15,6 +15,15 @@ public:
     const char* what() const noexcept { return message.c_str(); }
 };
 
+class shader_compilation_error : public std::exception {
+    std::string message;
+public:
+    shader_compilation_error(const char* _message) : message(_message) {}
+    shader_compilation_error(const std::string& _message) : message(_message) {}
+
+    const char* what() const noexcept { return message.c_str(); }
+};
+
 class file_corrupted : public std::exception {
     std::string message;
 public:

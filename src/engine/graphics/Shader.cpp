@@ -1,114 +1,112 @@
 #include "Shader.hpp"
 
+#include <vector>
+
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "engine/utils/exc/ShaderExceptions.hpp"
+#include "engine/utils/exc/GeneralExceptions.hpp"
 
-Shader::Shader() {}
+uint32_t Shader::compileStage(const GLenum stage, const std::string& source) const {
+    const char* code = source.c_str();
+    uint32_t shaderId = glCreateShader(stage);
+    glShaderSource(shaderId, 1, &code, nullptr);
+    glCompileShader(shaderId);
 
-Shader::Shader(
-    const std::string& vertexSource,
-    const std::string& fragmentSource
-) {
-    this->compileShaders(
-        vertexSource,
-        fragmentSource
-    );
+    GLuint success;
+    glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        char infoLog[ERROR_BUFFER_SIZE];
+        glGetShaderInfoLog(
+            shaderId,
+            static_cast<GLsizei>(ERROR_BUFFER_SIZE),
+            nullptr,
+            infoLog
+        );
+        glDeleteShader(shaderId);
+        throw exc::shader_exceptions::compilation_failed(
+            "Shader compilation failed: " + std::string(infoLog)
+        );
+    }
+    return shaderId;
+}
+
+Shader::Shader(const ShaderSources& sources) {
+    glId = glCreateProgram();
+    std::vector<uint32_t> attachedShaders;
+
+    try {
+        if (!sources.vertex.empty() && !sources.fragment.empty()) {
+            const uint32_t vertexId = compileStage(GL_VERTEX_SHADER, sources.vertex);
+            const uint32_t fragmentId = compileStage(GL_FRAGMENT_SHADER, sources.fragment);
+            glAttachShader(glId, vertexId);
+            glAttachShader(glId, fragmentId);
+            attachedShaders.push_back(vertexId);
+            attachedShaders.push_back(fragmentId);
+        } else if (!sources.compute.empty()) {
+            const uint32_t computeId = compileStage(GL_COMPUTE_SHADER, sources.compute);
+            glAttachShader(glId, computeId);
+            attachedShaders.push_back(computeId);
+        } else {
+            throw exc::invalid_argument("Invalid shader configuration");
+        }
+
+        glLinkProgram(glId);
+
+        GLuint success;
+        glGetProgramiv(glId, GL_LINK_STATUS, &success);
+        if (!success) {
+            char infoLog[ERROR_BUFFER_SIZE];
+            glGetProgramInfoLog(glId, ERROR_BUFFER_SIZE, nullptr, infoLog);
+            throw exc::shader_exceptions::linking_failed(
+                "Shader linking failed: " + std::string(infoLog)
+            );
+        }
+    } catch (...) {
+        if (glId != NO_SHADER) glDeleteProgram(glId);
+        throw;
+    }
+
+    for (const uint32_t shaderStageId : attachedShaders) {
+        glDeleteShader(shaderStageId);
+    }
 }
 
 Shader::Shader(Shader&& other) noexcept 
     : uniformLocations(std::move(other.uniformLocations)),
       glId(other.glId) 
 {
-    other.glId = 0; 
+    other.glId = NO_SHADER;
 }
 
 Shader& Shader::operator=(Shader&& other) noexcept 
 {
     if (this != &other) {
-        if (glId != 0) {
+        if (glId != NO_SHADER) {
             glDeleteProgram(glId); 
         }
         glId = other.glId;
         uniformLocations = std::move(other.uniformLocations);
-        other.glId = 0;
+        other.glId = NO_SHADER;
     }
     return *this;
 }
 
 Shader::~Shader() {
-    if (glId == 0) return;
+    if (glId == NO_SHADER) return;
     glDeleteProgram(glId);
 }
 
-void Shader::compileShaders(
-    const std::string& vertexSource, 
-    const std::string& fragmentSource
-) {
-    const char* vShaderCode = vertexSource.c_str();
-    const char* vFragmentCode = fragmentSource.c_str();
-
-    uint vertexId, fragmentId;
-    GLint success;
-    char infoLog[ERROR_BUFFER_SIZE];
-
-    vertexId = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexId, 1, &vShaderCode, nullptr);
-    glCompileShader(vertexId);
-    glGetShaderiv(vertexId, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader compilation failed: ";
-        std::cerr << infoLog << std::endl;
-        glDeleteShader(vertexId);
-        throw std::runtime_error(
-            "Shader compilation failed"
-        );
-    }
-
-    fragmentId = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentId, 1, &vFragmentCode, nullptr);
-    glCompileShader(fragmentId);
-    glGetShaderiv(fragmentId, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader compilation failed: ";
-        std::cerr << infoLog << std::endl;
-        glDeleteShader(vertexId);
-        glDeleteShader(fragmentId);
-        throw std::runtime_error(
-            "Shader compilation failed"
-        );
-    }
-
-    glId = glCreateProgram();
-    glAttachShader(glId, vertexId);
-    glAttachShader(glId, fragmentId);
-    glLinkProgram(glId);
-    glGetProgramiv(glId, GL_LINK_STATUS, &success);
-
-    if (!success) {
-        glGetProgramInfoLog(glId, ERROR_BUFFER_SIZE, nullptr, infoLog);
-        std::cerr << "Shader linking failed: ";
-        std::cerr << infoLog << std::endl;
-        glDeleteShader(vertexId);
-        glDeleteShader(fragmentId);
-        throw std::runtime_error(
-            "Shader linking failed"
-        );
-    }
-
-    glDeleteShader(vertexId);
-    glDeleteShader(fragmentId);
-}
 
 void Shader::use() {
     glUseProgram(glId);
 }
 
-uint Shader::getUniformLocation(const std::string& name) {
-    auto found = uniformLocations.find(name);
+GLint Shader::getUniformLocation(const std::string& name) {
+    const auto found = uniformLocations.find(name);
     if (found == uniformLocations.end()) {
-        uint location = glGetUniformLocation(glId, name.c_str());
+        GLint location = glGetUniformLocation(glId, name.c_str());
         uniformLocations.try_emplace(name, location);
         return location;
     }

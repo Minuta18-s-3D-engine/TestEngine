@@ -9,6 +9,8 @@ TextureImporter::TextureImporter(Serializer* _serializer)
 Texture TextureImporter::loadTexture(
     const VirtualPath& path, ResourceManager& manager
 ) {
+    logger.info("Loading texture: {}...", path.resolve());
+
     StructuredData::DataNode metaContents = parseMetaFile(path);
  
     TextureSchema schema;
@@ -36,6 +38,8 @@ Texture TextureImporter::loadTexture(
             "File format not supported. Use .png or .jpg"
         );
     }
+
+    logger.info("Texture {} loaded successfully", path.resolve());
 
     return {*image, schema, SamplerType::Texture2D};
 }

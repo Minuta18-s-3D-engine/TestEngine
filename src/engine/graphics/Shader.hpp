@@ -2,38 +2,29 @@
 #define ENGINE_GRAPHICS_SHADER_H_
 
 #include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include <glm/gtc/type_ptr.hpp>
 
 #include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
 #include <unordered_map>
-#include <memory>
 #include <glad/glad.h>
 
-#include "../utils/EngineTypes.h"
-#include "../project/VirtualPath.hpp"
+struct ShaderSources {
+    std::string vertex;
+    std::string fragment;
+    std::string compute;
+};
 
-class Shader {
-protected:
-    const uint ERROR_BUFFER_SIZE = 4096;
-    std::unordered_map<std::string, uint> uniformLocations;
+class Shader final {
+    const uint32_t ERROR_BUFFER_SIZE = 4096;
 
-    void compileShaders(
-        const std::string& vertexSource, 
-        const std::string& fragmentSource
-    );
+    std::unordered_map<std::string, GLint> uniformLocations;
+    GLint getUniformLocation(const std::string& name);
 
-    uint getUniformLocation(const std::string& name);
+    uint32_t compileStage(GLenum stage, const std::string& source) const;
+
+    const uint32_t NO_SHADER = 0;
+    uint32_t glId = NO_SHADER;
 public:
-    uint glId;
-    Shader();
-    Shader(
-        const std::string& vertexSource,
-        const std::string& fragmentSource
-    );
+    explicit Shader(const ShaderSources& sources);
 
     Shader(const Shader&) = delete;
     Shader& operator=(const Shader&) = delete;
@@ -41,7 +32,7 @@ public:
     Shader(Shader&& other) noexcept;
     Shader& operator=(Shader&& other) noexcept;
 
-    virtual ~Shader();
+    ~Shader();
 
     void use();
 
@@ -61,6 +52,8 @@ public:
     void setUniform(const std::string& name, const glm::mat2& value);
     void setUniform(const std::string& name, const glm::mat3& value);
     void setUniform(const std::string& name, const glm::mat4& value);
+
+    [[nodiscard]] uint32_t getGlId() const { return glId; }
 };
 
 

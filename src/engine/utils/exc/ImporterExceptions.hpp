@@ -12,43 +12,43 @@ class importer_exception : public std::exception {
 protected:
     std::string message;
 public:
-    importer_exception(const char* _message) : message(_message) {}
-    importer_exception(const std::string& _message) : message(_message) {}
+    explicit importer_exception(const char* _message) : message(_message) {}
+    explicit importer_exception(std::string _message) : message(std::move(_message)) {}
 
-    [[nodiscard]] virtual const char* what() const noexcept { 
+    [[nodiscard]] const char* what() const noexcept override {
         return message.c_str(); 
     } 
 };
 
 class meta_file_not_found : public importer_exception {
 public:
-    meta_file_not_found(const char* _message) 
+    explicit meta_file_not_found(const char* _message)
         : importer_exception(_message) {}
-    meta_file_not_found(const std::string& _message) 
+    explicit meta_file_not_found(const std::string& _message)
         : importer_exception(_message) {}
 };
 
 class meta_file_invalid : public importer_exception {
 public:
-    meta_file_invalid(const char* _message) 
+    explicit meta_file_invalid(const char* _message)
         : importer_exception(_message) {}
-    meta_file_invalid(const std::string& _message) 
+    explicit meta_file_invalid(const std::string& _message)
         : importer_exception(_message) {}
 };
 
 class resource_not_found : public importer_exception {
 public:
-    resource_not_found(const char* _message) 
+    explicit resource_not_found(const char* _message)
         : importer_exception(_message) {}
-    resource_not_found(const std::string& _message) 
+    explicit resource_not_found(const std::string& _message)
         : importer_exception(_message) {}
 };
 
 class resource_invalid : public importer_exception {
 public:
-    resource_invalid(const char* _message) 
+    explicit resource_invalid(const char* _message)
         : importer_exception(_message) {}
-    resource_invalid(const std::string& _message) 
+    explicit resource_invalid(const std::string& _message)
         : importer_exception(_message) {}
 };
 
