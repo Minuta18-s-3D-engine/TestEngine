@@ -34,7 +34,7 @@ public:
 
     ~Shader();
 
-    void use();
+    void use() const;
 
     void setUniform(const std::string& name, int32_t value);
     void setUniform(const std::string& name, uint32_t value);

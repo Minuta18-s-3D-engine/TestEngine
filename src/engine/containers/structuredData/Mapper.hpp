@@ -3,6 +3,8 @@
 
 #include "engine/containers/structuredData/DataNode.hpp"
 #include "engine/containers/reflection/Reflection.hpp"
+#include <unordered_map>
+#include <map>
 #include <type_traits>
 #include <vector>
 #include <string>
@@ -14,6 +16,16 @@ template <typename> struct is_vector : std::false_type {};
 template <typename T, typename A> struct is_vector<std::vector<T, A>> : 
     std::true_type {};
 template <typename T> inline constexpr bool is_vector_v = is_vector<T>::value;
+
+template <typename T> struct is_map : std::false_type {};
+
+template <typename Key, typename Value, typename Cmp, typename Alloc>
+struct is_map<std::map<Key, Value, Cmp, Alloc>> : std::true_type {};
+
+template <typename Key, typename Value, typename Hash, typename KeyEqual, typename Alloc>
+struct is_map<std::unordered_map<Key, Value, Hash, KeyEqual, Alloc>> : std::true_type {};
+
+template <typename T> inline constexpr bool is_map_v = is_map<T>::value;
 
 template <typename T>
 inline constexpr bool is_primitive_v = 
@@ -35,12 +47,14 @@ private:
     template <typename T> static DataNode writeEnum(const T& value);
     template <typename T> static DataNode writeObject(const T& value);
     template <typename T> static DataNode writeVariant(const T& value);
+    template <typename T> static DataNode writeMap(const T& value);
 
     template <typename T> static bool readPrimitive(const DataNode& node, T& out);
     template <typename T> static bool readArray(const DataNode& node, T& out);
     template <typename T> static bool readEnum(const DataNode& node, T& out);
     template <typename T> static bool readObject(const DataNode& node, T& out);
     template <typename T> static bool readVariant(const DataNode& node, T& out);
+    template <typename T> static bool readMap(const DataNode& node, T& out);
 };
 
 template <typename T>
@@ -49,6 +63,7 @@ inline DataNode Mapper::write(const T& value) {
 
     if constexpr (is_primitive_v<DecayT>) return writePrimitive(value);
     else if constexpr (is_vector_v<DecayT>) return writeArray(value);
+    else if constexpr (is_map_v<DecayT>) return writeMap(value);
     else if constexpr (std::is_enum_v<DecayT>) return writeEnum(value);
     else if constexpr (Reflection::Meta<DecayT>::isMapped)
         return writeObject(value);
@@ -62,6 +77,7 @@ inline bool Mapper::read(const DataNode& node, T& out) {
 
     if constexpr (is_primitive_v<DecayT>) return readPrimitive(node, out);
     else if constexpr (is_vector_v<DecayT>) return readArray(node, out);
+    else if constexpr (is_map_v<DecayT>) return readMap(node, out);
     else if constexpr (std::is_enum_v<DecayT>) return readEnum(node, out);
     else if constexpr (Reflection::Meta<DecayT>::isMapped)
         return readObject(node, out);
@@ -136,6 +152,15 @@ inline DataNode Mapper::writeObject(const T& value) {
 template <typename T>
 inline DataNode Mapper::writeVariant(const T& value) {
     return std::visit([](const auto& v) { return write(v); }, value);
+}
+
+template <typename T>
+inline DataNode Mapper::writeMap(const T& value) {
+    Object obj;
+    for (const auto& [key, val] : value) {
+        obj[std::string(key)] = write(val);
+    }
+    return DataNode(std::move(obj));
 }
 
 template <typename T>
@@ -252,6 +277,24 @@ inline bool Mapper::readVariant(const DataNode& node, T& out) {
     };
 
     tryRead(std::make_index_sequence<std::variant_size_v<T>>{});
+    return success;
+}
+
+template <typename T>
+inline bool Mapper::readMap(const DataNode& node, T& out) {
+    if (!node.isObject()) return false;
+
+    const auto& obj = node.asObject();
+    out.clear();
+
+    bool success = true;
+    for (const auto& entry : obj) {
+        typename std::decay_t<T>::mapped_type temp{};
+        if (!read(entry.second, temp)) {
+            success = false;
+        }
+        out[entry.first] = std::move(temp);
+    }
     return success;
 }
 
