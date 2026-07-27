@@ -8,7 +8,7 @@ Logger::Logger(
 Log Logger::createLog(
     LogLevel level, 
     const std::string& userMessage
-) {
+) const {
     return {
         .loggerName = loggerName,
         .time = Clock::getFormattedCurrentTime(),
