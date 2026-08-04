@@ -1,10 +1,20 @@
 #include "TextureImporter.hpp"
 
-TextureImporter::TextureImporter(Serializer* _serializer) 
-  : logger(Logging::createLogger("engine.resource.importers.textureImporter")),
-    ResourceImporter(_serializer) {
-    
-}
+#include <string>
+
+#include "engine/graphics/TextureSchema.hpp"
+#include "engine/resource/ResourceManager.hpp"
+#include "engine/containers/structuredData/DataNode.hpp"
+#include "engine/containers/structuredData/Mapper.hpp"
+#include "engine/resource/utils/ImageData.hpp"
+#include "engine/resource/utils/Files.hpp"
+#include "engine/resource/coders/images/PngCoder.hpp"
+#include "engine/resource/coders/images/JpgCoder.hpp"
+#include "engine/graphics/Texture.hpp"
+
+TextureImporter::TextureImporter(Serializer& _serializer)
+    : logger(Logging::createLogger("engine.resource.importers.textureImporter")),
+      ResourceImporter(_serializer) {}
 
 Texture TextureImporter::loadTexture(
     const VirtualPath& path, ResourceManager& manager
@@ -50,7 +60,7 @@ Texture TextureImporter::import(
     try {
         return loadTexture(path, manager);
     } catch (exc::importer_exceptions::importer_exception& e) {
-        throw e;
+        throw;
     } catch (std::exception& e) {
         throw exc::importer_exceptions::importer_exception(e.what());
     }

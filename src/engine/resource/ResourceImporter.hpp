@@ -29,7 +29,7 @@ protected:
 
     Serializer* serializer;
 public:
-    ResourceImporter(Serializer* _serializer) : serializer(_serializer) {}
+    explicit ResourceImporter(Serializer& serializer_) : serializer(&serializer_) {}
 
     virtual ~ResourceImporter() = default;
 
@@ -40,7 +40,7 @@ public:
 
 template <typename T>
 VirtualPath ResourceImporter<T>::constructMetaPath(const VirtualPath& basePath) {
-    return VirtualPath(basePath.resolve() + ".meta");
+    return { basePath.resolve() + ".meta" };
 }
 
 template <typename T>
