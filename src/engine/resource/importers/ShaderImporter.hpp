@@ -20,7 +20,7 @@ class ShaderImporter : public ResourceImporter<Shader> {
         const std::string& propType
     );
     [[nodiscard]] MaterialLayout createLayout(const ShaderSchema& schema);
-    std::string readSourceFile(const VirtualPath& path) const;
+    [[nodiscard]] std::string readSourceFile(const VirtualPath& path) const;
 public:
     explicit ShaderImporter(Serializer& serializer_);
     ~ShaderImporter() override = default;
