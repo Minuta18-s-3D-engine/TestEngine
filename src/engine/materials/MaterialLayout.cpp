@@ -46,28 +46,7 @@ size_t MaterialLayout::getStd430Size(PropertyType type) {
     }
 }
 
-void MaterialLayout::repackData() {
-    propsOrder.clear();
-    propsOrder.reserve(properties.size());
-    for (const auto& [name, _] : properties) {
-        propsOrder.push_back(name);
-    }
-    std::sort(propsOrder.begin(), propsOrder.end());
 
-    size_t currentOffset = 0;
-    maxAlignment = 4;
-
-    for (const std::string& name : propsOrder) {
-        Property& prop = properties.at(name);
-
-        prop.offset = currentOffset;
-        prop.size = getSize(prop.type);
-
-        currentOffset += prop.size;
-    }
-
-    materialSize = currentOffset;
-}
 
 bool MaterialLayout::hasProperty(const std::string& name) const {
     return properties.contains(name);
