@@ -1,6 +1,7 @@
 #include "ShaderLayout.hpp"
 
 #include <algorithm>
+#include <stdexcept>
 
 void ShaderLayout::repackData() {
     if (finalized) return;
@@ -59,5 +60,6 @@ std::vector<std::string> ShaderLayout::getProperties() const {
             "Unable to get property order before finalization"
         );
     }
-    return propsOrder;
+
+    return propertyOrder;
 }
