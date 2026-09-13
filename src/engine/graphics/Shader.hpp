@@ -13,6 +13,8 @@ struct ShaderSources {
     std::string compute;
 };
 
+class ShaderLayout;
+
 class Shader final {
     const uint32_t ERROR_BUFFER_SIZE = 4096;
 
