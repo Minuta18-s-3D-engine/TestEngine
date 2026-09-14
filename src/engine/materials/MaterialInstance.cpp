@@ -1,5 +1,7 @@
 #include "MaterialInstance.hpp"
 
+#include <iostream>
+
 MaterialInstance::MaterialInstance(
     const std::string& _name, 
     const Material& _material, 
@@ -123,11 +125,17 @@ void MaterialInstance::bindSamplers(uint32_t startSlot) const {
         auto it = samplers.find(samplerDef.name);
 
         if (it != samplers.end() && it->second) {
-            glBindTextureUnit(
-                samplerDef.slot + startSlot, it->second->getId()
-            );
+            // glBindTextureUnit(
+            //     samplerDef.slot + startSlot, it->second->getId()
+            // );
+
+            glActiveTexture(GL_TEXTURE0 + samplerDef.slot + startSlot);
+            glBindTexture(GL_TEXTURE_2D, it->second->getId());
         } else {
-            glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
+            // glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
+
+            glActiveTexture(GL_TEXTURE0 + samplerDef.slot + startSlot);
+            glBindTexture(GL_TEXTURE_2D, GL_NO_BIND);
         }
     }
 }
@@ -135,6 +143,10 @@ void MaterialInstance::bindSamplers(uint32_t startSlot) const {
 void MaterialInstance::unbindSamplers() const {
     const GLuint GL_NO_BIND = 0;
     for (const auto& samplerDef : baseMaterial->getSamplerDefinitions()) {
-        glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
+        constexpr GLuint GL_NO_BIND = 0;
+        // glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
+
+        glActiveTexture(GL_TEXTURE0 + samplerDef.slot);
+        glBindTexture(GL_TEXTURE_2D, GL_NO_BIND);
     }
 }

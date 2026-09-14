@@ -10,6 +10,13 @@ configure_file(
 
 include(FetchContent)
 
+add_library(glad 
+    ${CMAKE_CURRENT_SOURCE_DIR}/../lib/glad/src/glad.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../lib/glad/include/glad/glad.h
+)
+target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../lib/glad/include)
+
+
 FetchContent_Declare(
   stduuid
   GIT_REPOSITORY https://github.com/mariusbancila/stduuid
@@ -57,7 +64,6 @@ file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Main.cpp)
 
 add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-add_library(glad ../lib/glad/include/glad/glad.h ../lib/glad/src/glad.c)
 
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -69,7 +75,6 @@ include_directories( ${OPENGL_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} )
 
 add_subdirectory(lib/bvh)
 
-target_include_directories(glad PUBLIC ../lib/glad/include/)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
