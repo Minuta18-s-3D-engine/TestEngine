@@ -1,112 +1,57 @@
 #ifndef ENGINE_GRAPHICS_SHADERLAYOUT_HPP
 #define ENGINE_GRAPHICS_SHADERLAYOUT_HPP
 
-#include <cstdint>
-#include <unordered_map>
+#include "ShaderPropertyTypes.hpp"
 #include <string>
 #include <vector>
-#include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-
-#define PROPERTY_TYPE_LIST \
-    X(Int,    int32_t,    "int"     ) \
-    X(Uint,   uint32_t,   "uint"    ) \
-    X(Float,  float,      "float"   ) \
-    X(Bool,   bool,       "bool"    ) \
-    X(Vec2,   glm::vec2,  "vec2"    ) \
-    X(IVec2,  glm::ivec2, "ivec2"   ) \
-    X(UVec2,  glm::uvec2, "uvec2"   ) \
-    X(Vec3,   glm::vec3,  "vec3"    ) \
-    X(IVec3,  glm::ivec3, "ivec3"   ) \
-    X(UVec3,  glm::uvec3, "uvec3"   ) \
-    X(Vec4,   glm::vec4,  "vec4"    ) \
-    X(IVec4,  glm::ivec4, "ivec4"   ) \
-    X(UVec4,  glm::uvec4, "uvec4"   ) \
-    X(Mat2,   glm::mat2,  "mat2"    ) \
-    X(Mat3,   glm::mat3,  "mat3"    ) \
-    X(Mat4,   glm::mat4,  "mat4"    ) \
+#include <unordered_map>
 
 class ShaderLayout {
 public:
-    enum class PropertyType {
-        #define X(name, type, glslType) name,
-            PROPERTY_TYPE_LIST
-        #undef X
-        Unknown
-    };
+    using PropertyType = shader_layout::PropertyType;
+    using SamplerType = shader_layout::SamplerType;
 
-    struct PropertyInfo {
+    static constexpr uint32_t NO_HANDLE = 0;
+
+    struct Property {
+        std::string name;
         PropertyType type;
-        size_t offset;
-        size_t size;
+        uint32_t offset = 0;
     };
 
-    template <typename T>
-    static PropertyType getPropertyType() {
-        using DecayedT = std::decay_t<T>;
-
-        #define X(name, type, glslType) \
-            if constexpr (std::is_same_v<DecayedT, type>) \
-                return PropertyType::name;
-
-            PROPERTY_TYPE_LIST
-        #undef X
-
-        return PropertyType::Unknown;
-    }
-
-    static size_t getSize(const PropertyType propType) {
-        if (propType == PropertyType::Bool)
-            return 4;
-
-        #define X(name, type, glslType) \
-            if (propType == PropertyType::name) \
-                return sizeof(type);
-
-            PROPERTY_TYPE_LIST
-        #undef X
-
-        return 0;
-    }
+    struct Sampler {
+        std::string name;
+        SamplerType type;
+        uint32_t binding = 0;
+        uint32_t handleOffset = NO_HANDLE;
+    };
 private:
-    std::unordered_map<std::string, PropertyInfo> properties;
-    std::vector<std::string> propertyOrder;
+    bool isFinalized = false;
 
-    size_t layoutSize = 0;
-    size_t maxAlignment = 0;
+    uint32_t dataBlockSize = 0;
 
-    bool finalized = false;
+    std::vector<Property> properties;
+    std::vector<Sampler> samplers;
 
-    void repackData();
+    std::unordered_map<std::string, size_t> propertyIndex;
+    std::unordered_map<std::string, size_t> samplerIndex;
 public:
-    ShaderLayout() = default;
+    explicit ShaderLayout() = default;
 
-    template <typename T>
-    void addProperty(const std::string& name);
-    bool hasProperty(const std::string& name) const;
-
-    const PropertyInfo& getPropertyInfo(const std::string& name) const;
-    size_t getLayoutSize() const;
-
+    void addField(const std::string& name, PropertyType type);
+    void addSampler(const std::string& name, SamplerType type);
     void finalize();
-    bool isFinalized() const;
 
-    std::vector<std::string> getProperties() const;
+    [[nodiscard]] bool isFinalized() noexcept { return isFinalized; }
+    [[nodiscard]] bool hasProperty(const std::string& name) const;
+    [[nodiscard]] bool hasSampler(const std::string& name) const;
+    [[nodiscard]] uint32_t dataBlockSize() const noexcept { return dataBlockSize; };
+
+    [[nodiscard]] const Property& getProperty(const std::string& name) const;
+    [[nodiscard]] const Sampler& getSampler(const std::string& name) const;
+
+    [[nodiscard]] const std::vector<Property>& getProperties() const { return properties; };
+    [[nodiscard]] const std::vector<Sampler>& getSamplers() const { return samplers; };
 };
-
-template <typename T>
-void ShaderLayout::addProperty(const std::string& name) {
-    if (finalized) return;
-
-    const PropertyType type = getPropertyType<T>();
-
-    properties[name] = {
-        .type = type,
-        .offset = 0,
-        .size = 0
-    };
-}
 
 #endif // ENGINE_GRAPHICS_SHADERLAYOUT_HPP
