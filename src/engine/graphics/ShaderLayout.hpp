@@ -26,7 +26,7 @@ public:
         uint32_t handleOffset = NO_HANDLE;
     };
 private:
-    bool isFinalized = false;
+    bool finalized = false;
 
     uint32_t dataBlockSize = 0;
 
@@ -35,6 +35,8 @@ private:
 
     std::unordered_map<std::string, size_t> propertyIndex;
     std::unordered_map<std::string, size_t> samplerIndex;
+
+    void packProperties();
 public:
     explicit ShaderLayout() = default;
 
@@ -42,10 +44,10 @@ public:
     void addSampler(const std::string& name, SamplerType type);
     void finalize();
 
-    [[nodiscard]] bool isFinalized() noexcept { return isFinalized; }
+    [[nodiscard]] bool isFinalized() const noexcept { return finalized; }
     [[nodiscard]] bool hasProperty(const std::string& name) const;
     [[nodiscard]] bool hasSampler(const std::string& name) const;
-    [[nodiscard]] uint32_t dataBlockSize() const noexcept { return dataBlockSize; };
+    [[nodiscard]] uint32_t getDataBlockSize() const noexcept { return dataBlockSize; };
 
     [[nodiscard]] const Property& getProperty(const std::string& name) const;
     [[nodiscard]] const Sampler& getSampler(const std::string& name) const;
