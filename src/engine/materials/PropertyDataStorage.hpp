@@ -3,23 +3,23 @@
 
 #include <stdexcept>
 
-#include "MaterialLayout.hpp"
 #include "MaterialDataBuffer.hpp"
+#include "engine/graphics/ShaderLayout.hpp"
 
 class PropertyDataStorage {
-    const MaterialLayout* layout;
-    MaterialDataBuffer& buffer;
-
-    uint32_t instanceId;
+    const ShaderLayout* layout;
+    MaterialDataBuffer* buffer;
 
     // Obviously invalid id for move constructor
     static constexpr uint32_t INVALID_ID = 0xFFFFFFFF;
+
+    uint32_t instanceId = INVALID_ID;
 public:
-    PropertyDataStorage(
-        const MaterialLayout& _layout, 
+    explicit PropertyDataStorage(
+        const ShaderLayout& _layout,
         MaterialDataBuffer& _buffer
     );
-    PropertyDataStorage(
+    explicit PropertyDataStorage(
         const PropertyDataStorage& other, 
         MaterialDataBuffer& targetBuffer
     );
@@ -30,7 +30,7 @@ public:
     PropertyDataStorage(PropertyDataStorage&& other) noexcept;
     PropertyDataStorage& operator=(PropertyDataStorage&& other) noexcept;
 
-    bool hasProperty(const std::string& name) const;
+    [[nodiscard]] bool hasProperty(const std::string& name) const;
 
     template <typename T>
     void setProperty(const std::string& name, const T& value);
@@ -38,17 +38,31 @@ public:
     template <typename T>
     T getProperty(const std::string& name) const;
 
-    uint32_t getStartId() const { 
-        return buffer.getMetadataById(instanceId).offset; 
+    [[nodiscard]] uint32_t getStartId() const {
+        return buffer->getMetadataById(instanceId).offset;
     }
 
-    MaterialDataBuffer& getBuffer() const { return buffer; }
-    const MaterialLayout& getLayout() const { return *layout; }
+    [[nodiscard]] MaterialDataBuffer& getBuffer() const { return *buffer; }
+    [[nodiscard]] const ShaderLayout& getLayout() const { return *layout; }
 
-    void bindLayout(const MaterialLayout* newLayout) {
-        layout = newLayout;
+    void bindLayout(const ShaderLayout& newLayout) {
+        layout = &newLayout;
     }
 };
+
+template <typename T>
+void writeStd430(
+    MaterialDataBuffer& buf, const uint32_t id, const uint32_t offset, const T& v
+) {
+    buf.write(id, offset, sizeof(T), &v);
+}
+
+template <typename T>
+void readStd430(
+    MaterialDataBuffer& buf, const uint32_t id, const uint32_t offset, T& out
+) {
+    buf.read(id, offset, sizeof(T), &out);
+}
 
 template <typename T>
 void PropertyDataStorage::setProperty(
@@ -58,14 +72,15 @@ void PropertyDataStorage::setProperty(
         throw std::invalid_argument("No such property: " + name);
     }
 
-    const auto& info = layout->getPropertyInfo(name);
-    if (MaterialLayout::getPropertyType<T>() != info.type) {
+    const auto& property = layout->getProperty(name);
+    if (shader_layout::propertyTypeOf<T> != property.type) {
         throw std::invalid_argument(
-            "Excepted type " + MaterialLayout::getGLSLType(info.type)
+            "Type mismatch for" + name +
+                "Excepted type " + shader_layout::typeInfo(property.type).glslName
         );
     }
 
-    buffer.write(instanceId, info.offset, info.size, &value);
+    writeStd430(buffer, instanceId, property.offset, value);
 }
 
 template <typename T>
@@ -74,10 +89,9 @@ T PropertyDataStorage::getProperty(const std::string& name) const {
         throw std::invalid_argument("No such property: " + name);
     }
     
-    const auto& info = layout->getPropertyInfo(name);
-
-    T value;
-    buffer.read(instanceId, info.offset, sizeof(T), &value);
+    const auto& property = layout->getProperty(name);
+    T value{};
+    readStd430(buffer, instanceId, property.offset, value);
     return value;
 }
 
