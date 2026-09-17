@@ -7,6 +7,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "engine/utils/exc/ShaderExceptions.hpp"
 #include "engine/utils/exc/GeneralExceptions.hpp"
+#include "engine/graphics/ShaderLayout.hpp"
 
 uint32_t Shader::compileStage(const GLenum stage, const std::string& source) const {
     const char* code = source.c_str();
@@ -32,20 +33,22 @@ uint32_t Shader::compileStage(const GLenum stage, const std::string& source) con
     return shaderId;
 }
 
-Shader::Shader(const ShaderSources& sources) {
+Shader::Shader(
+    const ShaderSources& sources_, ShaderLayout&& layout_
+) : layout(std::make_unique<ShaderLayout>(std::move(layout_))) {
     glId = glCreateProgram();
     std::vector<uint32_t> attachedShaders;
 
     try {
-        if (!sources.vertex.empty() && !sources.fragment.empty()) {
-            const uint32_t vertexId = compileStage(GL_VERTEX_SHADER, sources.vertex);
-            const uint32_t fragmentId = compileStage(GL_FRAGMENT_SHADER, sources.fragment);
+        if (!sources_.vertex.empty() && !sources_.fragment.empty()) {
+            const uint32_t vertexId = compileStage(GL_VERTEX_SHADER, sources_.vertex);
+            const uint32_t fragmentId = compileStage(GL_FRAGMENT_SHADER, sources_.fragment);
             glAttachShader(glId, vertexId);
             glAttachShader(glId, fragmentId);
             attachedShaders.push_back(vertexId);
             attachedShaders.push_back(fragmentId);
-        } else if (!sources.compute.empty()) {
-            const uint32_t computeId = compileStage(GL_COMPUTE_SHADER, sources.compute);
+        } else if (!sources_.compute.empty()) {
+            const uint32_t computeId = compileStage(GL_COMPUTE_SHADER, sources_.compute);
             glAttachShader(glId, computeId);
             attachedShaders.push_back(computeId);
         } else {

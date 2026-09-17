@@ -5,6 +5,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <memory>
 #include <glad/glad.h>
 
 struct ShaderSources {
@@ -17,16 +18,17 @@ class ShaderLayout;
 
 class Shader final {
     const uint32_t ERROR_BUFFER_SIZE = 4096;
+    const uint32_t NO_SHADER = 0;
+
+    uint32_t glId = NO_SHADER;
+    std::unique_ptr<ShaderLayout> layout;
 
     std::unordered_map<std::string, GLint> uniformLocations;
+
     GLint getUniformLocation(const std::string& name);
-
     uint32_t compileStage(GLenum stage, const std::string& source) const;
-
-    const uint32_t NO_SHADER = 0;
-    uint32_t glId = NO_SHADER;
 public:
-    explicit Shader(const ShaderSources& sources);
+    explicit Shader(const ShaderSources& sources_, ShaderLayout&& layout_);
 
     Shader(const Shader&) = delete;
     Shader& operator=(const Shader&) = delete;
@@ -56,6 +58,7 @@ public:
     void setUniform(const std::string& name, const glm::mat4& value);
 
     [[nodiscard]] uint32_t getGlId() const { return glId; }
+    const ShaderLayout& getLayout() const { return *layout; }
 };
 
 
