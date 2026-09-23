@@ -3,63 +3,50 @@
 
 #include <string>
 
-#include "MaterialLayout.hpp"
 #include "MaterialGraphicsConfig.hpp"
 #include "PropertyDataStorage.hpp"
-#include "../graphics/SamplerDefinition.hpp"
-#include "MaterialDescriptor.hpp"
 #include "engine/resource/ResourceHandle.hpp"
 
 class Shader;
+class Texture;
 
 class Material {
-    friend class MaterialBuilder;
-
-    MaterialDescriptor descriptor;
-
-    ResourceHandle<Shader> shaderHandle;
-    PropertyDataStorage defaultValues;
-    MaterialDescriptor::SamplerMap samplerDefaults;
-
-    Material(
-        MaterialDescriptor&& _descriptor,
-        MaterialDescriptor::SamplerMap&& _samplerDefaults,
-        PropertyDataStorage&& _storage
-    );
 public:
+    using SamplerDefaults = std::unordered_map<std::string, ResourceHandle<Texture>>;
+private:
+    MaterialGraphicsConfig config;
+    ResourceHandle<Shader> shader;
+
+    PropertyDataStorage properties;
+    SamplerDefaults samplers;
+public:
+    Material(
+        MaterialGraphicsConfig config_,
+        ResourceHandle<Shader> shader_,
+        PropertyDataStorage&& defaultValues_,
+        SamplerDefaults&& defaultSamplers_
+    );
+
     Material(const Material& other) = delete;
     Material& operator=(const Material& other) = delete;
 
     Material(Material&& other) noexcept;
     Material& operator=(Material&& other) noexcept;
 
-    const std::string& getName() const;
-    const MaterialGraphicsConfig& getConfig() const;
-    const MaterialLayout& getLayout() const;
-    const PropertyDataStorage& getDefaultValues() const;
-    const std::vector<SamplerDefinition>& getSamplerDefinitions() const;
-    const MaterialDescriptor::SamplerMap& getSamplerDefaults() const;
-    const MaterialDescriptor& getDescriptor() const;
+    const MaterialGraphicsConfig& getConfig() const { return config; };
+    ResourceHandle<Shader> getShader() const { return shader; }
+    const PropertyDataStorage& getProperties() const { return properties; }
+    const SamplerDefaults& getSamplers() const { return samplers; }
 
-    bool hasProperty(const std::string& name) const;
-    bool hasDefaultValue(const std::string& name) const;
-    MaterialLayout::PropertyType getPropertyType(
-        const std::string& name
-    ) const;
-
-    bool hasSampler(const std::string& name) const;
-    const SamplerDefinition& getSampler(const std::string& name) const;
-
+    bool hasProperty(const std::string& propertyName) const;
     template <typename T>
-    T getPropertyDefaultValue(const std::string& name);
+    T getProperty(const std::string& propertyName) const;
+    template <typename T>
+    void setProperty(const std::string& propertyName, const T& value);
 
-    void bindShader(ResourceHandle<Shader> _shader) { shaderHandle = _shader; }
-    ResourceHandle<Shader> getShader() const { return shaderHandle; }
+    bool hasSampler(const std::string& samplerName) const;
+    ResourceHandle<Texture> getSampler(const std::string& samplerName) const;
+    void setSampler(const std::string& samplerName, ResourceHandle<Texture> value);
 };
-
-template <typename T>
-T Material::getPropertyDefaultValue(const std::string& name) {
-    return defaultValues.getProperty<T>(name); 
-}
 
 #endif // ENGINE_MATERIALS_MATERIAL_H_

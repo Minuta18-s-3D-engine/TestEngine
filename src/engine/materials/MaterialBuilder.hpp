@@ -10,7 +10,6 @@
 #include "Material.hpp"
 #include "MaterialGraphicsConfig.hpp"
 #include "PropertyDataStorage.hpp"
-#include "MaterialLayout.hpp"
 #include "MaterialDataBuffer.hpp"
 #include "../graphics/SamplerType.hpp"
 #include "../graphics/Texture.hpp"
@@ -19,6 +18,7 @@
 #include "engine/resource/ResourceHandle.hpp"
 
 class Shader;
+class ShaderLayout;
 
 class MaterialBuilder {
     MaterialDescriptor resultDescriptor;
