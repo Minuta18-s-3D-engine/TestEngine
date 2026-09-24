@@ -14,14 +14,14 @@ class Material {
 public:
     using SamplerDefaults = std::unordered_map<std::string, ResourceHandle<Texture>>;
 private:
-    MaterialGraphicsConfig config;
+    MaterialGraphicsConfig* config;
     ResourceHandle<Shader> shader;
 
     PropertyDataStorage properties;
     SamplerDefaults samplers;
 public:
     Material(
-        MaterialGraphicsConfig config_,
+        MaterialGraphicsConfig& config_,
         ResourceHandle<Shader> shader_,
         PropertyDataStorage&& defaultValues_,
         SamplerDefaults&& defaultSamplers_
@@ -33,7 +33,7 @@ public:
     Material(Material&& other) noexcept;
     Material& operator=(Material&& other) noexcept;
 
-    const MaterialGraphicsConfig& getConfig() const { return config; };
+    const MaterialGraphicsConfig& getConfig() const { return *config; };
     ResourceHandle<Shader> getShader() const { return shader; }
     const PropertyDataStorage& getProperties() const { return properties; }
     const SamplerDefaults& getSamplers() const { return samplers; }
@@ -48,5 +48,15 @@ public:
     ResourceHandle<Texture> getSampler(const std::string& samplerName) const;
     void setSampler(const std::string& samplerName, ResourceHandle<Texture> value);
 };
+
+template <typename T>
+T Material::getProperty(const std::string &propertyName) const {
+    return properties.getProperty<T>(propertyName);
+}
+
+template<typename T>
+void Material::setProperty(const std::string &propertyName, const T &value) {
+    properties.setProperty<T>(propertyName, value);
+}
 
 #endif // ENGINE_MATERIALS_MATERIAL_H_
