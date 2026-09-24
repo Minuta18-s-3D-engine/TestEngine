@@ -2,36 +2,26 @@
 #define ENGINE_MATERIALS_MATERIALINSTANCE_H_
 
 #include <string>
-#include <unordered_map>
 
 #include "Material.hpp"
-#include "MaterialDataBuffer.hpp"
-#include "MaterialDescriptor.hpp"
-#include "engine/graphics/Texture.hpp"
 #include "engine/resource/ResourceManager.hpp"
 
 class MaterialInstance {
-    std::string name;
-
-    const Material* baseMaterial;
-    const MaterialDescriptor* descriptor;
     MaterialDataBuffer* buffer;
     ResourceManager* resourceManager;
 
+    const Material* baseMaterial;
     PropertyDataStorage properties;
-
-    MaterialDescriptor::SamplerMap samplers;
+    Material::SamplerDefaults samplers;
 
     void throwIfNoSampler(const std::string& samplerName) const;
     void throwIfNoProperty(const std::string& propertyName) const;
 public:
     MaterialInstance(
-        std::string _name,
-        const Material& _material, 
-        MaterialDataBuffer& _buffer,
-        ResourceManager& _resourceManager
+        const Material& baseMaterial_,
+        MaterialDataBuffer& buffer_,
+        ResourceManager& resourceManager_
     );
-
     ~MaterialInstance() = default;
     
     MaterialInstance(const MaterialInstance& other) = default;
@@ -40,17 +30,15 @@ public:
     MaterialInstance(MaterialInstance&& other) noexcept;
     MaterialInstance& operator=(MaterialInstance&& other) noexcept;
 
-    bool hasProperty(const std::string& propertyName) const;
-
+    [[nodiscard]] bool hasProperty(const std::string& propertyName) const;
+    template <typename T>
+    [[nodiscard]] T getProperty(const std::string& propertyName) const;
     template <typename T>
     void setProperty(const std::string& propertyName, const T& value);
 
-    template <typename T>
-    T getProperty(const std::string& propertyName) const;
-
-    bool hasSampler(const std::string& samplerName) const;
-    void setSampler(const std::string& samplerName, ResourceHandle<Texture> texture);
-    ResourceHandle<Texture> getSampler(const std::string& samplerName) const;
+    [[nodiscard]] bool hasSampler(const std::string& samplerName) const;
+    [[nodiscard]] ResourceHandle<Texture> getSampler(const std::string& samplerName) const;
+    void setSampler(const std::string& samplerName, ResourceHandle<Texture> value);
 
     void bindSamplers(uint32_t startSlot = 0) const;
     void unbindSamplers() const;

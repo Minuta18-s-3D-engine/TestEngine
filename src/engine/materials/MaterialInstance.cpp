@@ -1,26 +1,26 @@
 #include "MaterialInstance.hpp"
 
+#include "engine/graphics/Shader.hpp"
+
 MaterialInstance::MaterialInstance(
-    std::string _name,
-    const Material& _material, 
-    MaterialDataBuffer& _buffer,
-    ResourceManager& _resourceManager
-) : name(std::move(_name)), baseMaterial(&_material),
-    descriptor(&baseMaterial->getDescriptor()),
-    buffer(&_buffer),
-    resourceManager(&_resourceManager),
-    properties(baseMaterial->getDefaultValues(), _buffer),
-    samplers(baseMaterial->getSamplerDefaults())
+    const Material& baseMaterial_,
+    MaterialDataBuffer& buffer_,
+    ResourceManager& resourceManager_
+) : buffer(&buffer_),
+    resourceManager(&resourceManager_),
+    baseMaterial(&baseMaterial_),
+    properties(baseMaterial_.getProperties(), buffer_),
+    samplers(baseMaterial_.getSamplers())
 {
-    properties.bindLayout(&baseMaterial->getLayout());
+    const auto& shader = resourceManager_.require<Shader>(
+        baseMaterial_.getShader());
+    properties.bindLayout(shader.getLayout());
 }
 
 MaterialInstance::MaterialInstance(MaterialInstance&& other) noexcept
-  : name(std::move(other.name)),
-    baseMaterial(other.baseMaterial),
-    descriptor(other.descriptor),
-    buffer(other.buffer),
+  : buffer(other.buffer),
     resourceManager(other.resourceManager),
+    baseMaterial(other.baseMaterial),
     properties(std::move(other.properties)),
     samplers(std::move(other.samplers))
 {
@@ -32,11 +32,9 @@ MaterialInstance& MaterialInstance::operator=(
     MaterialInstance&& other
 ) noexcept {
     if (this != &other) {
-        name = std::move(other.name);
         baseMaterial = other.baseMaterial;
         buffer = other.buffer;
         resourceManager = other.resourceManager;
-        descriptor = other.descriptor;
         properties = std::move(other.properties);
         samplers = std::move(other.samplers);
 
@@ -49,7 +47,7 @@ MaterialInstance& MaterialInstance::operator=(
 void MaterialInstance::throwIfNoSampler(const std::string& samplerName) const {
     if (!baseMaterial->hasSampler(samplerName)) {
         throw std::invalid_argument(
-            "Material \"" + name + "\" has no sampler \"" + samplerName + "\""
+            "Material  has no sampler \"" + samplerName
         );
     }
 }
@@ -59,8 +57,7 @@ void MaterialInstance::throwIfNoProperty(
 ) const {
     if (!baseMaterial->hasProperty(propertyName)) {
         throw std::invalid_argument(
-            "Material \"" + name + "\" has no property \"" + propertyName + 
-            "\""
+            "Material  has no property \"" + propertyName
         );
     }
 }
