@@ -4,75 +4,54 @@
 #include <string>
 #include <vector>
 #include <functional>
-#include <unordered_map>
-#include <memory>
 
 #include "Material.hpp"
-#include "MaterialGraphicsConfig.hpp"
 #include "PropertyDataStorage.hpp"
-#include "MaterialDataBuffer.hpp"
-#include "../graphics/SamplerType.hpp"
-#include "../graphics/Texture.hpp"
-#include "MaterialDescriptor.hpp"
 #include "engine/resource/ResourceManager.hpp"
 #include "engine/resource/ResourceHandle.hpp"
 
 class Shader;
 class ShaderLayout;
+class Texture;
+class Material;
+class MaterialGraphicsConfig;
+class MaterialDataBuffer;
 
 class MaterialBuilder {
-    MaterialDescriptor resultDescriptor;
-
-    MaterialDescriptor::SamplerMap samplerDefaults;
-
+    MaterialGraphicsConfig* graphicsConfig;
     ResourceManager* resourceManager;
     ResourceHandle<Texture> missingTexture;
 
+    MaterialDataBuffer* buffer;
+
     using BinderFunc = std::function<void(PropertyDataStorage&)>;
     std::vector<BinderFunc> propertyBinders;
+
+    ResourceHandle<Shader> materialShader;
+    Material::SamplerDefaults defaultSamplers;
 public:
     MaterialBuilder(
-        const std::string& _name, 
-        MaterialGraphicsConfig _cfg,
-        ResourceManager& _resourceManager
+        ResourceHandle<Shader> materialShader_,
+        ResourceManager& resourceManager_,
+        MaterialGraphicsConfig& graphicsConfig_,
+        MaterialDataBuffer& materialDataBuffer_
     );
 
     template <typename T>
-    MaterialBuilder& addProperty(const std::string& name);
-    
-    template <typename T>
-    MaterialBuilder& addProperty(
-        const std::string& name, const T& defaultValue
+    MaterialBuilder& setProperty(const std::string& name, const T& value);
+
+    MaterialBuilder& setSampler(
+        const std::string& name, ResourceHandle<Texture> texture
     );
 
-    MaterialBuilder& addSampler(const std::string& name);
-    MaterialBuilder& addSampler(const std::string& name, SamplerType type);
-    MaterialBuilder& addSampler(
-        const std::string& name, SamplerType type, 
-        ResourceHandle<Texture> defaultTexture
-    );
-
-    Material finalize(MaterialDataBuffer& buffer);
+    Material finalize();
 };
 
-template <typename T>
-MaterialBuilder& MaterialBuilder::addProperty(const std::string& name) {
-    resultDescriptor.layout.addProperty<T>(name);
-
-    return *this;
-}
-
-template <typename T>
-MaterialBuilder& MaterialBuilder::addProperty(
-    const std::string& name, const T& defaultValue
-) {
-    resultDescriptor.layout.addProperty<T>(name);
-
-    propertyBinders.push_back(
-        [name, defaultValue](PropertyDataStorage& storage) {
-            storage.setProperty<T>(name, defaultValue);
-        }
-    );
+template<typename T>
+MaterialBuilder& MaterialBuilder::setProperty(const std::string &name, const T &value) {
+    propertyBinders.emplace_back([name, value] (PropertyDataStorage& s) {
+        s.setProperty<T>(name, value);
+    });
 
     return *this;
 }

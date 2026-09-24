@@ -1,77 +1,65 @@
 #include "MaterialBuilder.hpp"
 
-MaterialBuilder::MaterialBuilder(
-    const std::string& _name, MaterialGraphicsConfig _cfg,
-    ResourceManager& _resourceManager
-) : resourceManager(&_resourceManager) {
-    resultDescriptor.name = _name;
-    resultDescriptor.config = _cfg;
+#include "engine/graphics/Texture.hpp"
+#include "MaterialGraphicsConfig.hpp"
+#include "engine/graphics/Shader.hpp"
 
-    missingTexture = resourceManager->load<Texture>(_cfg.missingTextureKey);
+MaterialBuilder::MaterialBuilder(
+    ResourceHandle<Shader> materialShader_,
+    ResourceManager& resourceManager_,
+    MaterialGraphicsConfig& graphicsConfig_,
+    MaterialDataBuffer& materialDataBuffer_
+) : graphicsConfig(&graphicsConfig_),
+    resourceManager(&resourceManager_),
+    buffer(&materialDataBuffer_),
+    materialShader(materialShader_) {
+
+    missingTexture = resourceManager->load<Texture>(
+        graphicsConfig->missingTextureKey
+    );
     if (!missingTexture.isValid()) {
         throw std::invalid_argument("Invalid missingTexture key");
     }
 }
 
-MaterialBuilder& MaterialBuilder::addSampler(const std::string& name) {
-    return addSampler(name, SamplerType::Texture2D);
-}
-
-MaterialBuilder& MaterialBuilder::addSampler(
-    const std::string& name, SamplerType type
+MaterialBuilder &MaterialBuilder::setSampler(
+    const std::string &name, ResourceHandle<Texture> texture
 ) {
-    return addSampler(name, type, missingTexture);
-}
+    const auto& shader = resourceManager->require<Shader>(materialShader);
 
-MaterialBuilder& MaterialBuilder::addSampler(
-    const std::string& name, const SamplerType type,
-    ResourceHandle<Texture> defaultTexture
-) {
-    if (resultDescriptor.samplerIndexes.contains(name)) {
-        return *this;
+    if (!shader.getLayout().hasSampler(name)) {
+        throw std::invalid_argument("Unknown sampler: " + name);
     }
+    if (!texture.isValid()) texture = missingTexture;
 
-    if (!defaultTexture.isValid()) {
-        return *this;
-    }
+    defaultSamplers[name] = texture;
 
-    SamplerDefinition def;
-    def.name = name;
-    def.type = type;
-    def.slot = static_cast<uint32_t>(resultDescriptor.samplerIndexes.size());
-    resultDescriptor.samplerIndexes[name] = 
-        resultDescriptor.samplerIndexes.size();
-    resultDescriptor.samplerDefinitions.push_back(def);
-    samplerDefaults[name] = defaultTexture;
+    const auto& sampler = shader.getLayout().getSampler(name);
+    if (sampler.handleOffset != ShaderLayout::NO_HANDLE) return *this;
 
-    // NOTE: It was initially planned to use uint64_t, as bindless_textures 
-    // docs suggest. Unfortunately, this causes mesa driver bug, which leads
-    // to segmentation fault.
-    resultDescriptor.layout.addProperty<glm::uvec2>(name);
-
-    const Texture& texture = resourceManager->require(defaultTexture);
-    uint64_t handle = texture.getHandle();
-    propertyBinders.emplace_back([handle, name](PropertyDataStorage& storage) {
-        auto lowerBits = static_cast<uint32_t>(handle);
-        auto upperBits = static_cast<uint32_t>(handle >> 32);
-        storage.setProperty<glm::uvec2>(name, {lowerBits, upperBits});
+    const Texture& t = resourceManager->require(texture);
+    uint64_t handle = t.getHandle();
+    propertyBinders.emplace_back([name, handle] (PropertyDataStorage& s) {
+        s.setProperty<glm::uvec2>(name, {
+            static_cast<uint32_t>(handle),
+            static_cast<uint32_t>(handle >> 32)
+        });
     });
 
     return *this;
 }
 
-Material MaterialBuilder::finalize(MaterialDataBuffer& buffer) {
-    resultDescriptor.layout.finalize();
+Material MaterialBuilder::finalize() {
+    const auto& shader = resourceManager->require<Shader>(materialShader);
 
-    PropertyDataStorage tempStorage(resultDescriptor.layout, buffer);
+    PropertyDataStorage tempStorage(shader.getLayout(), *buffer);
 
     for (const auto& binder : propertyBinders) {
         binder(tempStorage);
     }
 
     return {
-        std::move(resultDescriptor),
-        std::move(samplerDefaults),
-        std::move(tempStorage)
+        *graphicsConfig, materialShader,
+        std::move(tempStorage), std::move(defaultSamplers)
     };
 }

@@ -33,19 +33,19 @@ public:
     Material(Material&& other) noexcept;
     Material& operator=(Material&& other) noexcept;
 
-    const MaterialGraphicsConfig& getConfig() const { return *config; };
-    ResourceHandle<Shader> getShader() const { return shader; }
-    const PropertyDataStorage& getProperties() const { return properties; }
-    const SamplerDefaults& getSamplers() const { return samplers; }
+    [[nodiscard]] const MaterialGraphicsConfig& getConfig() const { return *config; };
+    [[nodiscard]] ResourceHandle<Shader> getShader() const { return shader; }
+    [[nodiscard]] const PropertyDataStorage& getProperties() const { return properties; }
+    [[nodiscard]] const SamplerDefaults& getSamplers() const { return samplers; }
 
-    bool hasProperty(const std::string& propertyName) const;
+    [[nodiscard]] bool hasProperty(const std::string& propertyName) const;
     template <typename T>
-    T getProperty(const std::string& propertyName) const;
+    [[nodiscard]] T getProperty(const std::string& propertyName) const;
     template <typename T>
     void setProperty(const std::string& propertyName, const T& value);
 
-    bool hasSampler(const std::string& samplerName) const;
-    ResourceHandle<Texture> getSampler(const std::string& samplerName) const;
+    [[nodiscard]] bool hasSampler(const std::string& samplerName) const;
+    [[nodiscard]] ResourceHandle<Texture> getSampler(const std::string& samplerName) const;
     void setSampler(const std::string& samplerName, ResourceHandle<Texture> value);
 };
 
