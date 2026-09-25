@@ -1,6 +1,7 @@
 #include "MaterialInstance.hpp"
 
 #include "engine/graphics/Shader.hpp"
+#include "engine/graphics/Texture.hpp"
 
 MaterialInstance::MaterialInstance(
     const Material& baseMaterial_,
@@ -102,23 +103,29 @@ ResourceHandle<Texture> MaterialInstance::getSampler(
 void MaterialInstance::bindSamplers(uint32_t startSlot) const {
     const GLuint GL_NO_BIND = 0;
 
-    for (const auto& samplerDef : baseMaterial->getSamplerDefinitions()) {
-        auto it = samplers.find(samplerDef.name);
+    const auto& shader = resourceManager->require(baseMaterial->getShader());
+    const auto& shaderLayout = shader.getLayout();
+
+    for (const auto& samplerDef : shaderLayout.getSamplers()) {
+        const auto it = samplers.find(samplerDef.name);
 
         if (it != samplers.end() && resourceManager->exists(it->second)) {
             Texture& texture = resourceManager->require(it->second);
             glBindTextureUnit(
-                samplerDef.slot + startSlot, texture.getId()
+                samplerDef.binding + startSlot, texture.getId()
             );
         } else {
-            glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
+            glBindTextureUnit(samplerDef.binding, GL_NO_BIND);
         }
     }
 }
 
 void MaterialInstance::unbindSamplers() const {
-    for (const auto& samplerDef : baseMaterial->getSamplerDefinitions()) {
+    const auto& shader = resourceManager->require(baseMaterial->getShader());
+    const auto& shaderLayout = shader.getLayout();
+
+    for (const auto& samplerDef : shaderLayout.getSamplers()) {
         constexpr GLuint GL_NO_BIND = 0;
-        glBindTextureUnit(samplerDef.slot, GL_NO_BIND);
+        glBindTextureUnit(samplerDef.binding, GL_NO_BIND);
     }
 }
