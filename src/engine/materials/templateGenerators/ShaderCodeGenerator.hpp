@@ -30,18 +30,18 @@ class ShaderCodeGenerator {
         ShaderLayout::SamplerType type) const;
     [[nodiscard]] std::string getGLSLSamplerName(const std::string& name);
 
-    [[nodiscard]] std::string generatePropertyUnpack(
-        const ShaderLayout::Property& prop);
-    [[nodiscard]] std::string generateUnpack(
-        const ShaderLayout& layout);
-
     [[nodiscard]] std::string generateParamsStruct(
-        const ShaderLayout& layout, uint32_t indentLevels);
+        const ShaderLayout& layout, uint32_t indentLevels) const;
 
     [[nodiscard]] std::string generateSamplerUniforms(
         const ShaderLayout& layout) const;
     [[nodiscard]] std::string generateSamplerGetters(
         const ShaderLayout& layout) const;
+
+    [[nodiscard]] std::string generatePropertyUnpack(
+        const ShaderLayout::Property& prop);
+    [[nodiscard]] std::string generateUnpack(
+        const ShaderLayout& layout);
 public:
     ShaderCodeGenerator(
         ResourceManager& resourceManager_,
