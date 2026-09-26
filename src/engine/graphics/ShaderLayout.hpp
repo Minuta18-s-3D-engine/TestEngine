@@ -2,6 +2,8 @@
 #define ENGINE_GRAPHICS_SHADERLAYOUT_HPP
 
 #include "ShaderPropertyTypes.hpp"
+#include "glad/glad.h"
+
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -43,6 +45,9 @@ public:
     void addField(const std::string& name, PropertyType type);
     void addSampler(const std::string& name, SamplerType type);
     void finalize();
+
+    // TODO: move bindless settings to config.
+    [[nodiscard]] bool isBindless() const noexcept { return GL_ARB_bindless_texture; }
 
     [[nodiscard]] bool isFinalized() const noexcept { return finalized; }
     [[nodiscard]] bool hasProperty(const std::string& name) const;
