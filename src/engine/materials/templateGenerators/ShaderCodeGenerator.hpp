@@ -28,7 +28,7 @@ class ShaderCodeGenerator {
 
     [[nodiscard]] std::string getGLSLSamplerType(
         ShaderLayout::SamplerType type) const;
-    [[nodiscard]] std::string getGLSLSamplerName(const std::string& name);
+    [[nodiscard]] std::string getGLSLSamplerName(const std::string& name) const;
 
     [[nodiscard]] std::string generateParamsStruct(
         const ShaderLayout& layout, uint32_t indentLevels) const;

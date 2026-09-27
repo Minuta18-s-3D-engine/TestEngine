@@ -25,7 +25,7 @@ std::string ShaderCodeGenerator::getGLSLSamplerType(
 
 std::string ShaderCodeGenerator::getGLSLSamplerName(
     const std::string& name
-) {
+) const {
     return "__u_GeneratedSampler_" + name;
 }
 
@@ -38,7 +38,38 @@ std::string ShaderCodeGenerator::generateParamsStruct(
     for (const auto& prop : properties) {
         result << generateIndentString(indentLevels);
         result << shader_layout::typeInfo(prop.type).glslName << " ";
-        result << prop.name << ";";
+        result << prop.name << ";\n";
+    }
+
+    return result.str();
+}
+
+std::string ShaderCodeGenerator::generateSamplerUniforms(
+    const ShaderLayout &layout
+) const {
+    std::stringstream result;
+
+    for (const auto& sampler : layout.getSamplers()) {
+        result << "uniform " << getGLSLSamplerType(sampler.type) << " "
+            << getGLSLSamplerName(sampler.name) << ";\n";
+    }
+
+    return result.str();
+}
+
+std::string ShaderCodeGenerator::generateSamplerGetters(
+    const ShaderLayout& layout
+) const {
+    std::stringstream result;
+
+    for (const auto& sampler : layout.getSamplers()) {
+        if (layout.isBindless()) {
+            result << "#define get_" << sampler.name
+                << "() (sampler2D(shaderParams." << sampler.name << "))\n";
+        } else {
+            result << "#define get_" << sampler.name << "() ("
+                << getGLSLSamplerName(sampler.name) << ")\n";
+        }
     }
 
     return result.str();
