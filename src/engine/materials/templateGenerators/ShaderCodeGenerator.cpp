@@ -86,8 +86,8 @@ std::string ShaderCodeGenerator::generateShaderParams(
 ) const {
     TemplateArguments args;
     args.set("shader_properties", generateParamsStruct(layout, 1));
-    args.set("sampler_definitions", "");
-    args.set("sampler_getters", "");
+    args.set("sampler_uniforms", generateSamplerUniforms(layout));
+    args.set("sampler_getters", generateSamplerGetters(layout));
     args.set("unpack_lines", "");
     return templateEngine.render(
         "shaders/shaderParams.glsl", args

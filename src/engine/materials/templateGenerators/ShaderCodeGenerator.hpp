@@ -58,4 +58,36 @@ public:
     ) const;
 };
 
+namespace ShaderCodeGeneratorData {
+
+struct UnpackInfo {
+    std::string unpackFunc = "(";
+    std::string vecFunc = "(";
+    uint32_t startOffset = 0;
+    uint32_t endOffset = 0;
+    bool customIndexesUsed = false;
+    std::vector<uint32_t> customIndexes = {};
+};
+
+std::vector<UnpackInfo> typesUnpackInfo = {
+    { "uintBitsToFloat(", "(", 0, 0, false, {} },
+    { "int(", "(", 0, 0, false, {} },
+    { "uint(", "(", 0, 0, false, {} },
+    { "(0U != ", "(", 0, 0, false, {} },
+    { "uintBitsToFloat(", "vec2(", 0, 1, false, {} },
+    { "int(", "ivec2(", 0, 1, false, {} },
+    { "uint(", "uvec2(", 0, 1, false, {} },
+    { "uintBitsToFloat(", "vec3(", 0, 2, false, {} },
+    { "int(", "ivec3(", 0, 2, false, {} },
+    { "uint(", "uvec3(", 0, 2, false, {} },
+    { "uintBitsToFloat(", "vec4(", 0, 3, false, {} },
+    { "int(", "ivec4(", 0, 3, false, {} },
+    { "uint(", "uvec4(", 0, 3, false, {} },
+    { "uintBitsToFloat(", "mat2", 0, 3, false, {} },
+    { "uintBitsToFloat(", "mat3", 0, 0, true, {0, 1, 2, 4, 5, 6, 8, 9, 10} },
+    { "uintBitsToFloat(", "mat4", 0, 15, false, {} }
+};
+
+};
+
 #endif // ENGINE_MATERIALS_TEMPLATEGENERATORS_SHADERCODEGENRATOR_H_
