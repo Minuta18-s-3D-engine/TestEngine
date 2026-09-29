@@ -1,5 +1,5 @@
 void main() {
-    loadCurrentMaterial();
+    __Generated_loadShaderParams();
 
     {{ user_func }}();
 }

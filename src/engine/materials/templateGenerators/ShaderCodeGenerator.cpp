@@ -1,5 +1,11 @@
 #include "ShaderCodeGenerator.hpp"
 
+#include <numeric>
+
+#include "engine/resource/ResourceManager.hpp"
+#include "engine/graphics/Shader.hpp"
+#include "cmakeConfig.h"
+
 ShaderCodeGenerator::ShaderCodeGenerator(
     ResourceManager& resourceManager_,
     FormattingOptions&& formattingOptions_
@@ -76,9 +82,51 @@ std::string ShaderCodeGenerator::generateSamplerGetters(
 }
 
 std::string ShaderCodeGenerator::generatePropertyUnpack(
-    const ShaderLayout::Property& prop
+    const ShaderLayout::Property& prop,
+    const uint32_t inArrayOffset,
+    const uint32_t indentLevels
 ) {
+    ShaderCodeGeneratorData::UnpackInfo info = 
+        ShaderCodeGeneratorData::typesUnpackInfo[static_cast<size_t>(prop.type)];
+    std::stringstream converterFunc;
+    converterFunc << info.vecFunc;
+    
+    std::vector<uint32_t> indexes;
+    if (info.customIndexesUsed) {
+        indexes = info.customIndexes;
+    } else {
+        indexes.resize(info.endOffset - info.startOffset + 1);
+        std::iota(indexes.begin(), indexes.end(), 0);
+    }
 
+    for (uint32_t i = info.startOffset; i <= info.endOffset; ++i) {
+        converterFunc << info.unpackFunc << "b_MaterialData[base + "
+            << indexes[i - info.startOffset] + inArrayOffset << "])";
+        if (i < info.endOffset) converterFunc << ", ";
+    }
+
+    std::stringstream result;
+    result << generateIndentString(indentLevels) << "shaderParams."
+        << prop.name << " = " << converterFunc.str() << ";\n";
+}
+
+std::string ShaderCodeGenerator::generateUnpack(
+    const ShaderLayout& layout
+) {
+    std::stringstream result;
+    for (const auto& prop : layout.getProperties()) {
+        result << generatePropertyUnpack(
+            prop, prop.offset / 4, 1
+        );
+    }
+
+    return result.str();
+}
+
+std::string ShaderCodeGenerator::generateCommentMessage() const {
+    std::stringstream result;
+    result << "Engine version: " << PROJECT_VERSION << "\n"; 
+    return result.str();
 }
 
 std::string ShaderCodeGenerator::generateShaderParams(
@@ -86,10 +134,53 @@ std::string ShaderCodeGenerator::generateShaderParams(
 ) const {
     TemplateArguments args;
     args.set("shader_properties", generateParamsStruct(layout, 1));
-    args.set("sampler_uniforms", generateSamplerUniforms(layout));
+    if (layout.isBindless()) {
+        args.set("sampler_uniforms", "// Bindless mode enabled.");
+    } else {
+        args.set("sampler_uniforms", generateSamplerUniforms(layout));
+    }
     args.set("sampler_getters", generateSamplerGetters(layout));
-    args.set("unpack_lines", "");
+    args.set("unpack_lines", generateUnpack(layout));
     return templateEngine.render(
         "shaders/shaderParams.glsl", args
     );
+}
+
+std::string ShaderCodeGenerator::generateShader(
+    ResourceHandle<Shader> shaderHandle,
+    std::string userCode, std::string userFunc, bool loadParams
+) const {
+    const Shader& shader = resourceManager->require<Shader>(
+        shaderHandle);
+
+    TemplateArguments engineGlobalsArgs;
+    engineGlobalsArgs.set(
+        "shader_params", generateShaderParams(shader.getLayout())
+    );
+    std::string engineGlobals = templateEngine.render(
+        "shaders/components/engineGlobals.glsl", engineGlobalsArgs
+    );
+
+    TemplateArguments headerArgs;
+    headerArgs.set("user_func", userFunc);
+    std::string header;
+    if (loadParams) {
+        header = templateEngine.render(
+            "shaders/headers/loaderHeader.glsl", 
+            headerArgs
+        );
+    } else {
+        header = templateEngine.render(
+            "shaders/headers/emptyHeader.glsl", 
+            headerArgs
+        );
+    }
+
+    TemplateArguments args;
+    args.set("message", generateCommentMessage());
+    args.set("engine_globals", engineGlobals);
+    args.set("user_code", userCode);
+    args.set("generated_header", header);
+
+    return templateEngine.render("shaders/shaderTemplate.glsl", args);
 }

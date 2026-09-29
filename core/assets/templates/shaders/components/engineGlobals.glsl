@@ -71,4 +71,4 @@ uniform mat4  u_InvProjection;
 uniform float u_ZNear;
 uniform float u_ZFar;
 
-{{ material_definition }}
+{{ shader_params }}

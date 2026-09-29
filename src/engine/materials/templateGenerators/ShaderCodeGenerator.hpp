@@ -39,9 +39,13 @@ class ShaderCodeGenerator {
         const ShaderLayout& layout) const;
 
     [[nodiscard]] std::string generatePropertyUnpack(
-        const ShaderLayout::Property& prop);
+        const ShaderLayout::Property& prop, uint32_t inArrayOffset, 
+        const uint32_t indentLevels
+    );
     [[nodiscard]] std::string generateUnpack(
         const ShaderLayout& layout);
+
+    [[nodiscard]] std::string generateCommentMessage() const;
 public:
     ShaderCodeGenerator(
         ResourceManager& resourceManager_,
@@ -53,8 +57,9 @@ public:
     ) const;
 
     [[nodiscard]] std::string generateShader(
-        ResourceHandle<Shader> shader,
-        std::string userCode
+        ResourceHandle<Shader> shaderHandle,
+        std::string userCode, std::string userFunc,
+        bool loadParams = true 
     ) const;
 };
 
