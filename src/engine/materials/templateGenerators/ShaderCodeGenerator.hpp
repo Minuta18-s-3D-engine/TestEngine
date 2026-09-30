@@ -40,10 +40,10 @@ class ShaderCodeGenerator {
 
     [[nodiscard]] std::string generatePropertyUnpack(
         const ShaderLayout::Property& prop, uint32_t inArrayOffset, 
-        const uint32_t indentLevels
-    );
+        uint32_t indentLevels
+    ) const;
     [[nodiscard]] std::string generateUnpack(
-        const ShaderLayout& layout);
+        const ShaderLayout& layout) const;
 
     [[nodiscard]] std::string generateCommentMessage() const;
 public:
@@ -58,7 +58,8 @@ public:
 
     [[nodiscard]] std::string generateShader(
         ResourceHandle<Shader> shaderHandle,
-        std::string userCode, std::string userFunc,
+        const std::string& userCode,
+        const std::string& userFunc,
         bool loadParams = true 
     ) const;
 };
@@ -74,7 +75,7 @@ struct UnpackInfo {
     std::vector<uint32_t> customIndexes = {};
 };
 
-std::vector<UnpackInfo> typesUnpackInfo = {
+const inline std::vector<UnpackInfo> typesUnpackInfo = {
     { "uintBitsToFloat(", "(", 0, 0, false, {} },
     { "int(", "(", 0, 0, false, {} },
     { "uint(", "(", 0, 0, false, {} },

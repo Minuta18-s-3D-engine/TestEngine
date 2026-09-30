@@ -85,8 +85,8 @@ std::string ShaderCodeGenerator::generatePropertyUnpack(
     const ShaderLayout::Property& prop,
     const uint32_t inArrayOffset,
     const uint32_t indentLevels
-) {
-    ShaderCodeGeneratorData::UnpackInfo info = 
+) const {
+    const auto& info =
         ShaderCodeGeneratorData::typesUnpackInfo[static_cast<size_t>(prop.type)];
     std::stringstream converterFunc;
     converterFunc << info.vecFunc;
@@ -108,11 +108,13 @@ std::string ShaderCodeGenerator::generatePropertyUnpack(
     std::stringstream result;
     result << generateIndentString(indentLevels) << "shaderParams."
         << prop.name << " = " << converterFunc.str() << ";\n";
+
+    return result.str();
 }
 
 std::string ShaderCodeGenerator::generateUnpack(
     const ShaderLayout& layout
-) {
+) const {
     std::stringstream result;
     for (const auto& prop : layout.getProperties()) {
         result << generatePropertyUnpack(
@@ -148,7 +150,9 @@ std::string ShaderCodeGenerator::generateShaderParams(
 
 std::string ShaderCodeGenerator::generateShader(
     ResourceHandle<Shader> shaderHandle,
-    std::string userCode, std::string userFunc, bool loadParams
+    const std::string& userCode,
+    const std::string& userFunc,
+    const bool loadParams
 ) const {
     const Shader& shader = resourceManager->require<Shader>(
         shaderHandle);
