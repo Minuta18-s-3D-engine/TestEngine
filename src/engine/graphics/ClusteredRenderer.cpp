@@ -1,13 +1,15 @@
 #include "ClusteredRenderer.hpp"
 
+#include "engine/graphics/Shader.hpp"
+
 ClusteredRenderer::ClusteredRenderer(
     Window& _window, ResourceManager& resourceManager_
 ) : resourceManager(&resourceManager_), window(_window) {
     this->createSSBOs();
 
-    buildClustersShaderHandle = resourceManager->getByPath<ComputeShader>(
+    buildClustersShaderHandle = resourceManager->getByPath<Shader>(
         "core://assets/shaders/buildClusters.comp.glsl");
-    lightCullingShaderHandle = resourceManager->getByPath<ComputeShader>(
+    lightCullingShaderHandle = resourceManager->getByPath<Shader>(
         "core://assets/shaders/lightCulling.comp.glsl");
 }
 

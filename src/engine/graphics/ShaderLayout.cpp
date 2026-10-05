@@ -37,7 +37,7 @@ bool ShaderLayout::hasSampler(const std::string& name) const {
     return samplerIndex.contains(name);
 }
 
-void ShaderLayout::addField(const std::string& name, PropertyType type) {
+void ShaderLayout::addProperty(const std::string& name, PropertyType type) {
     if (finalized) throw std::logic_error("Already finalized");
     if (propertyIndex.contains(name))
         throw std::invalid_argument("Property already exists: " + name);
@@ -65,7 +65,7 @@ void ShaderLayout::addSampler(
     samplers.push_back(std::move(s));
 
     if (GL_ARB_bindless_texture) {
-        addField(name, PropertyType::UVec2);
+        addProperty(name, PropertyType::UVec2);
     }
 }
 

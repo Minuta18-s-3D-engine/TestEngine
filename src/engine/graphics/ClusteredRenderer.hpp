@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "ComputeShader.hpp"
 #include "Camera.hpp"
 #include "ShaderStorageBuffer.hpp"
 #include "../window/Window.hpp"
@@ -33,6 +32,8 @@ struct alignas(16) CompLight {
     float linear, quadratic, radius;
 };
 
+class Shader;
+
 class ClusteredRenderer {
     ShaderStorageBuffer compClusterSSBO{
         SSBOBindings::CLUSTER_BINDING, GL_STATIC_DRAW};
@@ -47,8 +48,8 @@ class ClusteredRenderer {
 
     const uint MAX_LIGHTS_PER_CLUSTER = 256;
 
-    ResourceHandle<ComputeShader> buildClustersShaderHandle;
-    ResourceHandle<ComputeShader> lightCullingShaderHandle;
+    ResourceHandle<Shader> buildClustersShaderHandle;
+    ResourceHandle<Shader> lightCullingShaderHandle;
     ResourceManager* resourceManager;
     Window& window;
     

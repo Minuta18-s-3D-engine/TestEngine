@@ -29,7 +29,6 @@ void createRect(
 ) {
     const Material& baseMaterial = resManager.require<Material>(baseMaterialHandle);
     const auto matInstance = std::make_shared<MaterialInstance>(
-        baseMaterial.getName() + "Instance",
         baseMaterial,
         buffer,
         resManager
@@ -137,7 +136,18 @@ void Application::loadTextures() {
 }
 
 void Application::compileShadersAndMaterials() {
-    auto standardMaterial = MaterialBuilder("StandardMaterial", MaterialGraphicsConfig(), *resourceManager)
+    ShaderLayout prototypeShaderLayout;
+    prototypeShaderLayout.addProperty("baseColor", ShaderLayout::PropertyType::Vec3);
+    prototypeShaderLayout.addProperty("tilingScale", ShaderLayout::PropertyType::Float);
+    Shader prototypeShader({
+        .vertex = "fs://assets/shaders/julia/julia.vert.glsl",
+        .fragment = "fs://assets/shader/julia/julia.frag.glsl"
+    }, std::move(prototypeShaderLayout));
+    ResourceHandle<Shader> prototypeShaderHandle = resourceManager->addManually<Shader>(
+        "fs://assets/shaders/julia/julia.vert.glsl") 
+    // Material prototypeMaterial = MaterialBuilder()
+
+    auto standardMaterial = MaterialBuilder(MaterialGraphicsConfig(), *resourceManager)
         .addSampler("diffuseMap")
         .addSampler("specularMap")
         .finalize(*globalMaterialBuffer);
@@ -145,25 +155,25 @@ void Application::compileShadersAndMaterials() {
         "core://materials/standardMaterial", std::move(standardMaterial)
     );
 
-    auto prototypeGrid = MaterialBuilder("PrototypeGrid", MaterialGraphicsConfig(), *resourceManager)
-        .addProperty<glm::vec3>("baseColor", glm::vec3(0.8, 0.8, 0.8))
-        .addProperty<float>("tilingScale", 1.0f)
-        .finalize(*globalMaterialBuffer);
-    ResourceHandle<Material> protoGridMatHandle = resourceManager->addManually<Material>(
-        "fs://materials/prototypeGrid", std::move(prototypeGrid)
-    );
+    // auto prototypeGrid = MaterialBuilder("PrototypeGrid", MaterialGraphicsConfig(), *resourceManager)
+    //     .addProperty<glm::vec3>("baseColor", glm::vec3(0.8, 0.8, 0.8))
+    //     .addProperty<float>("tilingScale", 1.0f)
+    //     .finalize(*globalMaterialBuffer);
+    // ResourceHandle<Material> protoGridMatHandle = resourceManager->addManually<Material>(
+    //     "fs://materials/prototypeGrid", std::move(prototypeGrid)
+    // );
 
-    Shader prototypeShader = compileShader(
-        VirtualPath("fs://assets/shaders/julia/julia.vert.glsl"),
-        VirtualPath("fs://assets/shaders/julia/julia.frag.glsl"),
-        resourceManager->require(protoGridMatHandle),
-        *project
-    );
-    ResourceHandle<Shader> protoShaderHandle = resourceManager->addManually<Shader>(
-        "fs://assets/shaders/julia/julia.vert.glsl",
-        std::move(prototypeShader)
-    );
-    resourceManager->require(protoGridMatHandle).bindShader(protoShaderHandle);
+    // Shader prototypeShader = compileShader(
+    //     VirtualPath("fs://assets/shaders/julia/julia.vert.glsl"),
+    //     VirtualPath("fs://assets/shaders/julia/julia.frag.glsl"),
+    //     resourceManager->require(protoGridMatHandle),
+    //     *project
+    // );
+    // ResourceHandle<Shader> protoShaderHandle = resourceManager->addManually<Shader>(
+    //     "fs://assets/shaders/julia/julia.vert.glsl",
+    //     std::move(prototypeShader)
+    // );
+    // resourceManager->require(protoGridMatHandle).bindShader(protoShaderHandle);
 
     Shader geomShader = compileShader(
         VirtualPath("core://assets/shaders/geom.vert.glsl"),

@@ -42,7 +42,7 @@ private:
 public:
     explicit ShaderLayout() = default;
 
-    void addField(const std::string& name, PropertyType type);
+    void addProperty(const std::string& name, PropertyType type);
     void addSampler(const std::string& name, SamplerType type);
     void finalize();
 
