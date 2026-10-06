@@ -4,6 +4,7 @@
 #include "CommandLineArgs.hpp"
 #include "engine/project/VirtualPath.hpp"
 #include "engine/debug/logging/Logging.hpp"
+#include "engine/resource/ResourceHandle.hpp"
 
 #define UUID_SYSTEM_GENERATOR
 #include <uuid.h>
@@ -16,6 +17,7 @@ class Project;
 class ResourceManager;
 class JsonSerializer;
 class Player;
+class ShaderLayout;
 
 class Application {
     const std::string cmdProjectKey = "--project";
@@ -23,7 +25,6 @@ class Application {
     bool isRunning = true;
     Logger applicationLogger;
     CommandLineArgs args;
-    MaterialGraphicsConfig graphicsConfig;
 
     std::unique_ptr<EventManager> eventManager;
     std::unique_ptr<Window> window;
@@ -44,6 +45,12 @@ class Application {
     void createTestScene();
     void setupPlayerCamera();
     void loadTextures();
+    std::string generateShaderSource(
+        const VirtualPath& sourcePath,
+        const ShaderLayout& shaderLayout,
+        const std::string& callFunc,
+        bool generateUnpack = false
+    );
     void compileShadersAndMaterials();
     void spawnSceneObjects();
     void loadLights();

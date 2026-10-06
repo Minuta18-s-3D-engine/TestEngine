@@ -18,7 +18,7 @@ class MaterialGraphicsConfig;
 class MaterialDataBuffer;
 
 class MaterialBuilder {
-    MaterialGraphicsConfig* graphicsConfig;
+    MaterialGraphicsConfig graphicsConfig;
     ResourceManager* resourceManager;
     ResourceHandle<Texture> missingTexture;
 
@@ -33,7 +33,7 @@ public:
     MaterialBuilder(
         ResourceHandle<Shader> materialShader_,
         ResourceManager& resourceManager_,
-        MaterialGraphicsConfig& graphicsConfig_,
+        MaterialGraphicsConfig graphicsConfig_,
         MaterialDataBuffer& materialDataBuffer_
     );
 

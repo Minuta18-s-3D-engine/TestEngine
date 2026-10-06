@@ -124,7 +124,7 @@ void Application::loadProject(const std::string& projectPath) {
     resourceManager = std::make_unique<ResourceManager>();
 
     auto textureImporter = std::make_unique<TextureImporter>(
-        serializer.get()
+        *serializer
     );
     resourceManager->registerImporter<Texture>(std::move(textureImporter));
 
@@ -153,20 +153,46 @@ void Application::loadTextures() {
     resourceManager->load<Texture>(VirtualPath("core://assets/textures/missing.png"));
 }
 
+std::string Application::generateShaderSource(
+    const VirtualPath& sourcePath,
+    const ShaderLayout& shaderLayout,
+    const std::string& callFunc,
+    bool generateUnpack
+) {
+    const std::string source = project->getFilesystem().readFile(sourcePath);
+
+    const ShaderCodeGenerator generator(
+        *resourceManager,
+        ShaderCodeGenerator::FormattingOptions()
+    );
+    std::string fullSource = generator.generateShader(
+        shaderLayout, source, callFunc, generateUnpack
+    );
+
+    return fullSource;
+}
+
 void Application::compileShadersAndMaterials() {
     {
         ShaderLayout geometryPassShaderLayout;
         geometryPassShaderLayout.addSampler("diffuseMap", ShaderLayout::SamplerType::Texture2D);
         geometryPassShaderLayout.addSampler("specularMap", ShaderLayout::SamplerType::Texture2D);
+        geometryPassShaderLayout.finalize();
+        std::string vertexSource = generateShaderSource(
+            "fs://assets/shaders/geom.vert.glsl", geometryPassShaderLayout,
+            "vertex");
+        std::string fragmentSource = generateShaderSource(
+            "fs://assets/shaders/geom.frag.glsl", geometryPassShaderLayout,
+            "fragment");
         Shader geometryPassShader({
-            .vertex = "fs://assets/shaders/geom.vert.glsl",
-            .fragment = "fs://assets/shaders/geom.frag.glsl"
+            .vertex = vertexSource,
+            .fragment = fragmentSource
         }, std::move(geometryPassShaderLayout));
         ResourceHandle<Shader> geometryPassShaderHandle = resourceManager->addManually<Shader>(
             "fs://assets/shaders/geom.vert.glsl", std::move(geometryPassShader));
 
         Material defaultTexturedMaterial = MaterialBuilder(
-            geometryPassShaderHandle, *resourceManager, graphicsConfig, *globalMaterialBuffer
+            geometryPassShaderHandle, *resourceManager, MaterialGraphicsConfig(), *globalMaterialBuffer
         ).finalize();
         ResourceHandle<Material> defaultTexturedMaterialHandle = resourceManager->addManually<Material>(
             "fs://materials/prototypeGrid", std::move(defaultTexturedMaterial)
@@ -175,9 +201,16 @@ void Application::compileShadersAndMaterials() {
 
     {
         ShaderLayout lightingPassShaderLayout;
+        lightingPassShaderLayout.finalize();
+        std::string vertexSource = generateShaderSource(
+            "fs://assets/shaders/light.vert.glsl", lightingPassShaderLayout,
+            "vertex");
+        std::string fragmentSource = generateShaderSource(
+            "fs://assets/shaders/light.frag.glsl", lightingPassShaderLayout,
+            "fragment");
         Shader lightingPassShader({
-            .vertex = "fs://assets/shaders/light.vert.glsl",
-            .fragment = "fs://assets/shaders/light.frag.glsl"
+            .vertex = vertexSource,
+            .fragment = fragmentSource
         }, std::move(lightingPassShaderLayout));
         ResourceHandle<Shader> lightingPassShaderHandle = resourceManager->addManually<Shader>(
             "fs://assets/shaders/light.vert.glsl", std::move(lightingPassShader));
@@ -187,15 +220,22 @@ void Application::compileShadersAndMaterials() {
         ShaderLayout prototypeShaderLayout;
         prototypeShaderLayout.addProperty("baseColor", ShaderLayout::PropertyType::Vec3);
         prototypeShaderLayout.addProperty("tilingScale", ShaderLayout::PropertyType::Float);
+        prototypeShaderLayout.finalize();
+        std::string vertexSource = generateShaderSource(
+            "fs://assets/shaders/julia/julia.vert.glsl", prototypeShaderLayout,
+            "vertex");
+        std::string fragmentSource = generateShaderSource(
+            "fs://assets/shader/julia/julia.frag.glsl", prototypeShaderLayout,
+            "fragment");
         Shader prototypeShader({
-            .vertex = "fs://assets/shaders/julia/julia.vert.glsl",
-            .fragment = "fs://assets/shader/julia/julia.frag.glsl"
+            .vertex = vertexSource,
+            .fragment = fragmentSource
         }, std::move(prototypeShaderLayout));
         ResourceHandle<Shader> prototypeShaderHandle = resourceManager->addManually<Shader>(
             "fs://assets/shaders/julia/julia.vert.glsl", std::move(prototypeShader)); 
         
         Material prototypeMaterial = MaterialBuilder(
-            prototypeShaderHandle, *resourceManager, graphicsConfig, *globalMaterialBuffer
+            prototypeShaderHandle, *resourceManager, MaterialGraphicsConfig(), *globalMaterialBuffer
         ).setProperty("baseColor", glm::vec3(0.8, 0.8, 0.8))
             .setProperty("tilingScale", 1.0f)
             .finalize();
@@ -206,8 +246,12 @@ void Application::compileShadersAndMaterials() {
 
     {
         ShaderLayout buildClustersShaderLayout;
+        buildClustersShaderLayout.finalize();
+        std::string computeSource = generateShaderSource(
+            "fs://assets/shaders/buildClusters.comp.glsl", buildClustersShaderLayout,
+            "compute");
         Shader buildClustersShader({
-            .compute = "fs://assets/shaders/buildClusters.comp.glsl"
+            .compute = computeSource
         }, std::move(buildClustersShaderLayout));
         ResourceHandle<Shader> buildClustersShaderHandle = resourceManager->addManually<Shader>(
             "fs://assets/shaders/buildClusters.comp.glsl", std::move(buildClustersShader));
@@ -215,8 +259,12 @@ void Application::compileShadersAndMaterials() {
 
     {
         ShaderLayout lightCullingShaderLayout;
+        lightCullingShaderLayout.finalize();
+        std::string computeSource = generateShaderSource(
+            "fs://assets/shaders/lightCulling.comp.glsl", lightCullingShaderLayout,
+            "compute");
         Shader lightCullingShader({
-            .compute = "fs://assets/shaders/lightCulling.comp.glsl"
+            .compute = computeSource
         }, std::move(lightCullingShaderLayout));
         ResourceHandle<Shader> lightCullingShaderHandle = resourceManager->addManually<Shader>(
             "fs://assets/shaders/lightCulling.comp.glsl", std::move(lightCullingShader));
@@ -235,7 +283,6 @@ void Application::spawnSceneObjects() {
 
     {
         auto matInstance = std::make_shared<MaterialInstance>(
-            "PrototypeGridInstance",
             resourceManager->require(protoGridMatHandle),
             *globalMaterialBuffer,
             *resourceManager

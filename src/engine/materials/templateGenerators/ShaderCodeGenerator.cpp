@@ -149,17 +149,14 @@ std::string ShaderCodeGenerator::generateShaderParams(
 }
 
 std::string ShaderCodeGenerator::generateShader(
-    ResourceHandle<Shader> shaderHandle,
+    const ShaderLayout& layout,
     const std::string& userCode,
     const std::string& userFunc,
     const bool loadParams
 ) const {
-    const Shader& shader = resourceManager->require<Shader>(
-        shaderHandle);
-
     TemplateArguments engineGlobalsArgs;
     engineGlobalsArgs.set(
-        "shader_params", generateShaderParams(shader.getLayout())
+        "shader_params", generateShaderParams(layout)
     );
     std::string engineGlobals = templateEngine.render(
         "shaders/components/engineGlobals.glsl", engineGlobalsArgs

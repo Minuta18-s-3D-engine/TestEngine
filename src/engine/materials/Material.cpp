@@ -1,17 +1,17 @@
 #include "Material.hpp"
 
 Material::Material(
-    MaterialGraphicsConfig& config_,
+    MaterialGraphicsConfig config_,
     ResourceHandle<Shader> shader_,
     PropertyDataStorage&& defaultValues_,
     SamplerDefaults&& defaultSamplers_
-) : config(&config_),
+) : config(std::move(config_)),
     shader(shader_),
     properties(std::move(defaultValues_)),
     samplers(std::move(defaultSamplers_)) {}
 
 Material::Material(Material&& other) noexcept
-  : config(other.config),
+  : config(std::move(other.config)),
     shader(other.shader),
     properties(std::move(other.properties)),
     samplers(std::move(other.samplers)) {

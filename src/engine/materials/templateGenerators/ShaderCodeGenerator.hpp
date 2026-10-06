@@ -13,15 +13,15 @@ class ResourceManager;
 class Shader;
 
 class ShaderCodeGenerator {
+public:
+    struct FormattingOptions {
+        uint32_t indentSize = 4;
+    };
+private:
     TemplateParser parser;
     TemplateEngine templateEngine;
 
     ResourceManager* resourceManager;
-
-    struct FormattingOptions {
-        uint32_t indentSize = 4;
-    };
-
     FormattingOptions formattingOptions;
 
     [[nodiscard]] std::string generateIndentString(uint32_t indentLevels) const;
@@ -57,7 +57,7 @@ public:
     ) const;
 
     [[nodiscard]] std::string generateShader(
-        ResourceHandle<Shader> shaderHandle,
+        const ShaderLayout& layout,
         const std::string& userCode,
         const std::string& userFunc,
         bool loadParams = true 

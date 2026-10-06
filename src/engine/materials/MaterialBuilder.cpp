@@ -7,15 +7,15 @@
 MaterialBuilder::MaterialBuilder(
     ResourceHandle<Shader> materialShader_,
     ResourceManager& resourceManager_,
-    MaterialGraphicsConfig& graphicsConfig_,
+    MaterialGraphicsConfig graphicsConfig_,
     MaterialDataBuffer& materialDataBuffer_
-) : graphicsConfig(&graphicsConfig_),
+) : graphicsConfig(std::move(graphicsConfig_)),
     resourceManager(&resourceManager_),
     buffer(&materialDataBuffer_),
     materialShader(materialShader_) {
 
     missingTexture = resourceManager->load<Texture>(
-        graphicsConfig->missingTextureKey
+        graphicsConfig.missingTextureKey
     );
     if (!missingTexture.isValid()) {
         throw std::invalid_argument("Invalid missingTexture key");
