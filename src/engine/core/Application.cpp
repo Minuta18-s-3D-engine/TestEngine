@@ -66,6 +66,24 @@ void createRect(
     objectManager.addObject(cubeObject);
 }
 
+void createPointLight(
+    glm::vec3 pos, glm::vec3 color, float linear, float quadratic,
+    GameObjectManager& objectManager
+) {
+    std::unique_ptr<GameObject> lightObject = GameObject::createGameObject();
+    auto transformComponent = lightObject->getComponent<Transform>();
+    transformComponent->position = pos;
+    auto behaviorComponent = lightObject->getComponent<Behavior>();
+    behaviorComponent->type = BehaviorType::STATIC;
+    auto pointLightComponent = std::make_unique<PointLight>();
+    pointLightComponent->color = color;
+    pointLightComponent->linear = linear;
+    pointLightComponent->quadratic = quadratic;
+    lightObject->addComponent<PointLight>(pointLightComponent);
+
+    objectManager.addObject(lightObject);
+}
+
 } // namespace
 
 Application::Application(const CommandLineArgs& args_)
@@ -136,84 +154,73 @@ void Application::loadTextures() {
 }
 
 void Application::compileShadersAndMaterials() {
-    ShaderLayout prototypeShaderLayout;
-    prototypeShaderLayout.addProperty("baseColor", ShaderLayout::PropertyType::Vec3);
-    prototypeShaderLayout.addProperty("tilingScale", ShaderLayout::PropertyType::Float);
-    Shader prototypeShader({
-        .vertex = "fs://assets/shaders/julia/julia.vert.glsl",
-        .fragment = "fs://assets/shader/julia/julia.frag.glsl"
-    }, std::move(prototypeShaderLayout));
-    ResourceHandle<Shader> prototypeShaderHandle = resourceManager->addManually<Shader>(
-        "fs://assets/shaders/julia/julia.vert.glsl") 
-    // Material prototypeMaterial = MaterialBuilder()
+    {
+        ShaderLayout geometryPassShaderLayout;
+        geometryPassShaderLayout.addSampler("diffuseMap", ShaderLayout::SamplerType::Texture2D);
+        geometryPassShaderLayout.addSampler("specularMap", ShaderLayout::SamplerType::Texture2D);
+        Shader geometryPassShader({
+            .vertex = "fs://assets/shaders/geom.vert.glsl",
+            .fragment = "fs://assets/shaders/geom.frag.glsl"
+        }, std::move(geometryPassShaderLayout));
+        ResourceHandle<Shader> geometryPassShaderHandle = resourceManager->addManually<Shader>(
+            "fs://assets/shaders/geom.vert.glsl", std::move(geometryPassShader));
 
-    auto standardMaterial = MaterialBuilder(MaterialGraphicsConfig(), *resourceManager)
-        .addSampler("diffuseMap")
-        .addSampler("specularMap")
-        .finalize(*globalMaterialBuffer);
-    ResourceHandle<Material> stdMatHandle = resourceManager->addManually<Material>(
-        "core://materials/standardMaterial", std::move(standardMaterial)
-    );
+        Material defaultTexturedMaterial = MaterialBuilder(
+            geometryPassShaderHandle, *resourceManager, graphicsConfig, *globalMaterialBuffer
+        ).finalize();
+        ResourceHandle<Material> defaultTexturedMaterialHandle = resourceManager->addManually<Material>(
+            "fs://materials/prototypeGrid", std::move(defaultTexturedMaterial)
+        );
+    }
 
-    // auto prototypeGrid = MaterialBuilder("PrototypeGrid", MaterialGraphicsConfig(), *resourceManager)
-    //     .addProperty<glm::vec3>("baseColor", glm::vec3(0.8, 0.8, 0.8))
-    //     .addProperty<float>("tilingScale", 1.0f)
-    //     .finalize(*globalMaterialBuffer);
-    // ResourceHandle<Material> protoGridMatHandle = resourceManager->addManually<Material>(
-    //     "fs://materials/prototypeGrid", std::move(prototypeGrid)
-    // );
+    {
+        ShaderLayout lightingPassShaderLayout;
+        Shader lightingPassShader({
+            .vertex = "fs://assets/shaders/light.vert.glsl",
+            .fragment = "fs://assets/shaders/light.frag.glsl"
+        }, std::move(lightingPassShaderLayout));
+        ResourceHandle<Shader> lightingPassShaderHandle = resourceManager->addManually<Shader>(
+            "fs://assets/shaders/light.vert.glsl", std::move(lightingPassShader));
+    }
 
-    // Shader prototypeShader = compileShader(
-    //     VirtualPath("fs://assets/shaders/julia/julia.vert.glsl"),
-    //     VirtualPath("fs://assets/shaders/julia/julia.frag.glsl"),
-    //     resourceManager->require(protoGridMatHandle),
-    //     *project
-    // );
-    // ResourceHandle<Shader> protoShaderHandle = resourceManager->addManually<Shader>(
-    //     "fs://assets/shaders/julia/julia.vert.glsl",
-    //     std::move(prototypeShader)
-    // );
-    // resourceManager->require(protoGridMatHandle).bindShader(protoShaderHandle);
+    {
+        ShaderLayout prototypeShaderLayout;
+        prototypeShaderLayout.addProperty("baseColor", ShaderLayout::PropertyType::Vec3);
+        prototypeShaderLayout.addProperty("tilingScale", ShaderLayout::PropertyType::Float);
+        Shader prototypeShader({
+            .vertex = "fs://assets/shaders/julia/julia.vert.glsl",
+            .fragment = "fs://assets/shader/julia/julia.frag.glsl"
+        }, std::move(prototypeShaderLayout));
+        ResourceHandle<Shader> prototypeShaderHandle = resourceManager->addManually<Shader>(
+            "fs://assets/shaders/julia/julia.vert.glsl", std::move(prototypeShader)); 
+        
+        Material prototypeMaterial = MaterialBuilder(
+            prototypeShaderHandle, *resourceManager, graphicsConfig, *globalMaterialBuffer
+        ).setProperty("baseColor", glm::vec3(0.8, 0.8, 0.8))
+            .setProperty("tilingScale", 1.0f)
+            .finalize();
+        ResourceHandle<Material> prototypeMaterialHandle = resourceManager->addManually<Material>(
+            "fs://materials/prototypeMaterial", std::move(prototypeMaterial)
+        );
+    }
 
-    Shader geomShader = compileShader(
-        VirtualPath("core://assets/shaders/geom.vert.glsl"),
-        VirtualPath("core://assets/shaders/geom.frag.glsl"),
-        resourceManager->require(stdMatHandle),
-        *project
-    );
+    {
+        ShaderLayout buildClustersShaderLayout;
+        Shader buildClustersShader({
+            .compute = "fs://assets/shaders/buildClusters.comp.glsl"
+        }, std::move(buildClustersShaderLayout));
+        ResourceHandle<Shader> buildClustersShaderHandle = resourceManager->addManually<Shader>(
+            "fs://assets/shaders/buildClusters.comp.glsl", std::move(buildClustersShader));
+    }
 
-    Shader lightingShader = compileShader(
-        VirtualPath("core://assets/shaders/light.vert.glsl"),
-        VirtualPath("core://assets/shaders/light.frag.glsl"),
-        resourceManager->require(stdMatHandle),
-        *project
-    );
-
-    ResourceHandle<Shader> geomShaderHandle = resourceManager->addManually<Shader>(
-        "core://assets/shaders/geom.vert.glsl",
-        std::move(geomShader)
-    );
-    resourceManager->require(stdMatHandle).bindShader(geomShaderHandle);
-    resourceManager->addManually<Shader>(
-        "core://assets/shaders/light.vert.glsl",
-        std::move(lightingShader)
-    );
-
-    ComputeShader buildClustersShader = compileComputeShader(
-        "core://assets/shaders/buildClusters.comp.glsl", *project
-    );
-    ComputeShader lightCullingShader = compileComputeShader(
-        "core://assets/shaders/lightCulling.comp.glsl", *project
-    );
-
-    resourceManager->addManually<ComputeShader>(
-        "core://assets/shaders/buildClusters.comp.glsl",
-        std::move(buildClustersShader)
-    );
-    resourceManager->addManually<ComputeShader>(
-        "core://assets/shaders/lightCulling.comp.glsl",
-        std::move(lightCullingShader)
-    );
+    {
+        ShaderLayout lightCullingShaderLayout;
+        Shader lightCullingShader({
+            .compute = "fs://assets/shaders/lightCulling.comp.glsl"
+        }, std::move(lightCullingShaderLayout));
+        ResourceHandle<Shader> lightCullingShaderHandle = resourceManager->addManually<Shader>(
+            "fs://assets/shaders/lightCulling.comp.glsl", std::move(lightCullingShader));
+    }
 }
 
 void Application::spawnSceneObjects() {

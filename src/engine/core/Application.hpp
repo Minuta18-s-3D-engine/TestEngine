@@ -23,6 +23,7 @@ class Application {
     bool isRunning = true;
     Logger applicationLogger;
     CommandLineArgs args;
+    MaterialGraphicsConfig graphicsConfig;
 
     std::unique_ptr<EventManager> eventManager;
     std::unique_ptr<Window> window;
