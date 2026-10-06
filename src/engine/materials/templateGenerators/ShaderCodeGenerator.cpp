@@ -107,7 +107,7 @@ std::string ShaderCodeGenerator::generatePropertyUnpack(
 
     std::stringstream result;
     result << generateIndentString(indentLevels) << "shaderParams."
-        << prop.name << " = " << converterFunc.str() << ";\n";
+        << prop.name << " = " << converterFunc.str() << ");\n";
 
     return result.str();
 }
@@ -127,7 +127,7 @@ std::string ShaderCodeGenerator::generateUnpack(
 
 std::string ShaderCodeGenerator::generateCommentMessage() const {
     std::stringstream result;
-    result << "Engine version: " << PROJECT_VERSION << "\n"; 
+    result << "Engine version: " << PROJECT_VERSION;
     return result.str();
 }
 
@@ -155,9 +155,13 @@ std::string ShaderCodeGenerator::generateShader(
     const bool loadParams
 ) const {
     TemplateArguments engineGlobalsArgs;
-    engineGlobalsArgs.set(
-        "shader_params", generateShaderParams(layout)
-    );
+    if (loadParams) {
+        engineGlobalsArgs.set(
+            "shader_params", generateShaderParams(layout)
+        );
+    } else {
+        engineGlobalsArgs.set("shader_params", "");
+    }
     std::string engineGlobals = templateEngine.render(
         "shaders/components/engineGlobals.glsl", engineGlobalsArgs
     );

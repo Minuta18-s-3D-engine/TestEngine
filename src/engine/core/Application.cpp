@@ -169,6 +169,8 @@ std::string Application::generateShaderSource(
         shaderLayout, source, callFunc, generateUnpack
     );
 
+    // applicationLogger.debug("{}:\n{}\n\n", sourcePath.getVirtual(), fullSource);
+
     return fullSource;
 }
 
@@ -179,23 +181,23 @@ void Application::compileShadersAndMaterials() {
         geometryPassShaderLayout.addSampler("specularMap", ShaderLayout::SamplerType::Texture2D);
         geometryPassShaderLayout.finalize();
         std::string vertexSource = generateShaderSource(
-            "fs://assets/shaders/geom.vert.glsl", geometryPassShaderLayout,
+            "core://assets/shaders/geom.vert.glsl", geometryPassShaderLayout,
             "vertex");
         std::string fragmentSource = generateShaderSource(
-            "fs://assets/shaders/geom.frag.glsl", geometryPassShaderLayout,
+            "core://assets/shaders/geom.frag.glsl", geometryPassShaderLayout,
             "fragment");
         Shader geometryPassShader({
             .vertex = vertexSource,
             .fragment = fragmentSource
         }, std::move(geometryPassShaderLayout));
         ResourceHandle<Shader> geometryPassShaderHandle = resourceManager->addManually<Shader>(
-            "fs://assets/shaders/geom.vert.glsl", std::move(geometryPassShader));
+            "core://assets/shaders/geom.vert.glsl", std::move(geometryPassShader));
 
         Material defaultTexturedMaterial = MaterialBuilder(
             geometryPassShaderHandle, *resourceManager, MaterialGraphicsConfig(), *globalMaterialBuffer
         ).finalize();
         ResourceHandle<Material> defaultTexturedMaterialHandle = resourceManager->addManually<Material>(
-            "fs://materials/prototypeGrid", std::move(defaultTexturedMaterial)
+            "core://materials/defaultTexturedMaterial", std::move(defaultTexturedMaterial)
         );
     }
 
@@ -203,17 +205,17 @@ void Application::compileShadersAndMaterials() {
         ShaderLayout lightingPassShaderLayout;
         lightingPassShaderLayout.finalize();
         std::string vertexSource = generateShaderSource(
-            "fs://assets/shaders/light.vert.glsl", lightingPassShaderLayout,
-            "vertex");
+            "core://assets/shaders/light.vert.glsl", lightingPassShaderLayout,
+            "vertex", false);
         std::string fragmentSource = generateShaderSource(
-            "fs://assets/shaders/light.frag.glsl", lightingPassShaderLayout,
-            "fragment");
+            "core://assets/shaders/light.frag.glsl", lightingPassShaderLayout,
+            "fragment", false);
         Shader lightingPassShader({
             .vertex = vertexSource,
             .fragment = fragmentSource
         }, std::move(lightingPassShaderLayout));
         ResourceHandle<Shader> lightingPassShaderHandle = resourceManager->addManually<Shader>(
-            "fs://assets/shaders/light.vert.glsl", std::move(lightingPassShader));
+            "core://assets/shaders/light.vert.glsl", std::move(lightingPassShader));
     }
 
     {
@@ -225,7 +227,7 @@ void Application::compileShadersAndMaterials() {
             "fs://assets/shaders/julia/julia.vert.glsl", prototypeShaderLayout,
             "vertex");
         std::string fragmentSource = generateShaderSource(
-            "fs://assets/shader/julia/julia.frag.glsl", prototypeShaderLayout,
+            "fs://assets/shaders/julia/julia.frag.glsl", prototypeShaderLayout,
             "fragment");
         Shader prototypeShader({
             .vertex = vertexSource,
@@ -248,26 +250,26 @@ void Application::compileShadersAndMaterials() {
         ShaderLayout buildClustersShaderLayout;
         buildClustersShaderLayout.finalize();
         std::string computeSource = generateShaderSource(
-            "fs://assets/shaders/buildClusters.comp.glsl", buildClustersShaderLayout,
-            "compute");
+            "core://assets/shaders/buildClusters.comp.glsl", buildClustersShaderLayout,
+            "compute", false);
         Shader buildClustersShader({
             .compute = computeSource
         }, std::move(buildClustersShaderLayout));
         ResourceHandle<Shader> buildClustersShaderHandle = resourceManager->addManually<Shader>(
-            "fs://assets/shaders/buildClusters.comp.glsl", std::move(buildClustersShader));
+            "core://assets/shaders/buildClusters.comp.glsl", std::move(buildClustersShader));
     }
 
     {
         ShaderLayout lightCullingShaderLayout;
         lightCullingShaderLayout.finalize();
         std::string computeSource = generateShaderSource(
-            "fs://assets/shaders/lightCulling.comp.glsl", lightCullingShaderLayout,
-            "compute");
+            "core://assets/shaders/lightCulling.comp.glsl", lightCullingShaderLayout,
+            "compute", false);
         Shader lightCullingShader({
             .compute = computeSource
         }, std::move(lightCullingShaderLayout));
         ResourceHandle<Shader> lightCullingShaderHandle = resourceManager->addManually<Shader>(
-            "fs://assets/shaders/lightCulling.comp.glsl", std::move(lightCullingShader));
+            "core://assets/shaders/lightCulling.comp.glsl", std::move(lightCullingShader));
     }
 }
 
@@ -275,10 +277,10 @@ void Application::spawnSceneObjects() {
     GameObjectManager& objectManager = project->getActiveScene().getGameObjectManager();
 
     ResourceHandle<Material> protoGridMatHandle = resourceManager->getByPath<Material>(
-        "fs://materials/prototypeGrid"
+        "fs://materials/prototypeMaterial"
     );
     ResourceHandle<Material> stdMatHandle = resourceManager->getByPath<Material>(
-        "core://materials/standardMaterial"
+        "core://materials/defaultTexturedMaterial"
     );
 
     {

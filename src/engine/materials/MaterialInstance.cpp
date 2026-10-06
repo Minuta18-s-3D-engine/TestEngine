@@ -48,7 +48,7 @@ MaterialInstance& MaterialInstance::operator=(
 void MaterialInstance::throwIfNoSampler(const std::string& samplerName) const {
     if (!baseMaterial->hasSampler(samplerName)) {
         throw std::invalid_argument(
-            "Material  has no sampler \"" + samplerName
+            "Material has no sampler \"" + samplerName + "\""
         );
     }
 }
@@ -58,7 +58,7 @@ void MaterialInstance::throwIfNoProperty(
 ) const {
     if (!baseMaterial->hasProperty(propertyName)) {
         throw std::invalid_argument(
-            "Material  has no property \"" + propertyName
+            "Material has no property \"" + propertyName + "\""
         );
     }
 }
@@ -106,6 +106,8 @@ void MaterialInstance::bindSamplers(uint32_t startSlot) const {
     const auto& shader = resourceManager->require(baseMaterial->getShader());
     const auto& shaderLayout = shader.getLayout();
 
+    if (shaderLayout.isBindless()) return;
+
     for (const auto& samplerDef : shaderLayout.getSamplers()) {
         const auto it = samplers.find(samplerDef.name);
 
@@ -123,6 +125,8 @@ void MaterialInstance::bindSamplers(uint32_t startSlot) const {
 void MaterialInstance::unbindSamplers() const {
     const auto& shader = resourceManager->require(baseMaterial->getShader());
     const auto& shaderLayout = shader.getLayout();
+
+    if (shaderLayout.isBindless()) return;
 
     for (const auto& samplerDef : shaderLayout.getSamplers()) {
         constexpr GLuint GL_NO_BIND = 0;

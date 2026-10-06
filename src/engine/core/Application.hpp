@@ -49,7 +49,7 @@ class Application {
         const VirtualPath& sourcePath,
         const ShaderLayout& shaderLayout,
         const std::string& callFunc,
-        bool generateUnpack = false
+        bool generateUnpack = true
     );
     void compileShadersAndMaterials();
     void spawnSceneObjects();

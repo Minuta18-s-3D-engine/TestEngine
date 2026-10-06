@@ -89,9 +89,9 @@ const inline std::vector<UnpackInfo> typesUnpackInfo = {
     { "uintBitsToFloat(", "vec4(", 0, 3, false, {} },
     { "int(", "ivec4(", 0, 3, false, {} },
     { "uint(", "uvec4(", 0, 3, false, {} },
-    { "uintBitsToFloat(", "mat2", 0, 3, false, {} },
-    { "uintBitsToFloat(", "mat3", 0, 0, true, {0, 1, 2, 4, 5, 6, 8, 9, 10} },
-    { "uintBitsToFloat(", "mat4", 0, 15, false, {} }
+    { "uintBitsToFloat(", "mat2(", 0, 3, false, {} },
+    { "uintBitsToFloat(", "mat3(", 0, 0, true, {0, 1, 2, 4, 5, 6, 8, 9, 10} },
+    { "uintBitsToFloat(", "mat4(", 0, 15, false, {} }
 };
 
 };

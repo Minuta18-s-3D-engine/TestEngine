@@ -11,5 +11,5 @@ __Generated_ShaderParams shaderParams;
 void __Generated_loadShaderParams() {
     uint base = u_CurrentMaterialStartId;
 
-    {{ unpack_lines }}
+{{ unpack_lines }}
 }

@@ -35,7 +35,7 @@ MaterialBuilder &MaterialBuilder::setSampler(
     defaultSamplers[name] = texture;
 
     const auto& sampler = shader.getLayout().getSampler(name);
-    if (sampler.handleOffset != ShaderLayout::NO_HANDLE) return *this;
+    if (sampler.handleOffset == ShaderLayout::NO_HANDLE) return *this;
 
     const Texture& t = resourceManager->require(texture);
     uint64_t handle = t.getHandle();
@@ -59,7 +59,7 @@ Material MaterialBuilder::finalize() {
     }
 
     return {
-        *graphicsConfig, materialShader,
+        graphicsConfig, materialShader,
         std::move(tempStorage), std::move(defaultSamplers)
     };
 }

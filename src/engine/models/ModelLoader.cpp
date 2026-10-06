@@ -89,9 +89,8 @@ ResourceHandle<Mesh> ModelLoader::processMesh(
     } else {
         const Material& baseMat = resourceManager->require(baseMaterialHandle);
         MaterialInstance instance(
-            baseMat.getName() + "Instance",
             baseMat,
-            baseMat.getDefaultValues().getBuffer(),
+            baseMat.getProperties().getBuffer(),
             *resourceManager
         );
         meshMaterialHandle = resourceManager->addManually(std::move(instance));
@@ -119,9 +118,8 @@ ResourceHandle<MaterialInstance> ModelLoader::loadMaterial(
     const Material& baseMat = resourceManager->require(baseMaterialHandle);
 
     MaterialInstance instance(
-        baseMat.getName() + "Instance",
         baseMat,
-        baseMat.getDefaultValues().getBuffer(),
+        baseMat.getProperties().getBuffer(),
         *resourceManager
     );
 

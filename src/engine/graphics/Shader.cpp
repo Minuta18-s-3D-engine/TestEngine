@@ -15,7 +15,7 @@ uint32_t Shader::compileStage(const GLenum stage, const std::string& source) con
     glShaderSource(shaderId, 1, &code, nullptr);
     glCompileShader(shaderId);
 
-    GLuint success;
+    GLint success;
     glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
     if (!success) {
         char infoLog[ERROR_BUFFER_SIZE];
@@ -57,7 +57,7 @@ Shader::Shader(
 
         glLinkProgram(glId);
 
-        GLuint success;
+        GLint success;
         glGetProgramiv(glId, GL_LINK_STATUS, &success);
         if (!success) {
             char infoLog[ERROR_BUFFER_SIZE];
@@ -77,8 +77,9 @@ Shader::Shader(
 }
 
 Shader::Shader(Shader&& other) noexcept 
-    : uniformLocations(std::move(other.uniformLocations)),
-      glId(other.glId) 
+    : glId(other.glId),
+    uniformLocations(std::move(other.uniformLocations)),
+    layout(std::move(other.layout))
 {
     other.glId = NO_SHADER;
 }
@@ -90,6 +91,7 @@ Shader& Shader::operator=(Shader&& other) noexcept
             glDeleteProgram(glId); 
         }
         glId = other.glId;
+        layout = std::move(other.layout);
         uniformLocations = std::move(other.uniformLocations);
         other.glId = NO_SHADER;
     }

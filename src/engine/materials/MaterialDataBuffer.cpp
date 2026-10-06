@@ -21,7 +21,7 @@ void MaterialDataBuffer::write(
 
 void MaterialDataBuffer::read(
     uint32_t id, uint32_t offset, uint32_t size, void* outData
-) {
+) const {
     const auto& meta = instances.at(id);
     std::memcpy(outData, cpuBuffer.data() + meta.offset + offset, size);
 }
