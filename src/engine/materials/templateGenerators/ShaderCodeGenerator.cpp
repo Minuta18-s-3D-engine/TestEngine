@@ -46,8 +46,17 @@ std::string ShaderCodeGenerator::generateParamsStruct(
         result << shader_layout::typeInfo(prop.type).glslName << " ";
         result << prop.name << ";\n";
     }
-
     return result.str();
+}
+
+std::string ShaderCodeGenerator::generateShaderParamsStruct(
+    const ShaderLayout &layout, uint32_t indentLevels
+) const {
+    TemplateArguments args;
+    args.set("shader_properties", generateParamsStruct(
+        layout, indentLevels
+    ));
+    return templateEngine.render("shaders/shaderParamsStruct.glsl", args);
 }
 
 std::string ShaderCodeGenerator::generateSamplerUniforms(
@@ -135,7 +144,17 @@ std::string ShaderCodeGenerator::generateShaderParams(
     const ShaderLayout& layout
 ) const {
     TemplateArguments args;
-    args.set("shader_properties", generateParamsStruct(layout, 1));
+    if (!layout.getProperties().empty()) {
+        args.set(
+            "shader_params_struct",
+            generateShaderParamsStruct(layout, 1)
+        );
+    } else {
+        args.set(
+            "shader_params_struct",
+            "// Structure generation omitted due to its emptiness."
+        );
+    }
     if (layout.isBindless()) {
         args.set("sampler_uniforms", "// Bindless mode enabled.");
     } else {
@@ -155,13 +174,9 @@ std::string ShaderCodeGenerator::generateShader(
     const bool loadParams
 ) const {
     TemplateArguments engineGlobalsArgs;
-    if (loadParams) {
-        engineGlobalsArgs.set(
-            "shader_params", generateShaderParams(layout)
-        );
-    } else {
-        engineGlobalsArgs.set("shader_params", "");
-    }
+    engineGlobalsArgs.set(
+        "shader_params", generateShaderParams(layout)
+    );
     std::string engineGlobals = templateEngine.render(
         "shaders/components/engineGlobals.glsl", engineGlobalsArgs
     );

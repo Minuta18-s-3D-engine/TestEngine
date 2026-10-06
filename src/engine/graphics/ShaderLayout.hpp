@@ -47,7 +47,7 @@ public:
     void finalize();
 
     // TODO: move bindless settings to config.
-    [[nodiscard]] bool isBindless() const noexcept { return GL_ARB_bindless_texture; }
+    [[nodiscard]] bool isBindless() const noexcept { return !GL_ARB_bindless_texture; }
 
     [[nodiscard]] bool isFinalized() const noexcept { return finalized; }
     [[nodiscard]] bool hasProperty(const std::string& name) const;

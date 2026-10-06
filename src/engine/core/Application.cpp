@@ -206,10 +206,10 @@ void Application::compileShadersAndMaterials() {
         lightingPassShaderLayout.finalize();
         std::string vertexSource = generateShaderSource(
             "core://assets/shaders/light.vert.glsl", lightingPassShaderLayout,
-            "vertex", false);
+            "vertex");
         std::string fragmentSource = generateShaderSource(
             "core://assets/shaders/light.frag.glsl", lightingPassShaderLayout,
-            "fragment", false);
+            "fragment");
         Shader lightingPassShader({
             .vertex = vertexSource,
             .fragment = fragmentSource
@@ -251,7 +251,7 @@ void Application::compileShadersAndMaterials() {
         buildClustersShaderLayout.finalize();
         std::string computeSource = generateShaderSource(
             "core://assets/shaders/buildClusters.comp.glsl", buildClustersShaderLayout,
-            "compute", false);
+            "compute");
         Shader buildClustersShader({
             .compute = computeSource
         }, std::move(buildClustersShaderLayout));
@@ -264,7 +264,7 @@ void Application::compileShadersAndMaterials() {
         lightCullingShaderLayout.finalize();
         std::string computeSource = generateShaderSource(
             "core://assets/shaders/lightCulling.comp.glsl", lightCullingShaderLayout,
-            "compute", false);
+            "compute");
         Shader lightCullingShader({
             .compute = computeSource
         }, std::move(lightCullingShaderLayout));

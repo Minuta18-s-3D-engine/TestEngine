@@ -55,7 +55,7 @@ void ShaderLayout::addSampler(
     if (samplerIndex.contains(name))
         throw std::invalid_argument("Sampler already exists: " + name);
     if (type == SamplerType::Count)
-        throw std::invalid_argument("Invalid sapmler type for field: " + name);
+        throw std::invalid_argument("Invalid sampler type for field: " + name);
 
     Sampler s;
     s.name = name;
@@ -64,7 +64,7 @@ void ShaderLayout::addSampler(
     samplerIndex[name] = static_cast<uint32_t>(samplers.size());
     samplers.push_back(std::move(s));
 
-    if (GL_ARB_bindless_texture) {
+    if (isBindless()) {
         addProperty(name, PropertyType::UVec2);
     }
 }

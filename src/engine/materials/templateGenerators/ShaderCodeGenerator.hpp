@@ -32,6 +32,8 @@ private:
 
     [[nodiscard]] std::string generateParamsStruct(
         const ShaderLayout& layout, uint32_t indentLevels) const;
+    [[nodiscard]] std::string generateShaderParamsStruct(
+        const ShaderLayout& layout, uint32_t indentLevels) const;
 
     [[nodiscard]] std::string generateSamplerUniforms(
         const ShaderLayout& layout) const;

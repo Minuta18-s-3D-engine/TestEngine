@@ -52,6 +52,10 @@ MaterialBuilder &MaterialBuilder::setSampler(
 Material MaterialBuilder::finalize() {
     const auto& shader = resourceManager->require<Shader>(materialShader);
 
+    for (const auto& sampler : shader.getLayout().getSamplers()) {
+        setSampler(sampler.name, missingTexture);
+    }
+
     PropertyDataStorage tempStorage(shader.getLayout(), *buffer);
 
     for (const auto& binder : propertyBinders) {

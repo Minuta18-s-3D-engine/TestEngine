@@ -1,8 +1,4 @@
-struct __Generated_ShaderParams {
-{{ shader_properties }}
-};
-
-__Generated_ShaderParams shaderParams;
+{{ shader_params_struct }}
 
 {{ sampler_uniforms }}
 

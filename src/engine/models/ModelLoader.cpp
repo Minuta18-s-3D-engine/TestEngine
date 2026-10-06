@@ -28,7 +28,7 @@ std::unique_ptr<Model> ModelLoader::loadModel(
     directory = resolvedPath.substr(0, resolvedPath.find_last_of('/'));
 
     createdModel = std::make_unique<Model>(*resourceManager);
-    createdModel->material = resourceManager->getByPath<Material>("core://materials/standardMaterial");
+    createdModel->material = resourceManager->getByPath<Material>("core://materials/defaultTexturedMaterial");
 
     loadedTextures.clear();
     loadedMaterials.clear();
