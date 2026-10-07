@@ -82,6 +82,7 @@ void MaterialInstance::setSampler(
 
     const Texture& textureResource = resourceManager->require(_texture);
     samplers[_name] = _texture;
+    if (!properties.getLayout().isBindless()) return;
 
     const uint64_t handle = textureResource.getHandle();
     const auto lowerBits = static_cast<uint32_t>(handle);
