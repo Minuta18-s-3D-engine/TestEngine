@@ -14,7 +14,7 @@ class Shader;
 class ShaderLayout;
 class Texture;
 class Material;
-class MaterialGraphicsConfig;
+struct MaterialGraphicsConfig;
 class MaterialDataBuffer;
 
 class MaterialBuilder {
