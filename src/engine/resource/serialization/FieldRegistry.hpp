@@ -1,5 +1,5 @@
-#ifndef TESTENG_FIELDREGISTRY_HPP
-#define TESTENG_FIELDREGISTRY_HPP
+#ifndef ENGINE_RESOURCE_SERIALIZATION_FIELDREGISTRY_HPP
+#define ENGINE_RESOURCE_SERIALIZATION_FIELDREGISTRY_HPP
 
 #include <string>
 
@@ -34,4 +34,4 @@ void FieldRegistry::registerField(std::string_view name, T C::*member) {
     fields.push_back(d);
 }
 
-#endif //TESTENG_FIELDREGISTRY_HPP
+#endif // ENGINE_RESOURCE_SERIALIZATION_FIELDREGISTRY_HPP
