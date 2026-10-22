@@ -30,7 +30,6 @@ void FieldRegistry::registerField(std::string_view name, T C::*member) {
     d.name = name;
 
 
-
     fields.push_back(d);
 }
 
