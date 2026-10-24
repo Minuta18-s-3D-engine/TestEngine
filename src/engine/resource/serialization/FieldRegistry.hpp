@@ -24,7 +24,7 @@ class FieldRegistry {
     std::vector<FieldDescriptor> fields;
 
     template <typename C, typename T>
-    size_t getMemberOffset(T C::*member) const {
+    [[nodiscard]] size_t getMemberOffset(T C::*member) const {
         // FIXME: Technically UB, but should work for almost all popular
         // compilers. DOES NOT work with multiple inheritance. I'll definitely
         // replace this one later, but I don't know what I should put here
