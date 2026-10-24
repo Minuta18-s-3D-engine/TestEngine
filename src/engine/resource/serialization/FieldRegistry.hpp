@@ -4,6 +4,7 @@
 #include <string>
 
 #include "engine/containers/structuredData/DataNode.hpp"
+#include "TypeSerialization.hpp"
 
 using SerializeFunc = void (*)(
     const void* fieldPtr, StructuredData::DataNode& outNode);
@@ -52,11 +53,11 @@ void FieldRegistry::registerField(std::string_view name, T C::*member) {
 
     d.serialize = [](const void* fieldPtr, StructuredData::DataNode& outNode) {
         const T* typedValue = static_cast<const T*>(fieldPtr);
-        // TODO
+        TypeSerialization::serializeField(outNode, *typedValue);
     };
     d.deserialize = [](const void* fieldPtr, StructuredData::DataNode& inNode) {
         T* typedValue = static_cast<T*>(fieldPtr);
-        // TODO
+        TypeSerialization::deserializeField(inNode, *typedValue);
     };
 
     fields.push_back(d);
