@@ -9,30 +9,42 @@
 
 template <typename T>
 class EnumMapper {
-    std::unordered_map<std::string, T> stringToEnum;
-    std::unordered_map<T, std::string> enumToString;
+public:
+    struct Mapping {
+        std::string_view name;
+        T value;
+    };
+private:
+    std::vector<Mapping> mappings;
 public:
     EnumMapper(
-        std::initializer_list<std::pair<T, std::string>> mapping
+        std::initializer_list<std::pair<T, std::string>> mappings_
     ) {
-        for (const auto& [value, name] : mapping) {
-            enumToString[value] = name;
-            stringToEnum[name] = value;
+        mappings.reserve(mappings_.size());
+        for (int i = 0; i < mappings_.size(); ++i) {
+            mappings.push_back({ mappings_[i].second, mappings_[i].first });
         }
     }
 
-    T toEnum(const std::string& _string) const { 
-        if (!stringToEnum.contains(_string)) {
-            throw std::out_of_range("unknown enum value."); 
+    [[nodiscard]] T toEnum(const std::string& name) const {
+        for (const auto& m : mappings) {
+            if (m.name == name) return m.value;
         }
-        return stringToEnum.at(_string); 
+        throw std::out_of_range("Unknown enum string name.");
     }
 
-    std::string toString(T _t) const { 
-        if (!enumToString.contains(_t)) {
-            throw std::out_of_range("unknown enum value.");
+    [[nodiscard]] std::string toString(T value) const {
+        for (const auto& m : mappings) {
+            if (m.value == value) return m.name;
         }
-        return enumToString.at(_t); 
+        throw std::out_of_range("Unknown enum value.");
+    }
+
+    [[nodiscard]] std::optional<T> tryToEnum(std::string_view name) const {
+        for (const auto& m : mappings) {
+            if (m.name == name) return m.value;
+        }
+        return std::nullopt;
     }
 };
 
