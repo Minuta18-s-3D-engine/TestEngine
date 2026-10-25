@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 
 #include "engine/containers/structuredData/DataNode.hpp"
+#include "EnumTraits.hpp"
 
 namespace TypeSerialization {
     inline void serializeField(StructuredData::DataNode& out, bool value);
@@ -31,9 +32,12 @@ namespace TypeSerialization {
     inline void serializeField(
         StructuredData::DataNode& out, const glm::qua<T, Q>& value);
 
+    template <MappedEnum T>
+    inline void serializeField(StructuredData::DataNode& out, T value);
+
 
     inline void deserializeField(const StructuredData::DataNode& in,
-        bool& value);
+                                 bool& value);
     inline void deserializeField(const StructuredData::DataNode& in,
         std::string& value);
 
@@ -54,6 +58,9 @@ namespace TypeSerialization {
     template <typename T, glm::qualifier Q>
     inline void deserializeField(
         const StructuredData::DataNode& in, glm::qua<T, Q>& value);
+
+    template <MappedEnum T>
+    inline void deserializeField(const StructuredData::DataNode& in, T& value);
 };
 
 inline void TypeSerialization::serializeField(
@@ -117,6 +124,13 @@ void TypeSerialization::serializeField(
     arr.emplace_back(static_cast<double>(value.z));
     arr.emplace_back(static_cast<double>(value.w));
     out = StructuredData::DataNode(std::move(arr));
+}
+
+template<MappedEnum T>
+void TypeSerialization::serializeField(StructuredData::DataNode &out, T value) {
+    out = StructuredData::DataNode(std::string(
+        EnumTraits<T>::mapping.toString(value)
+    ));
 }
 
 inline void TypeSerialization::deserializeField(
@@ -201,6 +215,20 @@ void TypeSerialization::deserializeField(
     value.y = static_cast<T>(arr[1].asNumber());
     value.z = static_cast<T>(arr[2].asNumber());
     value.w = static_cast<T>(arr[3].asNumber());
+}
+
+template<MappedEnum T>
+void TypeSerialization::deserializeField(
+    const StructuredData::DataNode &in, T &value
+) {
+    auto enumValue = EnumTraits<T>::mapping.tryToEnum(in.asString());
+    if (!enumValue.has_value()) {
+        std::string errorMessage = std::format(
+            "{} is not a valid option", in.asString()
+        );
+        throw std::runtime_error(errorMessage);
+    }
+    value = *enumValue;
 }
 
 #endif // ENGINE_RESOURCE_SERIALIZATION_TYPESERIALIZATION_HPP

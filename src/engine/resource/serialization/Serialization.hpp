@@ -3,6 +3,7 @@
 
 #include "TypeSerialization.hpp"
 #include "FieldRegistry.hpp"
+#include "EnumTraits.hpp"
 
 #define SERIALIZE_FIELD(fieldName) \
     registry.registerField(#fieldName, &StructType::fieldName)
