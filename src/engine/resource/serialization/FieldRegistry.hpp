@@ -31,7 +31,14 @@ public:
 
     template <typename C, typename T>
     void registerField(
-        std::string_view name, T C::*member, const T& defaultValue);
+        std::string_view name, T C::*member, const T& defaultValue
+    );
+
+    template <typename C, typename T>
+    void registerField(
+        std::string_view name, T C::*member, SerializeFunc customSerializeFunc,
+        DeserializeFunc customDeserializeFunc
+    );
 
     [[nodiscard]] const std::vector<FieldDescriptor>& getFields() const;
     [[nodiscard]] std::vector<FieldDescriptor>::iterator begin();
@@ -94,6 +101,31 @@ void FieldRegistry::registerField(
         } else {
             TypeSerialization::deserializeField(inNode, *typedValue);
         }
+    };
+
+    fields.push_back(d);
+}
+
+template<typename C, typename T>
+void FieldRegistry::registerField(
+    std::string_view name, T C::*member, SerializeFunc customSerializeFunc,
+    DeserializeFunc customDeserializeFunc
+) {
+    FieldDescriptor d;
+    d.name = name;
+    d.offset = getMemberOffset<C, T>(member);
+    d.hasDefault = true;
+    d.serialize = [customSerializeFunc] (
+        const void* fieldPtr, StructuredData::DataNode& outNode
+    ) {
+        const T* typedValue = static_cast<const T*>(fieldPtr);
+        customSerializeFunc(*typedValue, outNode);
+    };
+    d.deserialize = [customDeserializeFunc] (
+        void* fieldPtr, const StructuredData::DataNode& inNode
+    ) {
+        T* typedValue = static_cast<T*>(fieldPtr);
+        customDeserializeFunc(inNode, *typedValue);
     };
 
     fields.push_back(d);
