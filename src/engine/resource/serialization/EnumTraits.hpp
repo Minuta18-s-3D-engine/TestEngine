@@ -1,6 +1,8 @@
 #ifndef ENGINE_RESOURCE_SERIALIZATION_ENUMTRAITS_HPP
 #define ENGINE_RESOURCE_SERIALIZATION_ENUMTRAITS_HPP
 
+#include <type_traits>
+
 #include "engine/utils/EnumMapper.hpp"
 
 template <typename T>

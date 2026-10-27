@@ -1,15 +1,8 @@
 #ifndef ENGINE_RESOURCE_SERIALIZATION_OBJECTSERIALER_HPP
 #define ENGINE_RESOURCE_SERIALIZATION_OBJECTSERIALER_HPP
 
-#include <concepts>
-
 #include "engine/containers/structuredData/DataNode.hpp"
 #include "FieldRegistry.hpp"
-
-template <typename T>
-concept Serializable = requires {
-    { T::reflect() } -> std::same_as<const FieldRegistry&>;
-};
 
 class ObjectSerializer {
 public:
@@ -52,15 +45,39 @@ void ObjectSerializer::deserialize(
         const StructuredData::DataNode* fieldNode =
             objData.find(std::string(field.name));
 
-        if (fieldNode) {
-            field.deserialize(fieldPtr, *fieldNode);
-        } else if (field.hasDefault) {
-            field.deserialize(fieldPtr, field.defaultValue);
-        } else {
+        const bool present = fieldNode &&
+            !(field.hasDefault && fieldNode->isNull());
+
+        if (!present && !field.hasDefault) {
             throw std::runtime_error(
                 "Missing required field: " + std::string(field.name));
         }
+
+        const StructuredData::DataNode& source =
+            present ? *fieldNode : field.defaultValue;
+
+        try {
+            field.deserialize(fieldPtr, source);
+        } catch (const std::exception& e) {
+            throw std::runtime_error(
+                std::string(field.name) + ": " + e.what()
+            );
+        }
     }
+}
+
+template <Serializable T>
+inline void TypeSerialization::serializeField(
+    StructuredData::DataNode& out, const T& value
+) {
+    out = ObjectSerializer::serialize(value);
+}
+
+template <Serializable T>
+inline void TypeSerialization::deserializeField(
+    const StructuredData::DataNode& in, T& value
+) {
+    ObjectSerializer::deserialize(in, value);
 }
 
 #endif // ENGINE_RESOURCE_SERIALIZATION_OBJECTSERIALER_HPP

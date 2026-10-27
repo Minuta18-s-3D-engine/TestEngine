@@ -11,15 +11,15 @@
 #define SERIALIZE_FIELD_DEFAULT(fieldName, defaultValue) \
     registry.registerField(#fieldName, &StructType::fieldName, defaultValue)
 
-#define GENERATE_SERIALIZATION(StructType, ...) \
+#define GENERATE_SERIALIZATION(Type, ...) \
     static const FieldRegistry& reflect() { \
-        static FieldRegistry registry; \
-        static bool initialized = false; \
-        if (!initialized) { \
+        static const FieldRegistry instance = [] { \
+            using StructType = Type; \
+            FieldRegistry registry; \
             __VA_ARGS__; \
-            initialized = true; \
-        } \
-        return registry; \
+            return registry; \
+        }(); \
+        return instance; \
     }
 
 #endif // ENGINE_RESOURCE_SERIALIZATION_SERIALIZATION_HPP

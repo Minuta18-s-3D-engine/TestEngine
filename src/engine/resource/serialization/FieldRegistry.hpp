@@ -2,6 +2,9 @@
 #define ENGINE_RESOURCE_SERIALIZATION_FIELDREGISTRY_HPP
 
 #include <string>
+#include <concepts>
+#include <vector>
+#include <string_view>
 
 #include "engine/containers/structuredData/DataNode.hpp"
 #include "TypeSerialization.hpp"
@@ -15,6 +18,7 @@ struct FieldDescriptor {
     std::string_view name;
     size_t offset = 0;
     bool hasDefault = false;
+    bool isNested = false;
     StructuredData::DataNode defaultValue;
 
     SerializeFunc serialize = nullptr;
@@ -66,7 +70,7 @@ void FieldRegistry::registerField(std::string_view name, T C::*member) {
     FieldDescriptor d;
     d.name = name;
     d.offset = getMemberOffset<C, T>(member);
-    d.hasDefault = false;
+    d.isNested = Serializable<T>;
 
     d.serialize = [](const void* fieldPtr, StructuredData::DataNode& outNode) {
         const T* typedValue = static_cast<const T*>(fieldPtr);
@@ -88,19 +92,16 @@ void FieldRegistry::registerField(
     d.name = name;
     d.offset = getMemberOffset<C, T>(member);
     d.hasDefault = true;
+    d.isNested = Serializable<T>;
     TypeSerialization::serializeField(d.defaultValue, defaultValue);
 
     d.serialize = [](const void* fieldPtr, StructuredData::DataNode& outNode) {
         const T* typedValue = static_cast<const T*>(fieldPtr);
         TypeSerialization::serializeField(outNode, *typedValue);
     };
-    d.deserialize = [d](void* fieldPtr, const StructuredData::DataNode& inNode){
+    d.deserialize = [](void* fieldPtr, const StructuredData::DataNode& inNode){
         T* typedValue = static_cast<T*>(fieldPtr);
-        if (inNode.isNull() && d.hasDefault) {
-            TypeSerialization::deserializeField(d.defaultValue, *typedValue);
-        } else {
-            TypeSerialization::deserializeField(inNode, *typedValue);
-        }
+        TypeSerialization::deserializeField(inNode, *typedValue);
     };
 
     fields.push_back(d);

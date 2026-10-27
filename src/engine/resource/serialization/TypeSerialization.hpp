@@ -10,6 +10,13 @@
 #include "engine/containers/structuredData/DataNode.hpp"
 #include "EnumTraits.hpp"
 
+class FieldRegistry;
+
+template <typename T>
+concept Serializable = requires {
+    { T::reflect() } -> std::same_as<const FieldRegistry&>;
+};
+
 namespace TypeSerialization {
     inline void serializeField(StructuredData::DataNode& out, bool value);
     inline void serializeField(StructuredData::DataNode& out, const std::string& value);
@@ -34,6 +41,9 @@ namespace TypeSerialization {
 
     template <MappedEnum T>
     inline void serializeField(StructuredData::DataNode& out, T value);
+
+    template <Serializable T>
+    inline void serializeField(StructuredData::DataNode& out, const T& value);
 
 
     inline void deserializeField(const StructuredData::DataNode& in,
@@ -60,6 +70,9 @@ namespace TypeSerialization {
         const StructuredData::DataNode& in, glm::qua<T, Q>& value);
 
     template <MappedEnum T>
+    inline void deserializeField(const StructuredData::DataNode& in, T& value);
+
+    template <Serializable T>
     inline void deserializeField(const StructuredData::DataNode& in, T& value);
 };
 
