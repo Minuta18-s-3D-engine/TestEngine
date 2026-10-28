@@ -18,23 +18,23 @@ using Array = std::vector<DataNode>;
 
 class Object {
 public:
-    using Entry = std::pair<key_t, DataNode>;
-
+    using NodesMap = std::unordered_map<key_t, DataNode>;
+private:
+    NodesMap entries;
+public:
     DataNode& operator[](const key_t& key);
     [[nodiscard]] const DataNode* find(const key_t& key) const noexcept;
     [[nodiscard]] DataNode* find(const key_t& key) noexcept;
     bool erase(const key_t& key) noexcept;
 
-    [[nodiscard]] std::vector<Entry>::iterator begin() noexcept { return entries.begin(); }
-    [[nodiscard]] std::vector<Entry>::iterator end() noexcept { return entries.end(); }
-    [[nodiscard]] std::vector<Entry>::const_iterator begin() const noexcept {
+    [[nodiscard]] NodesMap::iterator begin() noexcept { return entries.begin(); }
+    [[nodiscard]] NodesMap::iterator end() noexcept { return entries.end(); }
+    [[nodiscard]] NodesMap::const_iterator begin() const noexcept {
         return entries.begin(); 
     } 
-    [[nodiscard]] std::vector<Entry>::const_iterator end() const noexcept {
+    [[nodiscard]] NodesMap::const_iterator end() const noexcept {
         return entries.end(); 
-    } 
-private:
-    std::vector<Entry> entries;
+    }
 };
 
 enum class Type : uint8_t {

@@ -6,39 +6,32 @@
 namespace StructuredData {
 
 DataNode& Object::operator[](const key_t& key) {
-    for (auto& entry : entries) {
-        if (entry.first == key) {
-            return entry.second;
-        }
+    if (entries.contains(key)) {
+        return entries[key];
     }
-    entries.emplace_back(key, DataNode());
-    return entries.back().second;
+
+    entries[key] = DataNode();
+    return entries[key];
 }
 
 const DataNode* Object::find(const key_t& key) const noexcept {
-    for (const auto& entry : entries) {
-        if (entry.first == key) {
-            return &entry.second;
-        }
+    if (entries.contains(key)) {
+        return &entries.at(key);
     }
     return nullptr;
 }
 
 DataNode* Object::find(const key_t& key) noexcept {
-    for (auto& entry : entries) {
-        if (entry.first == key) {
-            return &entry.second;
-        }
+    if (entries.contains(key)) {
+        return &entries.at(key);
     }
     return nullptr;
 }
 
 bool Object::erase(const key_t& key) noexcept {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        if (it->first == key) {
-            entries.erase(it);
-            return true;
-        }
+    if (entries.contains(key)) {
+        entries.erase(key);
+        return true;
     }
     return false;
 }
