@@ -4,6 +4,8 @@
 #include <format>
 #include <type_traits>
 #include <string>
+#include <map>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 
@@ -42,6 +44,24 @@ namespace TypeSerialization {
     template <MappedEnum T>
     inline void serializeField(StructuredData::DataNode& out, T value);
 
+    template <typename T>
+    inline void serializeField(
+        StructuredData::DataNode& out, const std::vector<T>& value);
+
+    template <typename T>
+    inline void serializeField(
+        StructuredData::DataNode& out, const std::optional<T>& value);
+
+    template <typename T>
+    inline void serializeField(
+        StructuredData::DataNode& out, const std::map<std::string, T>& value);
+
+    template <typename T>
+    inline void serializeField(
+        StructuredData::DataNode& out,
+        const std::unordered_map<std::string, T>& value
+    );
+
     template <Serializable T>
     inline void serializeField(StructuredData::DataNode& out, const T& value);
 
@@ -71,6 +91,24 @@ namespace TypeSerialization {
 
     template <MappedEnum T>
     inline void deserializeField(const StructuredData::DataNode& in, T& value);
+
+    template <typename T>
+    inline void deserializeField(
+        const StructuredData::DataNode& in, std::vector<T>& value);
+
+    template <typename T>
+    inline void deserializeField(
+        const StructuredData::DataNode& in, std::optional<T>& value);
+
+    template <typename T>
+    inline void deserializeField(
+        const StructuredData::DataNode& in, std::map<std::string, T>& value);
+
+    template <typename T>
+    inline void deserializeField(
+        const StructuredData::DataNode& in,
+        std::unordered_map<std::string, T>& value
+    );
 
     template <Serializable T>
     inline void deserializeField(const StructuredData::DataNode& in, T& value);
@@ -137,6 +175,58 @@ void TypeSerialization::serializeField(
     arr.emplace_back(static_cast<double>(value.z));
     arr.emplace_back(static_cast<double>(value.w));
     out = StructuredData::DataNode(std::move(arr));
+}
+
+template<typename T>
+void TypeSerialization::serializeField(
+    StructuredData::DataNode &out, const std::vector<T> &value
+) {
+    StructuredData::Array arr;
+    arr.reserve(value.size());
+    for (const auto& element : value) {
+        StructuredData::DataNode elemNode;
+        serializeField(elemNode, element);
+        arr.push_back(std::move(elemNode));
+    }
+    out = StructuredData::DataNode(std::move(arr));
+}
+
+template<typename T>
+void TypeSerialization::serializeField(
+    StructuredData::DataNode &out, const std::optional<T> &value
+) {
+    if (!value.has_value()) {
+        out = StructuredData::DataNode();
+        return;
+    }
+    serializeField(out, *value);
+}
+
+template<typename T>
+void TypeSerialization::serializeField(
+    StructuredData::DataNode &out, const std::map<std::string, T> &value
+) {
+    StructuredData::Object result;
+    for (const auto& [key, element] : value) {
+        StructuredData::DataNode elemNode;
+        serializeField(elemNode, element);
+        result[key] = std::move(elemNode);
+    }
+    out = StructuredData::DataNode(std::move(result));
+}
+
+template<typename T>
+void TypeSerialization::serializeField(
+    StructuredData::DataNode &out,
+    const std::unordered_map<std::string, T> &value
+) {
+    StructuredData::Object result;
+    for (const auto& [key, element] : value) {
+        StructuredData::DataNode elemNode;
+        serializeField(elemNode, element);
+        result[key] = std::move(elemNode);
+    }
+    out = StructuredData::DataNode(std::move(result));
 }
 
 template<MappedEnum T>
@@ -228,6 +318,62 @@ void TypeSerialization::deserializeField(
     value.y = static_cast<T>(arr[1].asNumber());
     value.z = static_cast<T>(arr[2].asNumber());
     value.w = static_cast<T>(arr[3].asNumber());
+}
+
+template<typename T>
+void TypeSerialization::deserializeField(
+    const StructuredData::DataNode &in, std::vector<T> &value
+) {
+    const auto& arr = in.asArray();
+    std::vector<T> result;
+    result.reserve(arr.size());
+    for (size_t i = 0; i < arr.size(); ++i) {
+        T element{};
+        deserializeField(arr[i], element);
+        result.push_back(std::move(element));
+    }
+    value = std::move(result);
+}
+
+template<typename T>
+void TypeSerialization::deserializeField(
+    const StructuredData::DataNode &in, std::optional<T> &value
+) {
+    if (in.isNull()) {
+        value.reset();
+        return;
+    }
+
+    T element{};
+    deserializeField(in, element);
+    value = std::move(element);
+}
+
+template<typename T>
+void TypeSerialization::deserializeField(
+    const StructuredData::DataNode &in, std::map<std::string, T> &value
+) {
+    std::map<std::string, T> result;
+    for (const auto& [key, node] : in.asObject()) {
+        T element{};
+        deserializeField(node, element);
+        result.emplace(key, std::move(element));
+    }
+    value = std::move(result);
+}
+
+template<typename T>
+void TypeSerialization::deserializeField(
+    const StructuredData::DataNode &in,
+    std::unordered_map<std::string, T> &value
+) {
+    std::unordered_map<std::string, T> result;
+    for (const auto& [key, node] : in.asObject()) {
+        T element{};
+        deserializeField(node, element);
+        result.emplace(key, std::move(element));
+    }
+    value = std::move(result);
 }
 
 template<MappedEnum T>
