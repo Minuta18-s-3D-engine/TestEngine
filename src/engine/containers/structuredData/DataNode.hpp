@@ -44,6 +44,7 @@ enum class Type : uint8_t {
     Integer,
     Number,
     String,
+    Binary,
     Array,
     Object
 };
@@ -54,6 +55,7 @@ const EnumMapper<Type> typeMapper = {
     { Type::Integer, "integer" },
     { Type::Number, "number" },
     { Type::String, "string" },
+    { Type::Binary, "binary" },
     { Type::Array, "array" },
     { Type::Object, "object" }
 }; 
@@ -66,6 +68,7 @@ class DataNode {
         int64_t value_integer;
         double value_number;
         std::string value_string;
+        std::vector<uint8_t> value_binary;
         Array value_array;
         Object value_object;
     };
@@ -78,6 +81,10 @@ public:
     explicit DataNode(const std::string& value);
     explicit DataNode(std::string&& value) noexcept;
     explicit DataNode(const char* value);
+
+    explicit DataNode(const std::vector<uint8_t>& value);
+    explicit DataNode(std::vector<uint8_t>&& value) noexcept;
+
     explicit DataNode(const Array& value);
     explicit DataNode(Array&& value) noexcept;
     explicit DataNode(const Object& value);
@@ -95,6 +102,7 @@ public:
     [[nodiscard]] bool isInteger() const noexcept { return type == Type::Integer; }
     [[nodiscard]] bool isNumber()  const noexcept { return type == Type::Integer || type == Type::Number; }
     [[nodiscard]] bool isString()  const noexcept { return type == Type::String; }
+    [[nodiscard]] bool isBinary()  const noexcept { return type == Type::Binary; }
     [[nodiscard]] bool isArray()   const noexcept { return type == Type::Array; }
     [[nodiscard]] bool isObject()  const noexcept { return type == Type::Object; }
 
@@ -102,6 +110,7 @@ public:
     [[nodiscard]] int64_t asInteger() const;
     [[nodiscard]] double asNumber() const;
     [[nodiscard]] const std::string& asString() const;
+    [[nodiscard]] const std::vector<uint8_t>& asBinary() const;
     [[nodiscard]] const Array& asArray() const;
     [[nodiscard]] const Object& asObject() const;
 
@@ -109,9 +118,11 @@ public:
     [[nodiscard]] int64_t asInteger(int64_t defaultValue) const;
     [[nodiscard]] double asNumber(double defaultValue) const;
     [[nodiscard]] const std::string& asString(const std::string& defaultValue) const;
+    [[nodiscard]] const std::vector<uint8_t>& asBinary(const std::vector<uint8_t>& defaultValue) const;
     [[nodiscard]] const Array& asArray(const Array& defaultValue) const;
     [[nodiscard]] const Object& asObject(const Object& defaultValue) const;
 
+    std::vector<uint8_t>& asBinary();
     Array& asArray();
     Object& asObject();
 

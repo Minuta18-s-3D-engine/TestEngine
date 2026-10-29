@@ -48,6 +48,14 @@ DataNode::DataNode(const char* value) : type(Type::String) {
     new (&value_string) std::string(value);
 }
 
+DataNode::DataNode(const std::vector<uint8_t>& value) : type(Type::Binary) {
+    new (&value_binary) std::vector<uint8_t>(value);
+}
+
+DataNode::DataNode(std::vector<uint8_t>&& value) noexcept : type(Type::Binary) {
+    new (&value_binary) std::vector<uint8_t>(std::move(value));
+}
+
 DataNode::DataNode(const Array& value) : type(Type::Array) {
     new (&value_array) Array(value);
 }
@@ -69,6 +77,9 @@ DataNode::~DataNode() noexcept {
         case Type::String:
             value_string.~basic_string();
             break;
+        case Type::Binary:
+            value_binary.~vector();
+            break;
         case Type::Array:
             value_array.~vector();
             break;
@@ -87,6 +98,9 @@ DataNode::DataNode(const DataNode& other) : type(other.type) {
         case Type::Number:  value_number = other.value_number; break;
         case Type::String:  
             new (&value_string) std::string(other.value_string); break;
+        case Type::Binary:
+            new (&value_binary) std::vector<uint8_t>(other.value_binary);
+            break;
         case Type::Array:   
             new (&value_array) Array(other.value_array); break;
         case Type::Object:  
@@ -102,6 +116,11 @@ DataNode::DataNode(DataNode&& other) noexcept : type(other.type) {
         case Type::Number:  value_number = other.value_number; break;
         case Type::String:  
             new (&value_string) std::string(std::move(other.value_string)); 
+            break;
+        case Type::Binary:
+            new (&value_binary) std::vector<uint8_t>(
+                std::move(other.value_binary)
+            );
             break;
         case Type::Array:   
             new (&value_array) Array(std::move(other.value_array)); break;
@@ -122,6 +141,9 @@ DataNode& DataNode::operator=(const DataNode& other) {
             case Type::Number:  value_number = other.value_number; break;
             case Type::String:  
                 new (&value_string) std::string(other.value_string); break;
+            case Type::Binary:
+                new (&value_binary) std::vector<uint8_t>(other.value_binary);
+                break;
             case Type::Array:   
                 new (&value_array) Array(other.value_array); break;
             case Type::Object:  
@@ -143,6 +165,10 @@ DataNode& DataNode::operator=(DataNode&& other) noexcept {
             case Type::String:  
                 new (&value_string) std::string(std::move(other.value_string));
                 break;
+            case Type::Binary:
+                new (&value_binary) std::vector<uint8_t>(
+                    std::move(other.value_binary)
+                );
             case Type::Array:   
                 new (&value_array) Array(std::move(other.value_array)); 
                 break;
@@ -180,6 +206,12 @@ const std::string& DataNode::asString() const {
     return value_string;
 }
 
+const std::vector<uint8_t> &DataNode::asBinary() const {
+    if (type != Type::Binary)
+        throw std::runtime_error("DataNode is not a binary block.");
+    return value_binary;
+}
+
 const Array& DataNode::asArray() const {
     if (type != Type::Array) 
         throw std::runtime_error("DataNode is not an array");
@@ -190,6 +222,12 @@ const Object& DataNode::asObject() const {
     if (type != Type::Object) 
         throw std::runtime_error("DataNode is not an object");
     return value_object;
+}
+
+std::vector<uint8_t>& DataNode::asBinary() {
+    if (type != Type::Binary)
+        throw std::runtime_error("DataNode is not a binary block.");
+    return value_binary;
 }
 
 Array& DataNode::asArray() {
@@ -220,6 +258,12 @@ double DataNode::asNumber(double defaultValue) const {
 
 const std::string& DataNode::asString(const std::string& defaultValue) const {
     return (type == Type::String) ? value_string : defaultValue;
+}
+
+const std::vector<uint8_t>& DataNode::asBinary(
+    const std::vector<uint8_t>& defaultValue
+) const {
+    return (type == Type::Binary) ? value_binary : defaultValue;
 }
 
 const Array& DataNode::asArray(const Array& defaultValue) const {
