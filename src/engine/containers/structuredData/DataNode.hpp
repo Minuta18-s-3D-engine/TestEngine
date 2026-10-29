@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
 
 #include "engine/utils/EnumMapper.hpp"
 
@@ -18,7 +19,7 @@ using Array = std::vector<DataNode>;
 
 class Object {
 public:
-    using NodesMap = std::unordered_map<key_t, DataNode>;
+    using NodesMap = std::map<key_t, DataNode>;
 private:
     NodesMap entries;
 public:
