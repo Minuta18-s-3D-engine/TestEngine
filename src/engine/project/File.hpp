@@ -53,7 +53,7 @@ public:
         ));
     }
 
-    void writeBytes(const uint8_t* bytes, size_t size);
+    void writeBytes(const void* bytes, size_t size);
     std::vector<uint8_t> readBytes(size_t size);
     std::vector<uint8_t> readLineBytes();
     std::vector<uint8_t> readAllBytes();

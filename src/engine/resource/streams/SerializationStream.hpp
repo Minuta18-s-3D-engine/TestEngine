@@ -1,5 +1,5 @@
-#ifndef ENGINE_RESOURCE_SERIALIZATION_SERIALIZATIONSTREAM_HPP
-#define ENGINE_RESOURCE_SERIALIZATION_SERIALIZATIONSTREAM_HPP
+#ifndef ENGINE_RESOURCE_STREAMS_SERIALIZATIONSTREAM_HPP
+#define ENGINE_RESOURCE_STREAMS_SERIALIZATIONSTREAM_HPP
 
 #include <cstdint>
 #include <string_view>
@@ -23,6 +23,7 @@ public:
 };
 
 class SerializationInputStream {
+public:
     virtual ~SerializationInputStream() = default;
 
     virtual void readKey(std::string& key) = 0;
@@ -39,4 +40,4 @@ class SerializationInputStream {
     virtual void readEndArray() = 0;
 };
 
-#endif // ENGINE_RESOURCE_SERIALIZATION_SERIALIZATIONSTREAM_HPP
+#endif // ENGINE_RESOURCE_STREAMS_SERIALIZATIONSTREAM_HPP

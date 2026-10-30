@@ -28,7 +28,7 @@ File::File(const VirtualPath& _path, IOMode _mode)
     if (mode & IOMode::APPEND) stdMode |= std::ios::app;
     if (mode & IOMode::BINARY) stdMode |= std::ios::binary;
     
-    stream.open(physicalPath);
+    stream.open(physicalPath, stdMode);
     if(!stream.is_open()) {
         throw exc::file_not_found("Failed to open file: " + physicalPath);
     }
@@ -57,13 +57,19 @@ File& File::operator=(File&& other) noexcept {
 
 void File::write(const std::string& data) {
     if (mode & IOMode::WRITE || mode & IOMode::APPEND) {
-        stream.write(data.c_str(), data.size());
+        stream.write(
+            data.c_str(),
+            static_cast<std::streamsize>(data.size())
+        );
     }
 }
 
-void File::writeBytes(const uint8_t* bytes, size_t size) {
+void File::writeBytes(const void* bytes, size_t size) {
     if (mode & IOMode::WRITE || mode & IOMode::APPEND) {
-        stream.write(reinterpret_cast<const char*>(bytes), size);
+        stream.write(
+            static_cast<const char*>(bytes),
+            static_cast<std::streamsize>(size)
+        );
     }
 }
 
@@ -73,7 +79,7 @@ void File::flush() {
 
 std::string File::read(size_t characters) {
     std::string result(characters, '\0');
-    stream.read(result.data(), characters);
+    stream.read(result.data(), static_cast<std::streamsize>(characters));
     
     result.resize(stream.gcount()); 
     return result;
@@ -92,13 +98,16 @@ std::string File::readAll() {
     stream.seekg(currentPos);
 
     std::string result(size, '\0');
-    stream.read(result.data(), size);
+    stream.read(result.data(), static_cast<std::streamsize>(size));
     return result;
 }
 
 std::vector<uint8_t> File::readBytes(size_t size) {
     std::vector<uint8_t> result(size);
-    stream.read(reinterpret_cast<char*>(result.data()), size);
+    stream.read(
+        reinterpret_cast<char*>(result.data()),
+        static_cast<std::streamsize>(size)
+    );
     result.resize(stream.gcount());
     return result;
 }
@@ -115,7 +124,10 @@ std::vector<uint8_t> File::readAllBytes() {
     stream.seekg(currentPos);
 
     std::vector<uint8_t> result(size);
-    stream.read(reinterpret_cast<char*>(result.data()), size);
+    stream.read(
+        reinterpret_cast<char*>(result.data()),
+        static_cast<std::streamsize>(size)
+    );
     return result;
 }
 
