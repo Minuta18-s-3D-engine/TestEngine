@@ -66,7 +66,9 @@ file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Main.cpp)
 
-add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS}
+        engine/resource/streams/DataNodeStream.cpp
+        engine/resource/streams/DataNodeStream.hpp)
 add_library(glad ../lib/glad/include/glad/glad.h ../lib/glad/src/glad.c)
 
 find_package(OpenGL REQUIRED)
