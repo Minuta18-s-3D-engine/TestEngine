@@ -14,7 +14,7 @@ public:
     virtual void writeInteger(int64_t value) = 0;
     virtual void writeNumber(double value) = 0;
     virtual void writeString(std::string_view value) = 0;
-    virtual void writeBytes(const void* data, size_t size) = 0;
+    virtual void writeBinary(const void* data, size_t size) = 0;
 
     virtual void writeBeginObject(const std::string& name) = 0;
     virtual void writeEndObject() = 0;
@@ -32,7 +32,7 @@ public:
     virtual void readInteger(int64_t& value) = 0;
     virtual void readNumber(double& value) = 0;
     virtual void readString(std::string& value) = 0;
-    virtual void readBytes(void* data, size_t size) = 0;
+    virtual void readBinary(void* data, size_t size) = 0;
 
     virtual void readBeginObject(std::string& name) = 0;
     virtual void readEndObject() = 0;

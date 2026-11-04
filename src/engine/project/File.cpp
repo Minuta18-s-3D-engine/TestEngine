@@ -64,7 +64,7 @@ void File::write(const std::string& data) {
     }
 }
 
-void File::writeBytes(const void* bytes, size_t size) {
+void File::writeBinary(const void* bytes, size_t size) {
     if (mode & IOMode::WRITE || mode & IOMode::APPEND) {
         stream.write(
             static_cast<const char*>(bytes),
@@ -102,7 +102,7 @@ std::string File::readAll() {
     return result;
 }
 
-std::vector<uint8_t> File::readBytes(size_t size) {
+std::vector<uint8_t> File::readBinary(size_t size) {
     std::vector<uint8_t> result(size);
     stream.read(
         reinterpret_cast<char*>(result.data()),

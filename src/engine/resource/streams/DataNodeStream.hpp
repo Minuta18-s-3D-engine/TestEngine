@@ -9,6 +9,8 @@ class DataNodeOutputStream : public SerializationOutputStream {
     StructuredData::DataNode root;
     std::stack<StructuredData::DataNode*> nodeStack;
     std::string currentKey;
+
+    void insertNode(StructuredData::DataNode node);
 public:
     explicit DataNodeOutputStream();
 
@@ -18,18 +20,26 @@ public:
     void writeInteger(int64_t value) override;
     void writeNumber(double value) override;
     void writeString(std::string_view value) override;
-    void writeBytes(const void *data, size_t size) override;
+    void writeBinary(const void *data, size_t size) override;
 
     void writeBeginObject(const std::string &name) override;
     void writeEndObject() override;
     void writeBeginArray(const std::string &name) override;
     void writeEndArray() override;
+
+    [[nodiscard]] StructuredData::DataNode getResult();
 };
 
 class DataNodeInputStream : public SerializationInputStream {
+    const StructuredData::DataNode& root;
+    std::stack<const StructuredData::DataNode*> nodeStack;
+    std::stack<typename StructuredData::Object::NodesMap::const_iterator>
+        objectIterators;
+    std::stack<size_t> arrayIndices;
 
+    const StructuredData::DataNode* getNextNode();
 public:
-    explicit DataNodeInputStream();
+    explicit DataNodeInputStream(const StructuredData::DataNode& rootNode);
 
     void readKey(std::string &key) override;
 
@@ -37,7 +47,7 @@ public:
     void readInteger(int64_t &value) override;
     void readNumber(double &value) override;
     void readString(std::string &value) override;
-    void readBytes(void *data, size_t size) override;
+    void readBinary(void *data, size_t size) override;
 
     void readBeginObject(std::string &name) override;
     void readEndObject() override;

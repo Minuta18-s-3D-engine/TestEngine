@@ -17,7 +17,7 @@ public:
     void writeInteger(int64_t value) override;
     void writeNumber(double value) override;
     void writeString(std::string_view value) override;
-    void writeBytes(const void *data, size_t size) override;
+    void writeBinary(const void *data, size_t size) override;
 
     void writeBeginObject(const std::string &name) override {};
     void writeEndObject() override {};
@@ -36,7 +36,7 @@ public:
     void readInteger(int64_t &value) override;
     void readNumber(double &value) override;
     void readString(std::string &value) override;
-    void readBytes(void *data, size_t size) override;
+    void readBinary(void *data, size_t size) override;
 
     void readBeginObject(std::string &name) override {};
     void readEndObject() override {};
