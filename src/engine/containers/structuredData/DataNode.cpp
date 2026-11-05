@@ -128,29 +128,12 @@ DataNode::DataNode(DataNode&& other) noexcept : type(other.type) {
             new (&value_object) Object(std::move(other.value_object)); break;
         default: break;
     }
+    other.~DataNode();
     other.type = Type::Null;
 }
 
 DataNode& DataNode::operator=(const DataNode& other) {
-    if (this != &other) {
-        this->~DataNode();
-        type = other.type;
-        switch (type) {
-            case Type::Boolean: value_boolean = other.value_boolean; break;
-            case Type::Integer: value_integer = other.value_integer; break;
-            case Type::Number:  value_number = other.value_number; break;
-            case Type::String:  
-                new (&value_string) std::string(other.value_string); break;
-            case Type::Binary:
-                new (&value_binary) std::vector<uint8_t>(other.value_binary);
-                break;
-            case Type::Array:   
-                new (&value_array) Array(other.value_array); break;
-            case Type::Object:  
-                new (&value_object) Object(other.value_object); break;
-            default: break;
-        }
-    }
+    if (this != &other) { DataNode tmp(other); *this = std::move(tmp); }
     return *this;
 }
 
@@ -169,6 +152,7 @@ DataNode& DataNode::operator=(DataNode&& other) noexcept {
                 new (&value_binary) std::vector<uint8_t>(
                     std::move(other.value_binary)
                 );
+                break;
             case Type::Array:   
                 new (&value_array) Array(std::move(other.value_array)); 
                 break;
@@ -177,6 +161,7 @@ DataNode& DataNode::operator=(DataNode&& other) noexcept {
                 break;
             default: break;
         }
+        other.~DataNode();
         other.type = Type::Null;
     }
     return *this;
