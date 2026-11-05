@@ -43,15 +43,15 @@ void DataNodeOutputStream::writeBinary(const void *data, const size_t size) {
     insertNode(StructuredData::DataNode(std::move(binary)));
 }
 
-void DataNodeOutputStream::writeBeginObject(const std::string &name) {
+void DataNodeOutputStream::writeBeginObject() {
     StructuredData::DataNode objNode(StructuredData::Object{});
 
     auto* topNode = nodeStack.top();
     StructuredData::DataNode* childPtr = nullptr;
 
     if (topNode->isObject()) {
-        topNode->asObject()[name] = std::move(objNode);
-        childPtr = &((*topNode)[name]);
+        topNode->asObject()[currentKey] = std::move(objNode);
+        childPtr = &((*topNode)[currentKey]);
     } else if (topNode->isArray()) {
         topNode->asArray().push_back(std::move(objNode));
         childPtr = &(topNode->asArray().back());
@@ -67,14 +67,14 @@ void DataNodeOutputStream::writeEndObject() {
     }
 }
 
-void DataNodeOutputStream::writeBeginArray(const std::string &name) {
+void DataNodeOutputStream::writeBeginArray() {
     StructuredData::DataNode arrNode(StructuredData::Array{});
 
     auto* topNode = nodeStack.top();
     StructuredData::DataNode* childPtr = nullptr;
     if (topNode->isObject()) {
-        topNode->asObject()[name] = std::move(arrNode);
-        childPtr = &((*topNode)[name]);
+        topNode->asObject()[currentKey] = std::move(arrNode);
+        childPtr = &((*topNode)[currentKey]);
     } else if (topNode->isArray()) {
         topNode->asArray().push_back(std::move(arrNode));
         childPtr = &(topNode->asArray().back());
@@ -165,7 +165,7 @@ void DataNodeInputStream::readBinary(void *data, size_t size) {
     }
 }
 
-void DataNodeInputStream::readBeginObject(std::string &name) {
+void DataNodeInputStream::readBeginObject() {
     if (auto* node = getNextNode(); node && node->isObject()) {
         nodeStack.push(node);
         objectIterators.push(node->asObject().begin());
@@ -179,7 +179,7 @@ void DataNodeInputStream::readEndObject() {
     }
 }
 
-void DataNodeInputStream::readBeginArray(std::string &name) {
+void DataNodeInputStream::readBeginArray() {
     if (auto* node = getNextNode(); node && node->isArray()) {
         nodeStack.push(node);
         arrayIndices.push(0);

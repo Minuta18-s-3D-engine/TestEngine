@@ -16,9 +16,9 @@ public:
     virtual void writeString(std::string_view value) = 0;
     virtual void writeBinary(const void* data, size_t size) = 0;
 
-    virtual void writeBeginObject(const std::string& name) = 0;
+    virtual void writeBeginObject() = 0;
     virtual void writeEndObject() = 0;
-    virtual void writeBeginArray(const std::string& name) = 0;
+    virtual void writeBeginArray() = 0;
     virtual void writeEndArray() = 0;
 };
 
@@ -34,9 +34,9 @@ public:
     virtual void readString(std::string& value) = 0;
     virtual void readBinary(void* data, size_t size) = 0;
 
-    virtual void readBeginObject(std::string& name) = 0;
+    virtual void readBeginObject() = 0;
     virtual void readEndObject() = 0;
-    virtual void readBeginArray(std::string& name) = 0;
+    virtual void readBeginArray() = 0;
     virtual void readEndArray() = 0;
 };
 

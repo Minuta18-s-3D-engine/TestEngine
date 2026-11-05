@@ -22,9 +22,9 @@ public:
     void writeString(std::string_view value) override;
     void writeBinary(const void *data, size_t size) override;
 
-    void writeBeginObject(const std::string &name) override;
+    void writeBeginObject() override;
     void writeEndObject() override;
-    void writeBeginArray(const std::string &name) override;
+    void writeBeginArray() override;
     void writeEndArray() override;
 
     [[nodiscard]] StructuredData::DataNode getResult();
@@ -49,9 +49,9 @@ public:
     void readString(std::string &value) override;
     void readBinary(void *data, size_t size) override;
 
-    void readBeginObject(std::string &name) override;
+    void readBeginObject() override;
     void readEndObject() override;
-    void readBeginArray(std::string &name) override;
+    void readBeginArray() override;
     void readEndArray() override;
 };
 
