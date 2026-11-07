@@ -10,7 +10,7 @@ GLenum Texture::getGLTarget() const {
 
 Texture::Texture(
     const ImageData& image, 
-    const TextureSchema& schema,
+    const TextureMeta& schema,
     SamplerType _type
 ) : width(image.getWidth()), 
     height(image.getHeight()), 
@@ -28,10 +28,10 @@ Texture::Texture(
 
     GLuint wrapParam = GL_REPEAT;
     switch (schema.wrapMode) {
-        case TextureSchema::WrapMode::ClampToEdge: 
+        case TextureMeta::WrapMode::ClampToEdge:
             wrapParam = GL_CLAMP_TO_EDGE;
             break;
-        case TextureSchema::WrapMode::MirroredRepeat:
+        case TextureMeta::WrapMode::MirroredRepeat:
             wrapParam = GL_MIRRORED_REPEAT;
             break;
         default:
@@ -47,15 +47,15 @@ Texture::Texture(
     GLint magFilter = GL_LINEAR;
     GLint minFilter = GL_LINEAR;
 
-    if (std::holds_alternative<TextureSchema::FilterMode>(schema.filtering)) {
-        auto mode = std::get<TextureSchema::FilterMode>(schema.filtering);
-        magFilter = minFilter = (mode == TextureSchema::FilterMode::Linear) ? 
+    if (std::holds_alternative<TextureMeta::FilterMode>(schema.filtering)) {
+        auto mode = std::get<TextureMeta::FilterMode>(schema.filtering);
+        magFilter = minFilter = (mode == TextureMeta::FilterMode::Linear) ?
             GL_LINEAR : GL_NEAREST;
     } else {
-        auto tf = std::get<TextureSchema::TextureFiltering>(schema.filtering);
-        magFilter = (tf.mag == TextureSchema::FilterMode::Linear) ? 
+        auto tf = std::get<TextureMeta::TextureFiltering>(schema.filtering);
+        magFilter = (tf.mag == TextureMeta::FilterMode::Linear) ?
             GL_LINEAR : GL_NEAREST;
-        minFilter = (tf.min == TextureSchema::FilterMode::Linear) ? 
+        minFilter = (tf.min == TextureMeta::FilterMode::Linear) ?
             GL_LINEAR : GL_NEAREST;
     }
 
@@ -77,7 +77,7 @@ Texture::Texture(
     }
 
     GLint internalFormat = dataFormat;
-    if (schema.colorSpace == TextureSchema::ColorSpace::sRGB) {
+    if (schema.colorSpace == TextureMeta::ColorSpace::sRGB) {
         if (dataFormat == GL_RGB) internalFormat = GL_SRGB;
         else if (dataFormat == GL_RGBA) internalFormat = GL_SRGB_ALPHA;
     }

@@ -31,8 +31,6 @@ protected:
 public:
     explicit ResourceImporter(Serializer& serializer_) : serializer(&serializer_) {}
 
-    virtual ~ResourceImporter() = default;
-
     virtual T import(
         const VirtualPath& path, ResourceManager& manager
     ) = 0;

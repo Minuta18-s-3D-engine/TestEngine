@@ -228,7 +228,7 @@ ResourceHandle<Texture> ModelLoader::loadTexture(
     }
 
     Texture texture(
-        *rawTexture, TextureSchema(), SamplerType::Texture2D
+        *rawTexture, TextureMeta(), SamplerType::Texture2D
     );
 
     return resourceManager->addManually(

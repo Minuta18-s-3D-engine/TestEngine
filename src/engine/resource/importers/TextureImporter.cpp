@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include "engine/graphics/TextureSchema.hpp"
+#include "engine/graphics/TextureMeta.hpp"
 #include "engine/resource/ResourceManager.hpp"
 #include "engine/containers/structuredData/DataNode.hpp"
-#include "engine/containers/structuredData/Mapper.hpp"
+#include "engine/resource/serialization/ObjectSerializer.hpp"
 #include "engine/resource/utils/ImageData.hpp"
 #include "engine/resource/utils/Files.hpp"
 #include "engine/resource/coders/images/PngCoder.hpp"
@@ -23,9 +23,9 @@ Texture TextureImporter::loadTexture(
 
     StructuredData::DataNode metaContents = parseMetaFile(path);
  
-    TextureSchema schema;
-    StructuredData::Mapper::read<TextureSchema>(metaContents, schema);
-    
+    TextureMeta schema;
+    ObjectSerializer::deserialize(metaContents, schema);
+
     File textureFile(path);
     auto textureFileContent = textureFile.readAllBytes();
     

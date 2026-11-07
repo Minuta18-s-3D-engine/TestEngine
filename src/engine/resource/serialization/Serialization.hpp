@@ -8,8 +8,8 @@
 #define SERIALIZE_FIELD(fieldName) \
     registry.registerField(#fieldName, &StructType::fieldName)
 
-#define SERIALIZE_FIELD_DEFAULT(fieldName, defaultValue) \
-    registry.registerField(#fieldName, &StructType::fieldName, defaultValue)
+#define SERIALIZE_FIELD_DEFAULT(fieldName, ...) \
+    registry.registerField(#fieldName, &StructType::fieldName, __VA_ARGS__)
 
 #define GENERATE_SERIALIZATION(Type, ...) \
     static const FieldRegistry& reflect() { \

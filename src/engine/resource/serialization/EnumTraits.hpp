@@ -18,9 +18,9 @@ struct EnumTraits {
     struct EnumTraits<EnumType> { \
         using UnderlyingType = EnumType; \
         static constexpr bool isMapped = true; \
-        static constexpr EnumMapper<EnumType> mapping = { \
+        inline static const EnumMapper<EnumType> mapping = { \
             __VA_ARGS__ \
-        } \
+        }; \
     };
 
 template <typename T>

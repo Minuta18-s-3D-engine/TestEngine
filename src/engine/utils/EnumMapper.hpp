@@ -1,17 +1,17 @@
 #ifndef ENGINE_UTILS_ENUMMAPPER_H_
 #define ENGINE_UTILS_ENUMMAPPER_H_
 
-#include <unordered_map>
 #include <string>
 #include <initializer_list>
-#include <exception>
+#include <optional>
+#include <vector>
 #include <stdexcept>
 
 template <typename T>
 class EnumMapper {
 public:
     struct Mapping {
-        std::string_view name;
+        std::string name;
         T value;
     };
 private:
@@ -21,8 +21,11 @@ public:
         std::initializer_list<std::pair<T, std::string>> mappings_
     ) {
         mappings.reserve(mappings_.size());
-        for (int i = 0; i < mappings_.size(); ++i) {
-            mappings.push_back({ mappings_[i].second, mappings_[i].first });
+        for (auto [value, name] : mappings_) {
+            mappings.push_back({
+                .name = name,
+                .value = value
+            });
         }
     }
 
@@ -35,7 +38,7 @@ public:
 
     [[nodiscard]] std::string toString(T value) const {
         for (const auto& m : mappings) {
-            if (m.value == value) return m.name;
+            if (m.value == value) return std::string(m.name);
         }
         throw std::out_of_range("Unknown enum value.");
     }

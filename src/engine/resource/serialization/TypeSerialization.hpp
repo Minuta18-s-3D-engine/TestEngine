@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <unordered_map>
+#include <variant>
 
 #include <glm/glm.hpp>
 
@@ -62,12 +63,16 @@ namespace TypeSerialization {
         const std::unordered_map<std::string, T>& value
     );
 
+    template <typename... Ts>
+    inline void serializeField(StructuredData::DataNode& out,
+        const std::variant<Ts...>& value);
+
     template <Serializable T>
     inline void serializeField(StructuredData::DataNode& out, const T& value);
 
 
     inline void deserializeField(const StructuredData::DataNode& in,
-                                 bool& value);
+        bool& value);
     inline void deserializeField(const StructuredData::DataNode& in,
         std::string& value);
 
@@ -112,6 +117,10 @@ namespace TypeSerialization {
 
     template <Serializable T>
     inline void deserializeField(const StructuredData::DataNode& in, T& value);
+
+    template <typename... Ts>
+    inline void deserializeField(const StructuredData::DataNode& in,
+        std::variant<Ts...>& value);
 };
 
 inline void TypeSerialization::serializeField(
@@ -234,6 +243,15 @@ void TypeSerialization::serializeField(StructuredData::DataNode &out, T value) {
     out = StructuredData::DataNode(std::string(
         EnumTraits<T>::mapping.toString(value)
     ));
+}
+
+template<typename... Ts>
+void TypeSerialization::serializeField(
+    StructuredData::DataNode &out, const std::variant<Ts...> &value
+) {
+    std::visit([&out] (const auto& val) {
+        serializeField(out, val);
+    }, value);
 }
 
 inline void TypeSerialization::deserializeField(
@@ -388,6 +406,32 @@ void TypeSerialization::deserializeField(
         throw std::runtime_error(errorMessage);
     }
     value = *enumValue;
+}
+
+template <typename T, typename VariantType>
+bool tryDeserializeAlternative(
+    const StructuredData::DataNode& in, VariantType& value
+) {
+    try {
+        T altVal{};
+        TypeSerialization::deserializeField(in, altVal);
+        value = std::move(altVal);
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+
+template<typename... Ts>
+void TypeSerialization::deserializeField(
+    const StructuredData::DataNode &in, std::variant<Ts...> &value
+) {
+    bool success = (
+        tryDeserializeAlternative<Ts, std::variant<Ts...>>(in, value) || ...
+    );
+    if (!success) {
+        throw std::runtime_error("Failed to deserialize std::variant");
+    }
 }
 
 #endif // ENGINE_RESOURCE_SERIALIZATION_TYPESERIALIZATION_HPP

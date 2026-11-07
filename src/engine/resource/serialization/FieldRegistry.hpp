@@ -63,6 +63,15 @@ public:
     [[nodiscard]] void* getMemberPtr(T& instance, const size_t offset) const {
         return static_cast<char*>(static_cast<void*>(&instance)) + offset;
     }
+
+    template <typename T>
+    [[nodiscard]] const void* getMemberPtr(
+        const T& instance, const size_t offset
+    ) const {
+        return static_cast<const char*>(
+            static_cast<const void*>(&instance)
+        ) + offset;
+    }
 };
 
 template <typename C, typename T>

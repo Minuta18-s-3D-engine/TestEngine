@@ -5,7 +5,7 @@
 #include "engine/utils/exc/GeneralExceptions.hpp"
 #include "engine/resource/utils/ImageData.hpp"
 #include "SamplerType.hpp"
-#include "TextureSchema.hpp"
+#include "TextureMeta.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -27,7 +27,7 @@ class Texture {
 public:
     Texture(
         const ImageData& image, 
-        const TextureSchema& schema,
+        const TextureMeta& schema,
         SamplerType _type = SamplerType::Texture2D
     );
     ~Texture();
