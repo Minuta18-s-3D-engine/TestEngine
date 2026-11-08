@@ -3,6 +3,7 @@
 
 #include "../utils/EngineTypes.h"
 #include "engine/utils/exc/GeneralExceptions.hpp"
+#include "engine/debug/logging/Logging.hpp"
 #include "engine/resource/utils/ImageData.hpp"
 #include "SamplerType.hpp"
 #include "TextureMeta.hpp"
@@ -23,6 +24,8 @@ class Texture {
     uint id;
     uint64_t bindlessHandle = NO_HANDLE;
 
+    static std::unique_ptr<Logger> textureLogger;
+
     GLenum getGLTarget() const;
 public:
     Texture(
@@ -41,9 +44,9 @@ public:
     void bind();
     void unbind();
 
-    uint getWidth();
-    uint getHeight();
-    uint getId();
+    uint getWidth() const;
+    uint getHeight() const;
+    uint getId() const;
     uint64_t getHandle() const;
     SamplerType getType() const;
 };

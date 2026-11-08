@@ -34,12 +34,13 @@ MaterialBuilder &MaterialBuilder::setSampler(
 
     defaultSamplers[name] = texture;
 
-    const auto& sampler = shader.getLayout().getSampler(name);
-    if (sampler.handleOffset == ShaderLayout::NO_HANDLE) return *this;
+    const auto& layout = shader.getLayout();
+    if (!layout.isBindless()) return *this;
 
     const Texture& t = resourceManager->require(texture);
     uint64_t handle = t.getHandle();
-    propertyBinders.emplace_back([name, handle] (PropertyDataStorage& s) {
+    uint64_t id = t.getId();
+    propertyBinders.emplace_back([name, handle, id] (PropertyDataStorage& s) {
         s.setProperty<glm::uvec2>(name, {
             static_cast<uint32_t>(handle),
             static_cast<uint32_t>(handle >> 32)
@@ -53,7 +54,9 @@ Material MaterialBuilder::finalize() {
     const auto& shader = resourceManager->require<Shader>(materialShader);
 
     for (const auto& sampler : shader.getLayout().getSamplers()) {
-        setSampler(sampler.name, missingTexture);
+        if (!defaultSamplers.contains(sampler.name)) {
+            setSampler(sampler.name, missingTexture);
+        }
     }
 
     PropertyDataStorage tempStorage(shader.getLayout(), *buffer);
