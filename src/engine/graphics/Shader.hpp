@@ -2,11 +2,13 @@
 #define ENGINE_GRAPHICS_SHADER_H_
 
 #include "glm/glm.hpp"
+#include <glad/glad.h>
 
 #include <string>
 #include <unordered_map>
 #include <memory>
-#include <glad/glad.h>
+
+#include "ShaderMeta.hpp"
 
 struct ShaderSources {
     std::string vertex;

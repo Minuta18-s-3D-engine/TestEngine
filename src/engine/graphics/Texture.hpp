@@ -24,8 +24,6 @@ class Texture {
     uint id;
     uint64_t bindlessHandle = NO_HANDLE;
 
-    static std::unique_ptr<Logger> textureLogger;
-
     GLenum getGLTarget() const;
 public:
     Texture(

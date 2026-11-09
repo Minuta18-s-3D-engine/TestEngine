@@ -1,6 +1,7 @@
 #include "Application.hpp"
 
 #include "engine/resource/importers/TextureImporter.hpp"
+#include "engine/resource/importers/ShaderImporter.hpp"
 #include "engine/materials/preprocessor/Preprocessor.hpp"
 #include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
 #include "engine/project/ProjectLoader.hpp"
@@ -123,10 +124,10 @@ void Application::loadProject(const std::string& projectPath) {
 
     resourceManager = std::make_unique<ResourceManager>();
 
-    auto textureImporter = std::make_unique<TextureImporter>(
-        *serializer
-    );
+    auto textureImporter = std::make_unique<TextureImporter>(*serializer);
     resourceManager->registerImporter<Texture>(std::move(textureImporter));
+    auto shaderImporter = std::make_unique<ShaderImporter>(*serializer);
+    resourceManager->registerImporter<Shader>(std::move(shaderImporter));
 
     const std::string mainSceneName = "MainScene";
     project->createEmptyScene(mainSceneName);

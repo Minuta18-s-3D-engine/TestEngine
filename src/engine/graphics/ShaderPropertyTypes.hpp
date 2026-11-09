@@ -5,6 +5,9 @@
 #include <array>
 #include <glm/glm.hpp>
 
+#include "engine/resource/serialization/Serialization.hpp"
+#include "engine/resource/serialization/EnumTraits.hpp"
+
 namespace shader_layout {
 
 enum class PropertyType : uint8_t {
@@ -85,5 +88,29 @@ inline constexpr PropertyType propertyTypeOf =
     PropertyTypeOf<std::decay_t<T>>::value;
 
 }
+
+GENERATE_ENUM_SERIALIZATION(shader_layout::PropertyType,
+    ENUM_OPTION(shader_layout::PropertyType::Float, "float"),
+    ENUM_OPTION(shader_layout::PropertyType::Int, "int"),
+    ENUM_OPTION(shader_layout::PropertyType::Uint, "uint"),
+    ENUM_OPTION(shader_layout::PropertyType::Bool, "bool"),
+    ENUM_OPTION(shader_layout::PropertyType::Vec2, "vec2"),
+    ENUM_OPTION(shader_layout::PropertyType::IVec2, "ivec2"),
+    ENUM_OPTION(shader_layout::PropertyType::UVec2, "uvec2"),
+    ENUM_OPTION(shader_layout::PropertyType::Vec3, "vec3"),
+    ENUM_OPTION(shader_layout::PropertyType::IVec3, "ivec3"),
+    ENUM_OPTION(shader_layout::PropertyType::UVec3, "uvec3"),
+    ENUM_OPTION(shader_layout::PropertyType::Vec4, "vec4"),
+    ENUM_OPTION(shader_layout::PropertyType::IVec4, "ivec4"),
+    ENUM_OPTION(shader_layout::PropertyType::UVec4, "uvec4"),
+    ENUM_OPTION(shader_layout::PropertyType::Mat2, "mat2"),
+    ENUM_OPTION(shader_layout::PropertyType::Mat3, "mat3"),
+    ENUM_OPTION(shader_layout::PropertyType::Mat4, "mat4")
+)
+
+GENERATE_ENUM_SERIALIZATION(shader_layout::SamplerType,
+    ENUM_OPTION(shader_layout::SamplerType::Texture2D, "texture2D"),
+    ENUM_OPTION(shader_layout::SamplerType::CubeMap2D, "cubemap2D")
+)
 
 #endif // ENGINE_GRAPHICS_SHADERPROPERTYTYPES_HPP

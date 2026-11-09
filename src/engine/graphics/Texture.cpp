@@ -1,7 +1,5 @@
 #include "Texture.hpp"
 
-std::unique_ptr<Logger> Texture::textureLogger = nullptr;
-
 GLenum Texture::getGLTarget() const {
     switch (type) {
         case SamplerType::Texture2D: return GL_TEXTURE_2D;
@@ -20,12 +18,6 @@ Texture::Texture(
     type(_type),
     id(0)
 {
-    if (textureLogger == nullptr) {
-        textureLogger = std::make_unique<Logger>(Logging::createLogger(
-            "engine.graphics.texture"
-        ));
-    }
-
     if (!image.getData()) {
         throw exc::invalid_argument(
             "Cannot create texture from empty image data");
@@ -109,11 +101,8 @@ Texture::Texture(
     this->unbind();
 
     if (GL_ARB_bindless_texture) {
-        textureLogger->debug("glGetTextureHandleARB status: {}", (glGetTextureHandleARB == nullptr) ? "unloaded" : "loaded");
         bindlessHandle = glGetTextureHandleARB(id);
         glMakeTextureHandleResidentARB(bindlessHandle);
-        textureLogger->debug(
-            "Created texture with id {} and handle {}", id, bindlessHandle);
     }
 }
 

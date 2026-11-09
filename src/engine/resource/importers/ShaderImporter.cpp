@@ -1,53 +1,69 @@
 #include "ShaderImporter.hpp"
 
 #include "engine/graphics/Shader.hpp"
-#include "engine/graphics/ShaderSchema.h"
 #include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
+#include "engine/resource/serialization/ObjectSerializer.hpp"
 
-ShaderImporter::ShaderImporter(Serializer& serializer_)
-    : ResourceImporter(serializer_),
-      logger(Logging::createLogger(
-      "engine.resource.importers.shaderImporter")) {}
+ShaderImporter::ShaderImporter(
+    Serializer& serializer_, ResourceManager& manager_
+) : ResourceImporter(serializer_),
+    logger(Logging::createLogger(
+        "engine.resource.importers.shaderImporter")),
+    manager(&manager_),
+    generator(manager_, ShaderCodeGenerator::FormattingOptions()) {}
 
-std::string ShaderImporter::readSourceFile(const VirtualPath& path) const {
-    File sourceFile(path);
-    return sourceFile.readAll();
+std::string ShaderImporter::generateShaderSource(
+    const VirtualPath &path, const ShaderLayout &layout,
+    const ShaderMeta &meta, const std::string &callFunc
+) {
+    File shaderFile(path);
+    std::string source = shaderFile.readAll();
+
+    bool generateUnpack = true;
+    if (std::holds_alternative<std::string>(meta.codeGeneration.generateUnpack)) {
+        // WIP
+    }
+
+    std::string fullSource = generator.generateShader(
+        layout, source, callFunc,
+    );
 }
 
 Shader ShaderImporter::loadShader(
-    const VirtualPath& path, ResourceManager& resourceManager
+    const VirtualPath &path, ResourceManager &manager
 ) {
     logger.info("Loading shader: {}...", path.resolve());
 
-    // StructuredData::DataNode metaContents = parseMetaFile(path);
-    // ShaderSchema schema;
-    // StructuredData::Mapper::read<ShaderSchema>(metaContents, schema);
-    //
-    // MaterialLayout shaderLayout = createLayout(schema);
-    //
-    // ShaderSources sources;
-    // ShaderCodeGenerator generator;
-    //
-    // if (!schema.files.compute.empty()) {
-    //     std::string rawCompute = readSourceFile(schema.files.compute);
-    //     sources.compute = generator.generateCompShader(
-    //         rawCompute, "compute"
-    //     );
-    // }
-    // if (!schema.files.vertex.empty()) {
-    //     std::string rawVertex = readSourceFile(schema.files.vertex);
-    //     sources.vertex = generator.generateShader(
-    //         shaderLayout, rawVertex, "vertex" // TODO: ShaderCodeGenerator update
-    //     );
-    // }
-    // if (!schema.files.fragment.empty()) {
-    //     std::string rawFragment = readSourceFile(schema.files.fragment);
-    //     sources.fragment = generator.generateShader(
-    //         shaderLayout, rawFragment, "fragment"
-    //     );
-    // }
-    //
-    // return Shader(sources);
+    StructuredData::DataNode metaContents = parseMetaFile(path);
+    ShaderMeta meta;
+    ObjectSerializer::deserialize(metaContents, meta);
+
+    ShaderLayout layout;
+    for (const auto& prop : meta.properties) {
+        layout.addProperty(prop.name, prop.type);
+    }
+    for (const auto& sampler : meta.samplers) {
+        layout.addSampler(sampler.name, sampler.type);
+    }
+    layout.finalize();
+
+    ShaderSources sources;
+    if (!meta.sources.fragmentPath.empty()) {
+        File fragmentFile(path);
+        sources.fragment = fragmentFile.readAll();
+    }
+    if (!meta.sources.vertexPath.empty()) {
+        File vertexFile(path);
+        sources.vertex = vertexFile.readAll();
+    }
+    if (!meta.sources.computePath.empty()) {
+        File computeFile(path);
+        sources.compute = computeFile.readAll();
+    }
+
+    logger.info("Shader {} loaded successfully", path.resolve());
+
+    return Shader(sources, std::move(layout));
 }
 
 Shader ShaderImporter::import(
