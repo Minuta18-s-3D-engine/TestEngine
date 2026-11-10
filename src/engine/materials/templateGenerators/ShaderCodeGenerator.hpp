@@ -2,12 +2,11 @@
 #define ENGINE_MATERIALS_TEMPLATEGENERATORS_SHADERCODEGENRATOR_H_
 
 #include <string>
-#include <sstream>
 
 #include "../../stringProcessing/templateEngine/TemplateEngine.hpp"
 #include "../../stringProcessing/templateEngine/TemplateParser.hpp"
 #include "engine/graphics/ShaderLayout.hpp"
-#include "engine/resource/ResourceHandle.hpp"
+#include "engine/graphics/ShaderMeta.hpp"
 
 class ResourceManager;
 class Shader;
@@ -54,6 +53,10 @@ public:
         FormattingOptions&& formattingOptions_
     );
 
+    [[nodiscard]] std::string getUnpackFunctionByType(
+        ShaderMeta::ShaderType t
+    ) const;
+
     [[nodiscard]] std::string generateShaderParams(
         const ShaderLayout& layout
     ) const;
@@ -61,7 +64,7 @@ public:
     [[nodiscard]] std::string generateShader(
         const ShaderLayout& layout,
         const std::string& userCode,
-        const std::string& userFunc,
+        ShaderMeta::ShaderType shaderType,
         bool loadParams = true 
     ) const;
 };

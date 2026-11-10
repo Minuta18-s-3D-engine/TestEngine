@@ -13,25 +13,45 @@ ShaderImporter::ShaderImporter(
     generator(manager_, ShaderCodeGenerator::FormattingOptions()) {}
 
 std::string ShaderImporter::generateShaderSource(
-    const VirtualPath &path, const ShaderLayout &layout,
-    const ShaderMeta &meta, const std::string &callFunc
-) {
+    const VirtualPath& path, const ShaderLayout& layout,
+    const ShaderMeta& meta, const std::string& callFunc
+) const {
     File shaderFile(path);
     std::string source = shaderFile.readAll();
 
     bool generateUnpack = true;
     if (std::holds_alternative<std::string>(meta.codeGeneration.generateUnpack)) {
-        // WIP
+        if (callFunc == "compute") {
+            generateUnpack = false;
+        }
+    } else {
+        generateUnpack = std::get<bool>(meta.codeGeneration.generateUnpack);
     }
 
     std::string fullSource = generator.generateShader(
-        layout, source, callFunc,
+        layout, source, callFunc, generateUnpack
     );
+
+    return fullSource;
 }
 
-Shader ShaderImporter::loadShader(
-    const VirtualPath &path, ResourceManager &manager
-) {
+ShaderMeta::ShaderSources ShaderImporter::getShaderSources(
+    const ShaderLayout& layout, const ShaderMeta& meta
+) const {
+    ShaderMeta::ShaderSources sources;
+
+    for (const auto& [type, shaderPath] : meta.sourcesPaths) {
+        File shaderFile(shaderPath);
+        const std::string generatedSource = generateShaderSource(
+            shaderPath, layout, meta, "..."
+        );
+        sources[type] = generatedSource;
+    }
+
+    return sources;
+}
+
+Shader ShaderImporter::loadShader(const VirtualPath& path) {
     logger.info("Loading shader: {}...", path.resolve());
 
     StructuredData::DataNode metaContents = parseMetaFile(path);
@@ -47,30 +67,19 @@ Shader ShaderImporter::loadShader(
     }
     layout.finalize();
 
-    ShaderSources sources;
-    if (!meta.sources.fragmentPath.empty()) {
-        File fragmentFile(path);
-        sources.fragment = fragmentFile.readAll();
-    }
-    if (!meta.sources.vertexPath.empty()) {
-        File vertexFile(path);
-        sources.vertex = vertexFile.readAll();
-    }
-    if (!meta.sources.computePath.empty()) {
-        File computeFile(path);
-        sources.compute = computeFile.readAll();
-    }
+    ShaderMeta::ShaderSources sources = getShaderSources(layout, meta);
+    Shader createdShader(sources, std::move(layout));
 
     logger.info("Shader {} loaded successfully", path.resolve());
 
-    return Shader(sources, std::move(layout));
+    return createdShader;
 }
 
 Shader ShaderImporter::import(
-    const VirtualPath &path, ResourceManager &resourceManager
+    const VirtualPath& path, ResourceManager& resourceManager
 ) {
     try {
-        return loadShader(path, resourceManager);
+        return loadShader(path);
     } catch (exc::importer_exceptions::importer_exception& e) {
         throw;
     } catch (std::exception& e) {

@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "ShaderMeta.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -34,21 +35,25 @@ uint32_t Shader::compileStage(const GLenum stage, const std::string& source) con
 }
 
 Shader::Shader(
-    const ShaderSources& sources_, ShaderLayout&& layout_
+    const ShaderMeta::ShaderSources& sources, ShaderLayout&& layout_
 ) : layout(std::make_unique<ShaderLayout>(std::move(layout_))) {
     glId = glCreateProgram();
     std::vector<uint32_t> attachedShaders;
 
     try {
-        if (!sources_.vertex.empty() && !sources_.fragment.empty()) {
-            const uint32_t vertexId = compileStage(GL_VERTEX_SHADER, sources_.vertex);
-            const uint32_t fragmentId = compileStage(GL_FRAGMENT_SHADER, sources_.fragment);
+        const std::string vertexSource = sources[ShaderMeta::ShaderType::VERTEX];
+        const std::string fragmentSource = sources[ShaderMeta::ShaderType::FRAGMENT];
+        const std::string computeSource = sources[ShaderMeta::ShaderType::COMPUTE];
+
+        if (!vertexSource.empty() && !fragmentSource.empty()) {
+            const uint32_t vertexId = compileStage(GL_VERTEX_SHADER, vertexSource);
+            const uint32_t fragmentId = compileStage(GL_FRAGMENT_SHADER, fragmentSource);
             glAttachShader(glId, vertexId);
             glAttachShader(glId, fragmentId);
             attachedShaders.push_back(vertexId);
             attachedShaders.push_back(fragmentId);
-        } else if (!sources_.compute.empty()) {
-            const uint32_t computeId = compileStage(GL_COMPUTE_SHADER, sources_.compute);
+        } else if (!computeSource.empty()) {
+            const uint32_t computeId = compileStage(GL_COMPUTE_SHADER, computeSource);
             glAttachShader(glId, computeId);
             attachedShaders.push_back(computeId);
         } else {

@@ -3,7 +3,7 @@
 
 #include "engine/resource/ResourceImporter.hpp"
 #include "engine/debug/logging/Logging.hpp"
-#include "engine/graphics/ShaderLayout.hpp"
+#include "engine/graphics/Shader.hpp"
 #include "engine/graphics/ShaderMeta.hpp"
 #include "engine/materials/templateGenerators/ShaderCodeGenerator.hpp"
 
@@ -17,11 +17,14 @@ class ShaderImporter : public ResourceImporter<Shader> {
     ResourceManager* manager;
     ShaderCodeGenerator generator;
 
-    std::string generateShaderSource(
+    [[nodiscard]] std::string generateShaderSource(
         const VirtualPath& path, const ShaderLayout& layout,
         const ShaderMeta& meta, const std::string& callFunc
-    );
-    Shader loadShader(const VirtualPath& path, ResourceManager& manager);
+    ) const;
+    [[nodiscard]] ShaderMeta::ShaderSources getShaderSources(
+        const ShaderLayout& layout, const ShaderMeta& meta
+    ) const;
+    [[nodiscard]] Shader loadShader(const VirtualPath& path);
 public:
     explicit ShaderImporter(Serializer& serializer_, ResourceManager& manager_);
 

@@ -10,12 +10,6 @@
 
 #include "ShaderMeta.hpp"
 
-struct ShaderSources {
-    std::string vertex;
-    std::string fragment;
-    std::string compute;
-};
-
 class ShaderLayout;
 
 class Shader final {
@@ -30,7 +24,10 @@ class Shader final {
     GLint getUniformLocation(const std::string& name);
     uint32_t compileStage(GLenum stage, const std::string& source) const;
 public:
-    explicit Shader(const ShaderSources& sources_, ShaderLayout&& layout_);
+    explicit Shader(
+        const ShaderMeta::ShaderSources& sources,
+        ShaderLayout&& layout_
+    );
 
     Shader(const Shader&) = delete;
     Shader& operator=(const Shader&) = delete;

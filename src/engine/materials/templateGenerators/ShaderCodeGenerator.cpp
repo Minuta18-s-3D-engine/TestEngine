@@ -1,6 +1,7 @@
 #include "ShaderCodeGenerator.hpp"
 
 #include <numeric>
+#include <sstream>
 
 #include "engine/resource/ResourceManager.hpp"
 #include "engine/graphics/Shader.hpp"
@@ -12,6 +13,17 @@ ShaderCodeGenerator::ShaderCodeGenerator(
 ) : templateEngine("core://assets/templates", parser),
     resourceManager(&resourceManager_),
     formattingOptions(formattingOptions_) {}
+
+std::string ShaderCodeGenerator::getUnpackFunctionByType(
+    ShaderMeta::ShaderType t
+) const {
+    switch (t) {
+        case ShaderMeta::ShaderType::VERTEX: return "vertex";
+        case ShaderMeta::ShaderType::FRAGMENT: return "fragment";
+        case ShaderMeta::ShaderType::COMPUTE: return "compute";
+    }
+    return "this_should_never_happened";
+}
 
 std::string ShaderCodeGenerator::generateIndentString(
     const uint32_t indentLevels
@@ -170,7 +182,7 @@ std::string ShaderCodeGenerator::generateShaderParams(
 std::string ShaderCodeGenerator::generateShader(
     const ShaderLayout& layout,
     const std::string& userCode,
-    const std::string& userFunc,
+    ShaderMeta::ShaderType shaderType,
     const bool loadParams
 ) const {
     TemplateArguments engineGlobalsArgs;
@@ -182,7 +194,7 @@ std::string ShaderCodeGenerator::generateShader(
     );
 
     TemplateArguments headerArgs;
-    headerArgs.set("user_func", userFunc);
+    headerArgs.set("user_func", getUnpackFunctionByType(shaderType));
     std::string header;
     if (loadParams) {
         header = templateEngine.render(

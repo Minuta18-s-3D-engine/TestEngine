@@ -8,6 +8,12 @@
 #include "engine/resource/serialization/Serialization.hpp"
 
 struct ShaderMeta {
+    enum class ShaderType {
+        VERTEX,
+        FRAGMENT,
+        COMPUTE
+    };
+
     struct PropertyEntry {
         std::string name;
         shader_layout::PropertyType type;
@@ -28,18 +34,6 @@ struct ShaderMeta {
         )
     };
 
-    struct Sources {
-        std::string vertexPath;
-        std::string fragmentPath;
-        std::string computePath;
-
-        GENERATE_SERIALIZATION(Sources,
-            SERIALIZE_FIELD_DEFAULT(vertexPath, std::string()),
-            SERIALIZE_FIELD_DEFAULT(fragmentPath, std::string()),
-            SERIALIZE_FIELD_DEFAULT(computePath, std::string())
-        )
-    };
-
     struct CodeGeneration {
         std::variant<bool, std::string> generateUnpack = "default";
 
@@ -49,17 +43,25 @@ struct ShaderMeta {
         )
     };
 
-    Sources sources;
+    using ShaderSources = std::map<ShaderType, std::string>;
+
+    ShaderSources sourcesPaths;
     std::vector<PropertyEntry> properties;
     std::vector<SamplerEntry> samplers;
     CodeGeneration codeGeneration;
 
     GENERATE_SERIALIZATION(ShaderMeta,
-        SERIALIZE_FIELD(sources),
+        SERIALIZE_FIELD(sourcesPaths),
         SERIALIZE_FIELD_DEFAULT(properties, std::vector<PropertyEntry>());
         SERIALIZE_FIELD_DEFAULT(samplers, std::vector<SamplerEntry>()),
         SERIALIZE_FIELD_DEFAULT(codeGeneration, CodeGeneration())
     )
 };
+
+GENERATE_ENUM_SERIALIZATION(ShaderMeta::ShaderType,
+    ENUM_OPTION(ShaderMeta::ShaderType::VERTEX, "vertex"),
+    ENUM_OPTION(ShaderMeta::ShaderType::FRAGMENT, "fragment"),
+    ENUM_OPTION(ShaderMeta::ShaderType::COMPUTE, "compute")
+)
 
 #endif // ENGINE_GRAPHICS_SHADERMETA_HPP
