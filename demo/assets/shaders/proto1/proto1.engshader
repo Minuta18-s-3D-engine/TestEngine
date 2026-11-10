@@ -1,0 +1,10 @@
+{
+    "sourcesPaths": {
+        "vertex": "fs://assets/shaders/proto1/proto1.vert.glsl",
+        "fragment": "fs://assets/shaders/proto1/proto1.frag.glsl"
+    },
+    "properties": {
+        "baseColor": { "type": "vec3" },
+        "tilingScale": { "type": "float" }
+    }
+}

@@ -44,7 +44,7 @@ std::string ShaderCodeGenerator::getGLSLSamplerType(
 std::string ShaderCodeGenerator::getGLSLSamplerName(
     const std::string& name
 ) const {
-    return "__u_GeneratedSampler_" + name;
+    return "_u_GeneratedSampler_" + name;
 }
 
 std::string ShaderCodeGenerator::generateParamsStruct(

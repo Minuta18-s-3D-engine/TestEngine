@@ -41,9 +41,16 @@ Shader::Shader(
     std::vector<uint32_t> attachedShaders;
 
     try {
-        const std::string vertexSource = sources[ShaderMeta::ShaderType::VERTEX];
-        const std::string fragmentSource = sources[ShaderMeta::ShaderType::FRAGMENT];
-        const std::string computeSource = sources[ShaderMeta::ShaderType::COMPUTE];
+        std::string vertexSource;
+        std::string fragmentSource;
+        std::string computeSource;
+
+        if (sources.contains(ShaderMeta::ShaderType::VERTEX))
+            vertexSource = sources.at(ShaderMeta::ShaderType::VERTEX);
+        if (sources.contains(ShaderMeta::ShaderType::FRAGMENT))
+            fragmentSource = sources.at(ShaderMeta::ShaderType::FRAGMENT);
+        if (sources.contains(ShaderMeta::ShaderType::COMPUTE))
+            computeSource = sources.at(ShaderMeta::ShaderType::COMPUTE);
 
         if (!vertexSource.empty() && !fragmentSource.empty()) {
             const uint32_t vertexId = compileStage(GL_VERTEX_SHADER, vertexSource);

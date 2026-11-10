@@ -1,0 +1,6 @@
+{
+    "sourcesPaths": {
+        "vertex": "core://assets/shaders/light.vert.glsl",
+        "fragment": "core://assets/shaders/light.frag.glsl"
+    }
+}

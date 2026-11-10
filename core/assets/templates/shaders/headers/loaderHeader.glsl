@@ -1,5 +1,5 @@
 void main() {
-    __Generated_loadShaderParams();
+    _Generated_loadShaderParams();
 
     {{ user_func }}();
 }

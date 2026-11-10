@@ -4,7 +4,7 @@
 
 {{ sampler_getters }}
 
-void __Generated_loadShaderParams() {
+void _Generated_loadShaderParams() {
     uint base = u_CurrentMaterialStartId;
 
 {{ unpack_lines }}

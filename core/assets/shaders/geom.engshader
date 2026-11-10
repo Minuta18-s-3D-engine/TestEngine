@@ -1,0 +1,10 @@
+{
+    "sourcesPaths": {
+        "vertex": "core://assets/shaders/geom.vert.glsl",
+        "fragment": "core://assets/shaders/geom.frag.glsl"
+    },
+    "samplers": {
+        "diffuseMap": { "type": "texture2D" },
+        "specularMap": { "type": "texture2D" }
+    }
+}

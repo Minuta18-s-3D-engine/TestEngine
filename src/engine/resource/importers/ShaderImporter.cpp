@@ -14,14 +14,14 @@ ShaderImporter::ShaderImporter(
 
 std::string ShaderImporter::generateShaderSource(
     const VirtualPath& path, const ShaderLayout& layout,
-    const ShaderMeta& meta, const std::string& callFunc
+    const ShaderMeta& meta, const ShaderMeta::ShaderType type
 ) const {
     File shaderFile(path);
     std::string source = shaderFile.readAll();
 
     bool generateUnpack = true;
     if (std::holds_alternative<std::string>(meta.codeGeneration.generateUnpack)) {
-        if (callFunc == "compute") {
+        if (type == ShaderMeta::ShaderType::COMPUTE) {
             generateUnpack = false;
         }
     } else {
@@ -29,7 +29,7 @@ std::string ShaderImporter::generateShaderSource(
     }
 
     std::string fullSource = generator.generateShader(
-        layout, source, callFunc, generateUnpack
+        layout, source, type, generateUnpack
     );
 
     return fullSource;
@@ -43,7 +43,7 @@ ShaderMeta::ShaderSources ShaderImporter::getShaderSources(
     for (const auto& [type, shaderPath] : meta.sourcesPaths) {
         File shaderFile(shaderPath);
         const std::string generatedSource = generateShaderSource(
-            shaderPath, layout, meta, "..."
+            shaderPath, layout, meta, type
         );
         sources[type] = generatedSource;
     }
@@ -54,16 +54,16 @@ ShaderMeta::ShaderSources ShaderImporter::getShaderSources(
 Shader ShaderImporter::loadShader(const VirtualPath& path) {
     logger.info("Loading shader: {}...", path.resolve());
 
-    StructuredData::DataNode metaContents = parseMetaFile(path);
+    StructuredData::DataNode metaContents = parseMetaFile(path, true, false);
     ShaderMeta meta;
     ObjectSerializer::deserialize(metaContents, meta);
 
     ShaderLayout layout;
-    for (const auto& prop : meta.properties) {
-        layout.addProperty(prop.name, prop.type);
+    for (const auto& [name, prop] : meta.properties) {
+        layout.addProperty(name, prop.type);
     }
-    for (const auto& sampler : meta.samplers) {
-        layout.addSampler(sampler.name, sampler.type);
+    for (const auto& [name, sampler] : meta.samplers) {
+        layout.addSampler(name, sampler.type);
     }
     layout.finalize();
 

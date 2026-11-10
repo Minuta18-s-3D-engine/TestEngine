@@ -19,7 +19,7 @@ class ShaderImporter : public ResourceImporter<Shader> {
 
     [[nodiscard]] std::string generateShaderSource(
         const VirtualPath& path, const ShaderLayout& layout,
-        const ShaderMeta& meta, const std::string& callFunc
+        const ShaderMeta& meta, ShaderMeta::ShaderType type
     ) const;
     [[nodiscard]] ShaderMeta::ShaderSources getShaderSources(
         const ShaderLayout& layout, const ShaderMeta& meta

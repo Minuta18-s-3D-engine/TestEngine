@@ -1,0 +1,6 @@
+{
+    "sourcesPaths": {
+        "vertex": "fs://assets/shaders/julia/julia.vert.glsl",
+        "fragment": "fs://assets/shaders/julia/julia.frag.glsl"
+    }
+}

@@ -24,7 +24,8 @@ protected:
     VirtualPath constructMetaPath(const VirtualPath& basePath);
 
     StructuredData::DataNode parseMetaFile(
-        const VirtualPath& basePath, bool isMetaRequired = false
+        const VirtualPath& basePath, bool isMetaRequired = false,
+        bool changePath = true
     );
 
     Serializer* serializer;
@@ -43,11 +44,14 @@ VirtualPath ResourceImporter<T>::constructMetaPath(const VirtualPath& basePath) 
 
 template <typename T>
 StructuredData::DataNode ResourceImporter<T>::parseMetaFile(
-    const VirtualPath& basePath, bool isMetaRequired
+    const VirtualPath& basePath, bool isMetaRequired, bool changePath
 ) {
     StructuredData::DataNode emptyNode{StructuredData::Object()};
 
-    VirtualPath metaPath = constructMetaPath(basePath);
+    VirtualPath metaPath = basePath;
+    if (changePath) {
+        metaPath = constructMetaPath(basePath);
+    }
 
     try {
         File metaFile(metaPath);

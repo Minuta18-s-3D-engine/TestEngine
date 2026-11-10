@@ -13,7 +13,7 @@ void fragment() {
     vec3 normal = normalize(v_Normal);
     gNormal = normalize(normal);
 
-    vec3 scaledPos = v_WorldPos * currentMaterial.tilingScale;
+    vec3 scaledPos = v_WorldPos * shaderParams.tilingScale;
     float patternX = mod(floor(scaledPos.y) + floor(scaledPos.z), 2.0);
     float patternY = mod(floor(scaledPos.x) + floor(scaledPos.z), 2.0);
     float patternZ = mod(floor(scaledPos.x) + floor(scaledPos.y), 2.0);
@@ -27,7 +27,7 @@ void fragment() {
     
     pattern = step(0.5, pattern);
 
-    vec3 baseColor = currentMaterial.baseColor;
+    vec3 baseColor = shaderParams.baseColor;
     vec3 darkColor = baseColor - baseColor * 0.2;
 
     gAlbedoSpec.rgb = mix(darkColor, baseColor, pattern);

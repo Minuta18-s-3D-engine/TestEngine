@@ -16,7 +16,7 @@ RenderingSystem::RenderingSystem(
         this, &RenderingSystem::onWindowResize);
 
     lightingShaderHandle = resourceManager->getByPath<Shader>(
-        "core://assets/shaders/light.vert.glsl"
+        "core://assets/shaders/light.engshader"
     );
 }
 

@@ -8,9 +8,9 @@ ClusteredRenderer::ClusteredRenderer(
     this->createSSBOs();
 
     buildClustersShaderHandle = resourceManager->getByPath<Shader>(
-        "core://assets/shaders/buildClusters.comp.glsl");
+        "core://assets/shaders/buildClusters.engshader");
     lightCullingShaderHandle = resourceManager->getByPath<Shader>(
-        "core://assets/shaders/lightCulling.comp.glsl");
+        "core://assets/shaders/lightCulling.engshader");
 }
 
 void ClusteredRenderer::createSSBOs() {

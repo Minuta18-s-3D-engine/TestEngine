@@ -85,7 +85,7 @@ void FieldRegistry::registerField(std::string_view name, T C::*member) {
         const T* typedValue = static_cast<const T*>(fieldPtr);
         TypeSerialization::serializeField(outNode, *typedValue);
     };
-    d.deserialize = [](const void* fieldPtr, StructuredData::DataNode& inNode) {
+    d.deserialize = [](void* fieldPtr, const StructuredData::DataNode& inNode) {
         T* typedValue = static_cast<T*>(fieldPtr);
         TypeSerialization::deserializeField(inNode, *typedValue);
     };

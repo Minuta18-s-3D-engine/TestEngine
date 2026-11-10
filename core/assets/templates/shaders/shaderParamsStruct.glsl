@@ -1,5 +1,5 @@
-struct __Generated_ShaderParams {
+struct _Generated_ShaderParams {
 {{ shader_properties }}
 };
 
-__Generated_ShaderParams shaderParams;
+_Generated_ShaderParams shaderParams;

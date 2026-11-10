@@ -15,21 +15,17 @@ struct ShaderMeta {
     };
 
     struct PropertyEntry {
-        std::string name;
         shader_layout::PropertyType type;
 
         GENERATE_SERIALIZATION(PropertyEntry,
-            SERIALIZE_FIELD(name),
             SERIALIZE_FIELD(type)
         )
     };
 
     struct SamplerEntry {
-        std::string name;
         shader_layout::SamplerType type;
 
         GENERATE_SERIALIZATION(SamplerEntry,
-            SERIALIZE_FIELD(name),
             SERIALIZE_FIELD(type)
         )
     };
@@ -46,14 +42,14 @@ struct ShaderMeta {
     using ShaderSources = std::map<ShaderType, std::string>;
 
     ShaderSources sourcesPaths;
-    std::vector<PropertyEntry> properties;
-    std::vector<SamplerEntry> samplers;
+    std::map<std::string, PropertyEntry> properties;
+    std::map<std::string, SamplerEntry> samplers;
     CodeGeneration codeGeneration;
 
     GENERATE_SERIALIZATION(ShaderMeta,
         SERIALIZE_FIELD(sourcesPaths),
-        SERIALIZE_FIELD_DEFAULT(properties, std::vector<PropertyEntry>());
-        SERIALIZE_FIELD_DEFAULT(samplers, std::vector<SamplerEntry>()),
+        SERIALIZE_FIELD_DEFAULT(properties, std::map<std::string, PropertyEntry>());
+        SERIALIZE_FIELD_DEFAULT(samplers, std::map<std::string, SamplerEntry>()),
         SERIALIZE_FIELD_DEFAULT(codeGeneration, CodeGeneration())
     )
 };

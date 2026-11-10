@@ -1,0 +1,5 @@
+{
+    "sourcesPaths": {
+        "compute": "core://assets/shaders/buildClusters.comp.glsl"
+    }
+}
