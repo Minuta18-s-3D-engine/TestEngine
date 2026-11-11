@@ -1,4 +1,4 @@
-#include "CommandLineArgs.hpp"
+#include "core/CommandLineArgs.hpp"
 
 CommandLineArgs::CommandLineArgs(int argc, char* argv[]) {
     if (argc <= 1) return;

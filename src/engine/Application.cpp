@@ -1,4 +1,4 @@
-#include "Application.hpp"
+#include "core/Application.hpp"
 
 #include "engine/resource/importers/TextureImporter.hpp"
 #include "engine/resource/importers/ShaderImporter.hpp"

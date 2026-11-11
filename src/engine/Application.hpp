@@ -1,7 +1,7 @@
 #ifndef ENGINE_CORE_APPLICATION_HPP_
 #define ENGINE_CORE_APPLICATION_HPP_
 
-#include "CommandLineArgs.hpp"
+#include "core/CommandLineArgs.hpp"
 #include "engine/project/VirtualPath.hpp"
 #include "engine/debug/logging/Logging.hpp"
 #include "engine/resource/ResourceHandle.hpp"

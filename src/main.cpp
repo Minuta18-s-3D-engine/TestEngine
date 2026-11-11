@@ -10,7 +10,7 @@
 #include "engine/debug/logging/Logging.hpp"
 #include "engine/debug/logging/ConsoleLoggerMiddleware.hpp"
 #include "engine/debug/logging/FileLoggerMiddleware.hpp"
-#include "engine/core/Application.hpp"
+#include "engine/Application.hpp"
 #include "engine/core/CommandLineArgs.hpp"
 
 int main(int argc, char* argv[]) {
