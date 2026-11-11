@@ -1,5 +1,5 @@
-#ifndef ENGINE_CORE_COMMANDLINEARGS_HPP_
-#define ENGINE_CORE_COMMANDLINEARGS_HPP_
+#ifndef ENGINE_COMMANDLINEARGS_HPP_
+#define ENGINE_COMMANDLINEARGS_HPP_
 
 #include <unordered_map>
 #include <string>
@@ -13,4 +13,4 @@ public:
     std::string get(const std::string& key) { return args.at(key); }
 };
 
-#endif // ENGINE_CORE_COMMANDLINEARGS_HPP_
+#endif // ENGINE_COMMANDLINEARGS_HPP_

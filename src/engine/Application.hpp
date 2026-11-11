@@ -1,7 +1,7 @@
-#ifndef ENGINE_CORE_APPLICATION_HPP_
-#define ENGINE_CORE_APPLICATION_HPP_
+#ifndef ENGINE_APPLICATION_HPP_
+#define ENGINE_APPLICATION_HPP_
 
-#include "core/CommandLineArgs.hpp"
+#include "CommandLineArgs.hpp"
 #include "engine/project/VirtualPath.hpp"
 #include "engine/debug/logging/Logging.hpp"
 #include "engine/resource/ResourceHandle.hpp"
@@ -65,4 +65,4 @@ public:
     void run();
 };
 
-#endif // ENGINE_CORE_APPLICATION_HPP_
+#endif // ENGINE_APPLICATION_HPP_
