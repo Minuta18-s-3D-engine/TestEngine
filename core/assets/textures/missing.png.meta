@@ -1,4 +1,6 @@
 {
-    "filtering": "linear",
-    "colorSpace": "sRGB"
+    "meta": {
+        "filtering": "linear",
+        "colorSpace": "sRGB"
+    }
 }

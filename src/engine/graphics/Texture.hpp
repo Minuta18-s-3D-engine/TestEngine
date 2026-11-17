@@ -80,9 +80,6 @@ public:
     [[nodiscard]] std::string getTypeName() const override { return "Texture"; };
     [[nodiscard]] bool canDeserialize() const override { return false; };
 
-    void serialize(StructuredData::DataNode& out) const override;
-    void deserialize(const StructuredData::DataNode& in) override;
-
     void bind();
     void unbind();
 

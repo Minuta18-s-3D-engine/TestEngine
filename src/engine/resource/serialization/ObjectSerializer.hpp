@@ -4,6 +4,8 @@
 #include "engine/containers/structuredData/DataNode.hpp"
 #include "FieldRegistry.hpp"
 
+class Object;
+
 class ObjectSerializer {
 public:
     template <Serializable T>
@@ -15,6 +17,10 @@ public:
 
 template<Serializable T>
 StructuredData::DataNode ObjectSerializer::serialize(const T& instance) {
+    if (std::derived_from<T, Object>) {
+        instance.onSerializing();
+    }
+
     const FieldRegistry& registry = T::reflect();
 
     StructuredData::Object objData;
@@ -63,6 +69,10 @@ void ObjectSerializer::deserialize(
                 std::string(field.name) + ": " + e.what()
             );
         }
+    }
+
+    if (std::derived_from<T, Object>) {
+        instance.onDeserialized();
     }
 }
 
