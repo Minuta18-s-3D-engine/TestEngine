@@ -1,5 +1,7 @@
 #include "Texture.hpp"
 
+
+
 GLenum Texture::getGLTarget() const {
     switch (type) {
         case SamplerType::Texture2D: return GL_TEXTURE_2D;

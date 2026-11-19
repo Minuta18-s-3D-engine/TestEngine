@@ -31,44 +31,38 @@ public:
 
     using TextureFilterMode = std::variant<FilterMode, DetailedFilterMode>;
 
-    struct Meta {
-        ColorSpace colorSpace = ColorSpace::Linear;
-        WrapMode wrapMode = WrapMode::Repeat;
-        bool generateMipmaps = false;
-        TextureFilterMode filtering = FilterMode::Linear;
-        SamplerType type = SamplerType::Texture2D;
-
-        GENERATE_SERIALIZATION(Meta,
-            SERIALIZE_FIELD_DEFAULT(colorSpace, ColorSpace::Linear),
-            SERIALIZE_FIELD_DEFAULT(wrapMode, WrapMode::Repeat),
-            SERIALIZE_FIELD_DEFAULT(generateMipmaps, false),
-            SERIALIZE_FIELD_DEFAULT(filtering,
-                TextureFilterMode(FilterMode::Linear)),
-            SERIALIZE_FIELD_DEFAULT(type, SamplerType::Texture2D)
-        )
-    };
-protected:
-    void onDeserialized() override;
-
 private:
     static constexpr uint64_t NO_HANDLE = 0;
+
+    ColorSpace colorSpace = ColorSpace::Linear;
+    WrapMode wrapMode = WrapMode::Repeat;
+    bool generateMipmaps = true;
+    TextureFilterMode filtering = FilterMode::Linear;
+    SamplerType type = SamplerType::Texture2D;
 
     uint32_t width = 0;
     uint32_t height = 0;
     ImageFormat format = ImageFormat::rgba;
-    SamplerType type;
     uint32_t id = 0;
     uint32_t bindlessHandle = NO_HANDLE;
-
-    Meta meta;
 
     Texture() = default;
 
     [[nodiscard]] GLenum getGLTarget() const;
+    void uploadToGPU(const ImageData& image);
+    void releaseGPUResources();
+
+protected:
+    void onAfterDeserialize() override;
+
 public:
     Texture(
-        const ImageData& image, 
-        Meta&& meta
+        const ImageData& image,
+        ColorSpace colorSpace_ = ColorSpace::Linear,
+        WrapMode wrapMode_ = WrapMode::Repeat,
+        bool generateMipmaps_ = true,
+        TextureFilterMode filtering_ = FilterMode::Linear,
+        SamplerType type_ = SamplerType::Texture2D
     );
     ~Texture() override;
 
@@ -78,7 +72,6 @@ public:
     Texture& operator=(Texture&& other) noexcept;
 
     [[nodiscard]] std::string getTypeName() const override { return "Texture"; };
-    [[nodiscard]] bool canSerialize() const override { return false; };
 
     void bind();
     void unbind();
@@ -88,10 +81,17 @@ public:
     [[nodiscard]] uint32_t getId() const { return id;};
     [[nodiscard]] uint64_t getBindlessHandle() const { return bindlessHandle; };
     [[nodiscard]] SamplerType getType() const { return type; };
-    [[nodiscard]] const Meta& getMeta() const { return meta; }
+    [[nodiscard]] ColorSpace getColorSpace() const { return colorSpace; }
+    [[nodiscard]] WrapMode getWrapMode() const { return wrapMode; }
+    [[nodiscard]] bool getGenerateMipmaps() const { return generateMipmaps; }
+    [[nodiscard]] const TextureFilterMode& getFiltering() const { return filtering; }
 
     GENERATE_SERIALIZATION(Texture,
-        SERIALIZE_FIELD_DEFAULT(meta, Meta())
+        SERIALIZE_FIELD_DEFAULT(colorSpace, ColorSpace::Linear),
+        SERIALIZE_FIELD_DEFAULT(wrapMode, WrapMode::Repeat),
+        SERIALIZE_FIELD_DEFAULT(generateMipmaps, true),
+        SERIALIZE_FIELD_DEFAULT(filtering, TextureFilterMode(FilterMode::Linear)),
+        SERIALIZE_FIELD_DEFAULT(type, SamplerType::Texture2D)
     )
 };
 

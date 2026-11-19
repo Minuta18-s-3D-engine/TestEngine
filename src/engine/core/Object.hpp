@@ -3,13 +3,20 @@
 
 #include <string>
 
-#include "engine/resource/serialization/ObjectSerializer.hpp"
+#include "engine/resource/serialization/FieldRegistry.hpp"
+
+// Functionality will be added a little later
+#define OBJECT_BODY \
+public: \
+\
+private:
 
 class Object {
 protected:
-    friend class ObjectSerializer;
-
     Object() = default;
+
+    virtual void onBeforeSerialize() {};
+    virtual void onAfterDeserialize() {};
 public:
     virtual ~Object() = default;
 
