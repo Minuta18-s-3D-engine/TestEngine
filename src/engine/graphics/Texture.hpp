@@ -78,7 +78,7 @@ public:
     Texture& operator=(Texture&& other) noexcept;
 
     [[nodiscard]] std::string getTypeName() const override { return "Texture"; };
-    [[nodiscard]] bool canDeserialize() const override { return false; };
+    [[nodiscard]] bool canSerialize() const override { return false; };
 
     void bind();
     void unbind();

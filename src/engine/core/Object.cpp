@@ -1,9 +1,10 @@
 #include "Object.hpp"
 
-void Object::serialize(StructuredData::DataNode &out) const {
-    onSerializing();
+const FieldRegistry& Object::getStaticFieldRegistry() {
+    static const FieldRegistry objectRegistry;
+    return objectRegistry;
 }
 
-void Object::deserialize(const StructuredData::DataNode &in) {
-    onDeserialized();
+const FieldRegistry& Object::getFieldRegistry() const {
+    return getStaticFieldRegistry();
 }

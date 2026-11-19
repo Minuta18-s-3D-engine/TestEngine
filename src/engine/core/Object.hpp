@@ -10,16 +10,13 @@ protected:
     friend class ObjectSerializer;
 
     Object() = default;
-
-    virtual void onSerializing() const {};
-    virtual void onDeserialized() {};
 public:
     virtual ~Object() = default;
 
     [[nodiscard]] virtual std::string getTypeName() const { return "Object"; }
 
-    [[nodiscard]] virtual bool canSerialize() const { return true; }
-    [[nodiscard]] virtual bool canDeserialize() const { return true; }
+    static const FieldRegistry& getStaticFieldRegistry();
+    [[nodiscard]] virtual const FieldRegistry& getFieldRegistry() const;
 };
 
 #endif // ENGINE_CORE_OBJECT_HPP_
