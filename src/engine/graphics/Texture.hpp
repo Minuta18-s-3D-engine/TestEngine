@@ -49,7 +49,7 @@ private:
     Texture() = default;
 
     [[nodiscard]] GLenum getGLTarget() const;
-    void uploadToGPU(const ImageData& image);
+    void initializeTexture(const ImageData& image);
     void releaseGPUResources();
 
 protected:
@@ -73,8 +73,8 @@ public:
 
     [[nodiscard]] std::string getTypeName() const override { return "Texture"; };
 
-    void bind();
-    void unbind();
+    void bind() const;
+    void unbind() const;
 
     [[nodiscard]] uint32_t getWidth() const { return width; };
     [[nodiscard]] uint32_t getHeight() const { return height; };

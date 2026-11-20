@@ -1,6 +1,6 @@
 #include "Texture.hpp"
 
-
+#include "engine/utils/exc/GeneralExceptions.hpp"
 
 GLenum Texture::getGLTarget() const {
     switch (type) {
@@ -10,166 +10,176 @@ GLenum Texture::getGLTarget() const {
     return GL_TEXTURE_2D;
 }
 
-Texture::Texture(
-    const ImageData& image, 
-    const TextureMeta& schema,
-    SamplerType _type
-) : width(image.getWidth()), 
-    height(image.getHeight()), 
-    format(image.getFormat()), 
-    type(_type),
-    id(0)
-{
+void Texture::initializeTexture(const ImageData &image) {
     if (!image.getData()) {
-        throw exc::invalid_argument(
-            "Cannot create texture from empty image data");
+        throw exc::invalid_argument("empty image data.");
     }
+
+    releaseGPUResources();
+
+    width = image.getWidth();
+    height = image.getHeight();
+    format = image.getFormat();
 
     glGenTextures(1, &id);
-    this->bind();
+    bind();
 
-    GLuint wrapParam = GL_REPEAT;
-    switch (schema.wrapMode) {
-        case TextureMeta::WrapMode::ClampToEdge:
-            wrapParam = GL_CLAMP_TO_EDGE;
-            break;
-        case TextureMeta::WrapMode::MirroredRepeat:
-            wrapParam = GL_MIRRORED_REPEAT;
-            break;
+    GLint wrapParam = GL_REPEAT;
+    switch (wrapMode) {
+        case WrapMode::ClampToEdge:
+            wrapParam = GL_CLAMP_TO_EDGE; break;
+        case WrapMode::MirroredRepeat:
+            wrapParam = GL_MIRRORED_REPEAT; break;
+        case WrapMode::Repeat:
         default:
-            wrapParam = GL_REPEAT;
-            break;
+            wrapParam = GL_REPEAT; break;
     }
 
-    GLenum target = getGLTarget();
-
+    const GLenum target = getGLTarget();
     glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapParam);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapParam);
 
     GLint magFilter = GL_LINEAR;
     GLint minFilter = GL_LINEAR;
-
-    if (std::holds_alternative<TextureMeta::FilterMode>(schema.filtering)) {
-        auto mode = std::get<TextureMeta::FilterMode>(schema.filtering);
-        magFilter = minFilter = (mode == TextureMeta::FilterMode::Linear) ?
-            GL_LINEAR : GL_NEAREST;
+    if (std::holds_alternative<FilterMode>(filtering)) {
+        const FilterMode mode = std::get<FilterMode>(filtering);
+        magFilter = (mode == FilterMode::Linear) ? GL_LINEAR : GL_NEAREST;
+        minFilter = magFilter;
     } else {
-        auto tf = std::get<TextureMeta::TextureFiltering>(schema.filtering);
-        magFilter = (tf.mag == TextureMeta::FilterMode::Linear) ?
-            GL_LINEAR : GL_NEAREST;
-        minFilter = (tf.min == TextureMeta::FilterMode::Linear) ?
-            GL_LINEAR : GL_NEAREST;
+        const auto& mode = std::get<DetailedFilterMode>(filtering);
+        magFilter = (mode.mag == FilterMode::Linear) ? GL_LINEAR : GL_NEAREST;
+        minFilter = (mode.min == FilterMode::Linear) ? GL_LINEAR : GL_NEAREST;
     }
 
-    if (schema.generateMipmaps) {
-        minFilter = (minFilter == GL_LINEAR) ? 
-            GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST;
+    if (generateMipmaps) {
+        minFilter = (minFilter == GL_LINEAR)
+            ? GL_LINEAR_MIPMAP_LINEAR
+            : GL_LINEAR_MIPMAP_NEAREST;
     }
 
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minFilter);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
 
-    GLenum dataFormat;
-    switch (image.getFormat()) {
-        case ImageFormat::rgba: dataFormat = GL_RGBA; break;
-        case ImageFormat::rgb: dataFormat = GL_RGB; break;
-        case ImageFormat::grayscale: dataFormat = GL_RED; break;
+    GLenum dataFormat = GL_RGBA;
+    switch (format) {
+        case ImageFormat::rgba:
+            dataFormat = GL_RGBA; break;
+        case ImageFormat::rgb:
+            dataFormat = GL_RGB; break;
+        case ImageFormat::grayscale:
+            dataFormat = GL_RED; break;
         default:
-            dataFormat = GL_RGBA;
+            dataFormat = GL_RGBA; break;
     }
 
-    GLint internalFormat = dataFormat;
-    if (schema.colorSpace == TextureMeta::ColorSpace::sRGB) {
-        if (dataFormat == GL_RGB) internalFormat = GL_SRGB;
-        else if (dataFormat == GL_RGBA) internalFormat = GL_SRGB_ALPHA;
+    GLint internalFormat = static_cast<GLint>(dataFormat);
+    if (colorSpace == ColorSpace::sRGB) {
+        if (dataFormat == GL_RGB) {
+            internalFormat = GL_SRGB;
+        } else if (dataFormat == GL_RGBA) {
+            internalFormat = GL_SRGB_ALPHA;
+        }
     }
 
     glTexImage2D(
-        target,
-        0, 
-        internalFormat, 
-        width, 
-        height, 
-        0, 
-        dataFormat, 
-        GL_UNSIGNED_BYTE, 
+        target, 0, internalFormat, static_cast<GLsizei>(width),
+        static_cast<GLsizei>(height), 0, dataFormat, GL_UNSIGNED_BYTE,
         image.getData()
     );
 
-    if (schema.generateMipmaps) {
+    if (generateMipmaps) {
         glGenerateMipmap(target);
     }
 
-    this->unbind();
+    unbind();
 
-    if (GL_ARB_bindless_texture) {
+    if (GLAD_GL_ARB_bindless_texture) {
         bindlessHandle = glGetTextureHandleARB(id);
-        glMakeTextureHandleResidentARB(bindlessHandle);
+        if (bindlessHandle != NO_HANDLE) {
+            glMakeTextureHandleResidentARB(bindlessHandle);
+        }
     }
+}
+
+void Texture::releaseGPUResources() {
+    if (bindlessHandle != NO_HANDLE) {
+        if (GLAD_GL_ARB_bindless_texture) {
+            glMakeImageHandleNonResidentARB(bindlessHandle);
+        }
+        bindlessHandle = NO_HANDLE;
+    }
+
+    if (id != 0) {
+        glDeleteTextures(1, &id);
+        id = 0;
+    }
+}
+
+Texture::Texture(
+    const ImageData& image, ColorSpace colorSpace_, WrapMode wrapMode_,
+    bool generateMipmaps_, TextureFilterMode filtering_, SamplerType type_
+) : colorSpace(colorSpace_),
+    wrapMode(wrapMode_),
+    generateMipmaps(generateMipmaps_),
+    filtering(filtering_),
+    type(type_)
+{
+    initializeTexture(image);
 }
 
 Texture::~Texture() {
-    if (bindlessHandle != NO_HANDLE) {
-        glMakeTextureHandleNonResidentARB(bindlessHandle);
-    }
-    glDeleteTextures(1, &id);
+    releaseGPUResources();
 }
 
 Texture::Texture(Texture&& other) noexcept
-    : width(other.width), height(other.height),
-      format(other.format), type(other.type),
-      id(other.id), bindlessHandle(other.bindlessHandle) 
+  : colorSpace(other.colorSpace),
+    wrapMode(other.wrapMode),
+    generateMipmaps(other.generateMipmaps),
+    filtering(other.filtering),
+    type(other.type),
+    width(other.width),
+    height(other.height),
+    format(other.format),
+    id(other.id),
+    bindlessHandle(other.bindlessHandle)
 {
+    other.width = 0;
+    other.height = 0;
     other.id = 0;
     other.bindlessHandle = NO_HANDLE;
 }
 
 Texture& Texture::operator=(Texture&& other) noexcept {
     if (this != &other) {
-        if (bindlessHandle != NO_HANDLE) {
-            glMakeTextureHandleNonResidentARB(bindlessHandle);
-        }
-        if (id != 0) {
-            glDeleteTextures(1, &id);
-        }
+        releaseGPUResources();
 
+        colorSpace = other.colorSpace;
+        wrapMode = other.wrapMode;
+        generateMipmaps = other.generateMipmaps;
+        filtering = other.filtering;
+        type = other.type;
         width = other.width;
         height = other.height;
         format = other.format;
-        type = other.type;
         id = other.id;
         bindlessHandle = other.bindlessHandle;
 
+        other.width = 0;
+        other.height = 0;
         other.id = 0;
         other.bindlessHandle = NO_HANDLE;
     }
     return *this;
 }
 
-void Texture::bind() {
+void Texture::onAfterDeserialize() {
+    // WIP
+}
+
+void Texture::bind() const {
     glBindTexture(getGLTarget(), id);
 }
 
-void Texture::unbind() {
+void Texture::unbind() const {
     glBindTexture(getGLTarget(), 0);
-}
-
-uint Texture::getWidth() const {
-    return width;
-}
-
-uint Texture::getHeight() const {
-    return height;
-}
-
-uint Texture::getId() const {
-    return id;
-}
-
-uint64_t Texture::getHandle() const {
-    return bindlessHandle;
-}
-
-SamplerType Texture::getType() const {
-    return type;
 }
