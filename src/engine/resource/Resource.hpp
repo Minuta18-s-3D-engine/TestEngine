@@ -11,7 +11,8 @@ class Resource : public Object {
 protected:
     VirtualPath path;
 
-    Resource() = default;
+    explicit Resource(const VirtualPath& path_) : path(path_) {}
+    explicit Resource(VirtualPath&& path_) : path(std::move(path_)) {}
 
     [[nodiscard]] VirtualPath getMetaPath() const;
     [[nodiscard]] StructuredData::DataNode readMetaNode(

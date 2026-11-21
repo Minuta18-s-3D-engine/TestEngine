@@ -1,6 +1,14 @@
 #include "Texture.hpp"
 
+#include "engine/debug/logging/Logging.hpp"
 #include "engine/utils/exc/GeneralExceptions.hpp"
+#include "engine/project/File.hpp"
+#include "engine/resource/coders/images/JpgCoder.hpp"
+#include "engine/resource/coders/images/PngCoder.hpp"
+#include "engine/resource/utils/Files.hpp"
+#include "engine/utils/exc/ImporterExceptions.hpp"
+
+std::unique_ptr<Logger> Texture::textureLogger = nullptr;
 
 GLenum Texture::getGLTarget() const {
     switch (type) {
@@ -72,7 +80,7 @@ void Texture::initializeTexture(const ImageData &image) {
             dataFormat = GL_RGBA; break;
     }
 
-    GLint internalFormat = static_cast<GLint>(dataFormat);
+    auto internalFormat = static_cast<GLint>(dataFormat);
     if (colorSpace == ColorSpace::sRGB) {
         if (dataFormat == GL_RGB) {
             internalFormat = GL_SRGB;
@@ -115,15 +123,32 @@ void Texture::releaseGPUResources() {
     }
 }
 
+void Texture::setupLogger() const {
+    if (textureLogger != nullptr) return;
+
+    textureLogger = std::make_unique<Logger>(
+        Logging::createLogger("engine.graphics.texture")
+    );
+}
+
+Texture::Texture(const VirtualPath& path_) : Resource(path_) {
+    setupLogger();
+}
+
 Texture::Texture(
-    const ImageData& image, ColorSpace colorSpace_, WrapMode wrapMode_,
-    bool generateMipmaps_, TextureFilterMode filtering_, SamplerType type_
-) : colorSpace(colorSpace_),
+    const VirtualPath& path_,
+    const ImageData& image, const ColorSpace colorSpace_,
+    const WrapMode wrapMode_, const bool generateMipmaps_,
+    const TextureFilterMode filtering_, const SamplerType type_
+) : Resource(path_),
+    colorSpace(colorSpace_),
     wrapMode(wrapMode_),
     generateMipmaps(generateMipmaps_),
     filtering(filtering_),
     type(type_)
 {
+    setupLogger();
+
     initializeTexture(image);
 }
 
@@ -132,7 +157,8 @@ Texture::~Texture() {
 }
 
 Texture::Texture(Texture&& other) noexcept
-  : colorSpace(other.colorSpace),
+  : Resource(other.path),
+    colorSpace(other.colorSpace),
     wrapMode(other.wrapMode),
     generateMipmaps(other.generateMipmaps),
     filtering(other.filtering),
@@ -173,7 +199,38 @@ Texture& Texture::operator=(Texture&& other) noexcept {
 }
 
 void Texture::onAfterDeserialize() {
-    // WIP
+    File textureFile(getPath());
+    const auto textureFileContent = textureFile.readAllBytes();
+
+    const ImageType imgFormat = getImageType(
+        textureFileContent.data(), textureFileContent.size()
+    );
+    std::shared_ptr<ImageData> image = nullptr;
+    if (imgFormat == ImageType::PNG) {
+        image = PngCoder::load_image(
+            textureFileContent.data(),
+            textureFileContent.size(),
+            getPath().getVirtual()
+        );
+    } else if (imgFormat == ImageType::JPG) {
+        image = JpgCoder::load_image(
+            textureFileContent.data(),
+            textureFileContent.size(),
+            getPath().getVirtual()
+        );
+    } else {
+        throw exc::importer_exceptions::resource_invalid(
+            "File format not supported. Use png or jpg"
+        );
+    }
+
+    if (!image) {
+        throw exc::importer_exceptions::resource_invalid(
+            "Failed to decode image data"
+        );
+    }
+
+    initializeTexture(*image);
 }
 
 void Texture::bind() const {

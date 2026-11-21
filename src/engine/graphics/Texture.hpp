@@ -4,14 +4,11 @@
 #include "engine/resource/Resource.hpp"
 #include "engine/resource/serialization/Serialization.hpp"
 #include "engine/resource/utils/ImageData.hpp"
-
-#include <cstdint>
+#include "SamplerType.hpp"
+#include "engine/debug/logging/Logger.hpp"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
-#include "SamplerType.hpp"
-
 
 class Texture final : public Resource {
 public:
@@ -34,6 +31,8 @@ public:
 private:
     static constexpr uint64_t NO_HANDLE = 0;
 
+    static std::unique_ptr<Logger> textureLogger;
+
     ColorSpace colorSpace = ColorSpace::Linear;
     WrapMode wrapMode = WrapMode::Repeat;
     bool generateMipmaps = true;
@@ -46,17 +45,19 @@ private:
     uint32_t id = 0;
     uint32_t bindlessHandle = NO_HANDLE;
 
-    Texture() = default;
+    explicit Texture(const VirtualPath& path_);
 
     [[nodiscard]] GLenum getGLTarget() const;
     void initializeTexture(const ImageData& image);
     void releaseGPUResources();
+    void setupLogger() const;
 
 protected:
     void onAfterDeserialize() override;
 
 public:
-    Texture(
+    explicit Texture(
+        const VirtualPath& path_,
         const ImageData& image,
         ColorSpace colorSpace_ = ColorSpace::Linear,
         WrapMode wrapMode_ = WrapMode::Repeat,
